@@ -1,0 +1,30 @@
+<h2>Listing Pharmacies</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Email</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for pharmacy <- @pharmacies do %>
+    <tr>
+      <td><%= pharmacy.name %></td>
+      <td><%= pharmacy.address %></td>
+      <td><%= pharmacy.email %></td>
+
+      <td class="text-right">
+        <span><%= link "Show", to: pharmacy_path(@conn, :show, pharmacy), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Edit", to: pharmacy_path(@conn, :edit, pharmacy), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Delete", to: pharmacy_path(@conn, :delete, pharmacy), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Pharmacy", to: pharmacy_path(@conn, :new) %></span>

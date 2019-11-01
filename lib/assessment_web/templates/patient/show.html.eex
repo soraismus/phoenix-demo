@@ -1,0 +1,18 @@
+<h2>Show Patient</h2>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @patient.name %>
+  </li>
+
+  <li>
+    <strong>Address:</strong>
+    <%= @patient.address %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: patient_path(@conn, :edit, @patient) %></span>
+<span><%= link "Back", to: patient_path(@conn, :index) %></span>
