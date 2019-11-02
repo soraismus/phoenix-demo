@@ -4,6 +4,9 @@ defmodule AssessmentWeb.OrderController do
   alias Assessment.Orders
   alias Assessment.Orders.Order
 
+  @ok :ok
+  @error :error
+
   def index(conn, _params) do
     orders = Orders.list_orders()
     render(conn, "index.html", orders: orders)
@@ -16,11 +19,11 @@ defmodule AssessmentWeb.OrderController do
 
   def create(conn, %{"order" => order_params}) do
     case Orders.create_order(order_params) do
-      {:ok, order} ->
+      {@ok, order} ->
         conn
         |> put_flash(:info, "Order created successfully.")
         |> redirect(to: order_path(conn, :show, order))
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {@error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
@@ -40,18 +43,18 @@ defmodule AssessmentWeb.OrderController do
     order = Orders.get_order!(id)
 
     case Orders.update_order(order, order_params) do
-      {:ok, order} ->
+      {@ok, order} ->
         conn
         |> put_flash(:info, "Order updated successfully.")
         |> redirect(to: order_path(conn, :show, order))
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {@error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", order: order, changeset: changeset)
     end
   end
 
   def delete(conn, %{"id" => id}) do
     order = Orders.get_order!(id)
-    {:ok, _order} = Orders.delete_order(order)
+    {@ok, _order} = Orders.delete_order(order)
 
     conn
     |> put_flash(:info, "Order deleted successfully.")

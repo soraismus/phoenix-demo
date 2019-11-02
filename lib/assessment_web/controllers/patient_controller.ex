@@ -4,6 +4,9 @@ defmodule AssessmentWeb.PatientController do
   alias Assessment.Patients
   alias Assessment.Patients.Patient
 
+  @ok :ok
+  @error :error
+
   def index(conn, _params) do
     patients = Patients.list_patients()
     render(conn, "index.html", patients: patients)
@@ -16,11 +19,11 @@ defmodule AssessmentWeb.PatientController do
 
   def create(conn, %{"patient" => patient_params}) do
     case Patients.create_patient(patient_params) do
-      {:ok, patient} ->
+      {@ok, patient} ->
         conn
         |> put_flash(:info, "Patient created successfully.")
         |> redirect(to: patient_path(conn, :show, patient))
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {@error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
@@ -32,7 +35,7 @@ defmodule AssessmentWeb.PatientController do
 
   def delete(conn, %{"id" => id}) do
     patient = Patients.get_patient!(id)
-    {:ok, _patient} = Patients.delete_patient(patient)
+    {@ok, _patient} = Patients.delete_patient(patient)
 
     conn
     |> put_flash(:info, "Patient deleted successfully.")

@@ -6,9 +6,23 @@ defmodule Assessment.Accounts.Agent do
 
   schema "agents" do
     field :username, :string
+
+    # NOTE: The subordinate domain concepts Administrator, Courier, and
+    # Pharmacy are coupled to Agent for greater ease of use.
+    # That is, the `has_one` macro, although no agent record
+    # can actually claim to have one each of administrators, couriers, and
+    # pharmacies, allows use of `&Ecto.Changeset.cast_assoc`, which
+    # facilitates (1) database record insertion, (2) HTML form submission,
+    # and (3) HTML form error management.
+
     has_one :administrator, Administrator
     has_one :courier, Courier
     has_one :pharmacy, Pharmacy
+
+    # NOTE: Since Administrator et al. are already coupled to Agent,
+    # the following virtual field adds little extra harm.
+    # Its purpose is to facilitate pattern matching.
+    field :account_type, :string, virtual: true
 
     timestamps()
   end

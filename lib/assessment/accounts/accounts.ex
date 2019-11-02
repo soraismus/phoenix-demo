@@ -15,6 +15,26 @@ defmodule Assessment.Accounts do
 
   ## Examples
 
+      iex> get_agent(123)
+      {:ok, %Agent{}}
+
+      iex> get_agent(456)
+      {:error, :no_resource}
+
+  """
+  def get_agent(id) do
+    Agent
+    |> Repo.get(id)
+    |> Repo.preload([:administrator, :courier, :pharmacy])
+    |> Utilities.prohibit_nil(@no_resource)
+    |> Utilities.map_value(&set_account_type/1)
+  end
+
+  @doc """
+  Gets a single agent.
+
+  ## Examples
+
       iex> get_agent_by_username("abc")
       {:ok, %Agent{}}
 
@@ -273,6 +293,20 @@ defmodule Assessment.Accounts do
     |> Repo.all()
     |> Repo.preload(:agent)
     |> Enum.map(&set_username/1)
+  end
+
+  defp set_account_type(%Agent{} = agent) do
+    %{administrator: administrator, courier: courier, pharmacy: pharmacy} = agent
+    cond do
+      !is_nil(administrator) ->
+        %{agent | account_type: "administrator"}
+      !is_nil(courier) ->
+        %{agent | account_type: "courier"}
+      !is_nil(pharmacy) ->
+        %{agent | account_type: "pharmacy"}
+      true ->
+        raise "Invalid agent"
+    end
   end
 
   defp set_username(%{agent: %{username: username}, username: _} = account)

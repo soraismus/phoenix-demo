@@ -1,6 +1,8 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
 
+  @error :error
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -25,12 +27,26 @@ defmodule AssessmentWeb.Router do
     resources "/pharmacies", PharmacyController, except: [:edit, :update]
 
     get "/login", SessionController, :new
-    post "/session", SessionController, :create
-    delete "/session", SessionController, :delete
+    post "/login", SessionController, :create
+    delete "/logout", SessionController, :delete
   end
 
   # Other scopes may use custom stacks.
   # scope "/api", AssessmentWeb do
   #   pipe_through :api
   # end
+
+  defp authenticate_agent(conn, _) do
+    case get_session(conn, :agent_id) do
+      nil ->
+        conn
+        |> clear_session()
+        |> put_flash(@error, "Login required")
+        |> redirect(to: page_path(conn, :index))
+        |> halt()
+      agent_id ->
+        conn
+        |> assign(:current_user, Accounts.get_agent(agent_id))
+    end
+  end
 end
