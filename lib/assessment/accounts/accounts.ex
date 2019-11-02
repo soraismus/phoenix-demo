@@ -142,28 +142,9 @@ defmodule Assessment.Accounts do
 
   """
   def create_administrator(attrs \\ %{}) do
-    #%Agent{}
-    #|> Agent.changeset(attrs)
-    #|> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
-    #|> Repo.insert()
-
-    #Ecto.Multi.new()
-    #|> Ecto.Multi.run(:agent, fn (_) -> create_agent(attrs) end)
-    #|> Ecto.Multi.run(
-    #      :administrator,
-    #      fn (%{agent: agent}) ->
-    #          new_attrs =
-    #            attrs
-    #            |> Map.put(:agent_id, agent.id)
-    #            |> Map.delete(:username)
-    #          %Agent{}
-    #          |> Agent.changeset(new_attrs)
-    #          |> Repo.insert()
-    #      end)
-    #|> Repo.transaction()
-
-    %Administrator{}
-    |> Administrator.changeset(attrs)
+    %Agent{}
+    |> Agent.changeset(attrs)
+    |> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
     |> Repo.insert()
   end
 
