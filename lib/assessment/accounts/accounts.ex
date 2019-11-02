@@ -6,7 +6,8 @@ defmodule Assessment.Accounts do
   import Ecto.Query, warn: false
 
   alias Assessment.{Repo,Utilities}
-  alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
+  alias Assessment.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
+  alias Ecto.Changeset
 
   @no_resource :no_resource
 
@@ -312,5 +313,96 @@ defmodule Assessment.Accounts do
   defp set_username(%{agent: %{username: username}, username: _} = account)
     when is_binary(username) do
       %{account | username: username}
+  end
+
+  @doc """
+  Returns the list of credentials.
+
+  ## Examples
+
+      iex> list_credentials()
+      [%Credential{}, ...]
+
+  """
+  def list_credentials do
+    Repo.all(Credential)
+  end
+
+  @doc """
+  Gets a single credential.
+
+  Raises `Ecto.NoResultsError` if the Credential does not exist.
+
+  ## Examples
+
+      iex> get_credential(123)
+      {:ok, %Credential{}}
+
+      iex> get_credential!(456)
+      {:error, :no_resource}
+
+  """
+  def get_credential!(id) do
+    Credential
+    |> Repo.get(id)
+    |> Utilities.prohibit_nil(@no_resource)
+  end
+
+  @doc """
+  Creates a credential.
+
+  ## Examples
+
+      iex> create_credential(%{field: value})
+      {:ok, %Credential{}}
+
+      iex> create_credential(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_credential(attrs \\ %{}) do
+    %Credential{}
+    |> Credential.changeset(attrs)
+    |> hash_password()
+    |> Repo.insert()
+  end
+
+  @doc """
+  Deletes a Credential.
+
+  ## Examples
+
+      iex> delete_credential(credential)
+      {:ok, %Credential{}}
+
+      iex> delete_credential(credential)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_credential(%Credential{} = credential) do
+    Repo.delete(credential)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking credential changes.
+
+  ## Examples
+
+      iex> change_credential(credential)
+      %Ecto.Changeset{source: %Credential{}}
+
+  """
+  def change_credential(%Credential{} = credential) do
+    Credential.changeset(credential, %{})
+  end
+
+  defp hash_password(changeset) do
+    case changeset do
+      %Changeset{valid?: true, changes: %{password: password}} ->
+        changeset
+        |> Changeset.put_change(:password_digest, Bcrypt.hashpwsalt(password))
+      _ ->
+        changeset
+    end
   end
 end

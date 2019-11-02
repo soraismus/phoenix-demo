@@ -1,11 +1,13 @@
 defmodule Assessment.Accounts.Agent do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
+  alias Assessment.Accounts.{Administrator,Courier,Credential,Pharmacy}
 
 
   schema "agents" do
     field :username, :string
+
+    has_one :credential, Credential
 
     # NOTE: The subordinate domain concepts Administrator, Courier, and
     # Pharmacy are coupled to Agent for greater ease of use.
