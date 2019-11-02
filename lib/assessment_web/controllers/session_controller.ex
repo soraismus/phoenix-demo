@@ -6,7 +6,7 @@ defmodule AssessmentWeb.SessionController do
 
   def new(conn, _params) do
     changeset = Accounts.change_agent()
-    render(conn, "new.html", changeset: changeset, errors?: false)
+    render(conn, "new.html", changeset: changeset)
   end
 
   def create(conn, %{"agent" => %{"username" => username}}) do
@@ -18,15 +18,9 @@ defmodule AssessmentWeb.SessionController do
         |> configure_session(renew: true)
         |> redirect(to: "/")
       {:error, :no_resource} ->
-        changeset =
-          Agent.changeset(%Agent{}, %{username: username})
-          |> Ecto.Changeset.add_error(:username, "Invalid username")
-        changeset = %{changeset | action: :show_errors}
         conn
-        |> render("new.html", changeset: changeset, errors?: true)
-        #conn
-        #|> put_flash(:error, "Invalid username")
-        #|> redirect(to: session_path(conn, :new))
+        |> put_flash(:error, "Invalid username")
+        |> redirect(to: session_path(conn, :new))
     end
   end
 
