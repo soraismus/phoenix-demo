@@ -1,12 +1,6 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
 
-  alias AssessmentWeb.AdministratorController
-  alias AssessmentWeb.CourierController
-  alias AssessmentWeb.OrderController
-  alias AssessmentWeb.PatientController
-  alias AssessmentWeb.PharmacyController
-
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -24,11 +18,11 @@ defmodule AssessmentWeb.Router do
 
     get "/", PageController, :index
 
-    resources "/administrators", AdministratorController
-    resources "/couriers", CourierController
+    resources "/administrators", AdministratorController, except: [:edit, :update]
+    resources "/couriers", CourierController, except: [:edit, :update]
     resources "/orders", OrderController
-    resources "/patients", PatientController
-    resources "/pharmacies", PharmacyController
+    resources "/patients", PatientController, except: [:edit, :update]
+    resources "/pharmacies", PharmacyController, except: [:edit, :update]
   end
 
   # Other scopes may use custom stacks.

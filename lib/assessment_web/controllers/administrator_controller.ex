@@ -26,31 +26,12 @@ defmodule AssessmentWeb.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    administrator = Accounts.get_administrator!(id)
+    {:ok, administrator} = Accounts.get_administrator(id)
     render(conn, "show.html", administrator: administrator)
   end
 
-  def edit(conn, %{"id" => id}) do
-    administrator = Accounts.get_administrator!(id)
-    changeset = Accounts.change_administrator(administrator)
-    render(conn, "edit.html", administrator: administrator, changeset: changeset)
-  end
-
-  def update(conn, %{"id" => id, "administrator" => administrator_params}) do
-    administrator = Accounts.get_administrator!(id)
-
-    case Accounts.update_administrator(administrator, administrator_params) do
-      {:ok, administrator} ->
-        conn
-        |> put_flash(:info, "Administrator updated successfully.")
-        |> redirect(to: administrator_path(conn, :show, administrator))
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", administrator: administrator, changeset: changeset)
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
-    administrator = Accounts.get_administrator!(id)
+    {:ok, administrator} = Accounts.get_administrator(id)
     {:ok, _administrator} = Accounts.delete_administrator(administrator)
 
     conn

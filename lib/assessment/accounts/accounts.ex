@@ -4,9 +4,11 @@ defmodule Assessment.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias Assessment.Repo
 
-  alias Assessment.Accounts.Agent
+  alias Assessment.{Repo,Utilities}
+  alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
+
+  @no_resource :no_resource
 
   @doc """
   Returns the list of agents.
@@ -24,18 +26,20 @@ defmodule Assessment.Accounts do
   @doc """
   Gets a single agent.
 
-  Raises `Ecto.NoResultsError` if the Agent does not exist.
-
   ## Examples
 
-      iex> get_agent!(123)
-      %Agent{}
+      iex> get_agent(123)
+      {:ok, %Agent{}}
 
-      iex> get_agent!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_agent(456)
+      {:error, :no_resource}
 
   """
-  def get_agent!(id), do: Repo.get!(Agent, id)
+  def get_agent(id) do
+    Agent
+    |> Repo.get(id)
+    |> Utilities.prohibit_nil(@no_resource)
+  end
 
   @doc """
   Creates a agent.
@@ -56,24 +60,6 @@ defmodule Assessment.Accounts do
   end
 
   @doc """
-  Updates a agent.
-
-  ## Examples
-
-      iex> update_agent(agent, %{field: new_value})
-      {:ok, %Agent{}}
-
-      iex> update_agent(agent, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_agent(%Agent{} = agent, attrs) do
-    agent
-    |> Agent.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
   Deletes a Agent.
 
   ## Examples
@@ -89,6 +75,11 @@ defmodule Assessment.Accounts do
     Repo.delete(agent)
   end
 
+  defp set_username(%{agent: %{username: username}, username: _} = account)
+    when is_binary(username) do
+      %{account | username: username}
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking agent changes.
 
@@ -102,8 +93,6 @@ defmodule Assessment.Accounts do
     Agent.changeset(agent, %{})
   end
 
-  alias Assessment.Accounts.Administrator
-
   @doc """
   Returns the list of administrators.
 
@@ -114,24 +103,31 @@ defmodule Assessment.Accounts do
 
   """
   def list_administrators do
-    Repo.all(Administrator)
+    Administrator
+    |> Repo.all()
+    |> Repo.preload(:agent)
+    |> Enum.map(&set_username/1)
   end
 
   @doc """
   Gets a single administrator.
 
-  Raises `Ecto.NoResultsError` if the Administrator does not exist.
-
   ## Examples
 
-      iex> get_administrator!(123)
-      %Administrator{}
+      iex> get_administrator(123)
+      {:ok, %Administrator{}}
 
-      iex> get_administrator!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_administrator(456)
+      {:error, :no_resource}
 
   """
-  def get_administrator!(id), do: Repo.get!(Administrator, id)
+  def get_administrator(id) do
+    Administrator
+    |> Repo.get(id)
+    |> Repo.preload(:agent)
+    |> set_username()
+    |> Utilities.prohibit_nil(@no_resource)
+  end
 
   @doc """
   Creates a administrator.
@@ -146,27 +142,10 @@ defmodule Assessment.Accounts do
 
   """
   def create_administrator(attrs \\ %{}) do
-    %Administrator{}
-    |> Administrator.changeset(attrs)
+    %Agent{}
+    |> Agent.changeset(attrs)
+    |> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
     |> Repo.insert()
-  end
-
-  @doc """
-  Updates a administrator.
-
-  ## Examples
-
-      iex> update_administrator(administrator, %{field: new_value})
-      {:ok, %Administrator{}}
-
-      iex> update_administrator(administrator, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_administrator(%Administrator{} = administrator, attrs) do
-    administrator
-    |> Administrator.changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """
@@ -198,8 +177,6 @@ defmodule Assessment.Accounts do
     Administrator.changeset(administrator, %{})
   end
 
-  alias Assessment.Accounts.Pharmacy
-
   @doc """
   Returns the list of pharmacies.
 
@@ -210,24 +187,31 @@ defmodule Assessment.Accounts do
 
   """
   def list_pharmacies do
-    Repo.all(Pharmacy)
+    Pharmacy
+    |> Repo.all()
+    |> Repo.preload(:agent)
+    |> Enum.map(&set_username/1)
   end
 
   @doc """
   Gets a single pharmacy.
 
-  Raises `Ecto.NoResultsError` if the Pharmacy does not exist.
-
   ## Examples
 
-      iex> get_pharmacy!(123)
-      %Pharmacy{}
+      iex> get_pharmacy(123)
+      {:ok, %Pharmacy{}}
 
-      iex> get_pharmacy!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_pharmacy(456)
+      {:error, :no_resource}
 
   """
-  def get_pharmacy!(id), do: Repo.get!(Pharmacy, id)
+  def get_pharmacy(id) do
+    Pharmacy
+    |> Repo.get(id)
+    |> Repo.preload(:agent)
+    |> set_username()
+    |> Utilities.prohibit_nil(@no_resource)
+  end
 
   @doc """
   Creates a pharmacy.
@@ -242,27 +226,10 @@ defmodule Assessment.Accounts do
 
   """
   def create_pharmacy(attrs \\ %{}) do
-    %Pharmacy{}
-    |> Pharmacy.changeset(attrs)
+    %Agent{}
+    |> Agent.changeset(attrs)
+    |> Ecto.Changeset.cast_assoc(:pharmacy, with: &Pharmacy.changeset/2)
     |> Repo.insert()
-  end
-
-  @doc """
-  Updates a pharmacy.
-
-  ## Examples
-
-      iex> update_pharmacy(pharmacy, %{field: new_value})
-      {:ok, %Pharmacy{}}
-
-      iex> update_pharmacy(pharmacy, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_pharmacy(%Pharmacy{} = pharmacy, attrs) do
-    pharmacy
-    |> Pharmacy.changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """
@@ -294,8 +261,6 @@ defmodule Assessment.Accounts do
     Pharmacy.changeset(pharmacy, %{})
   end
 
-  alias Assessment.Accounts.Courier
-
   @doc """
   Returns the list of couriers.
 
@@ -306,24 +271,31 @@ defmodule Assessment.Accounts do
 
   """
   def list_couriers do
-    Repo.all(Courier)
+    Courier
+    |> Repo.all()
+    |> Repo.preload(:agent)
+    |> Enum.map(&set_username/1)
   end
 
   @doc """
   Gets a single courier.
 
-  Raises `Ecto.NoResultsError` if the Courier does not exist.
-
   ## Examples
 
-      iex> get_courier!(123)
-      %Courier{}
+      iex> get_courier(123)
+      {:ok, %Courier{}}
 
-      iex> get_courier!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_courier(456)
+      {:error, :no_resource}
 
   """
-  def get_courier!(id), do: Repo.get!(Courier, id)
+  def get_courier(id) do
+    Courier
+    |> Repo.get(id)
+    |> Repo.preload(:agent)
+    |> set_username()
+    |> Utilities.prohibit_nil(@no_resource)
+  end
 
   @doc """
   Creates a courier.
@@ -338,27 +310,10 @@ defmodule Assessment.Accounts do
 
   """
   def create_courier(attrs \\ %{}) do
-    %Courier{}
-    |> Courier.changeset(attrs)
+    %Agent{}
+    |> Agent.changeset(attrs)
+    |> Ecto.Changeset.cast_assoc(:courier, with: &Courier.changeset/2)
     |> Repo.insert()
-  end
-
-  @doc """
-  Updates a courier.
-
-  ## Examples
-
-      iex> update_courier(courier, %{field: new_value})
-      {:ok, %Courier{}}
-
-      iex> update_courier(courier, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_courier(%Courier{} = courier, attrs) do
-    courier
-    |> Courier.changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """

@@ -30,25 +30,6 @@ defmodule AssessmentWeb.PatientController do
     render(conn, "show.html", patient: patient)
   end
 
-  def edit(conn, %{"id" => id}) do
-    patient = Patients.get_patient!(id)
-    changeset = Patients.change_patient(patient)
-    render(conn, "edit.html", patient: patient, changeset: changeset)
-  end
-
-  def update(conn, %{"id" => id, "patient" => patient_params}) do
-    patient = Patients.get_patient!(id)
-
-    case Patients.update_patient(patient, patient_params) do
-      {:ok, patient} ->
-        conn
-        |> put_flash(:info, "Patient updated successfully.")
-        |> redirect(to: patient_path(conn, :show, patient))
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", patient: patient, changeset: changeset)
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     patient = Patients.get_patient!(id)
     {:ok, _patient} = Patients.delete_patient(patient)
