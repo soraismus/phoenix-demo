@@ -15,12 +15,10 @@ defmodule AssessmentWeb.SessionController do
     |> render("new.html")
   end
 
-  def create(conn, %{"agent" => %{"username" => username, "credential" => %{"password" => password}} = agent_params}) do
-    changeset =
-      %Agent{}
-      |> Agent.changeset(agent_params)
-      |> Changeset.cast_assoc(:credential, with: &Credential.validate/2)
+  def create(conn, %{"agent" => params}) do
+    changeset = session_changeset(params)
     if changeset.valid? do
+      %{"username" => username, "credential" => %{"password" => password}} = params
       case Accounts.get_agent_by_username_and_password(username, password) do
         {@ok, agent} ->
           conn
@@ -45,5 +43,11 @@ defmodule AssessmentWeb.SessionController do
     conn
     |> configure_session(drop: true)
     |> redirect(to: page_path(conn, :index))
+  end
+
+  defp session_changeset(params) do
+    %Agent{}
+    |> Agent.changeset(params)
+    |> Changeset.cast_assoc(:credential, with: &Credential.validate/2)
   end
 end

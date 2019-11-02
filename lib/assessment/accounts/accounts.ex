@@ -49,7 +49,7 @@ defmodule Assessment.Accounts do
       agent =
         Agent
         |> Repo.get_by(username: username)
-        |> Repo.preload([:administrator, :courier, :credential, :pharmacy])
+        |> Repo.preload(:credential)
       cond do
         is_nil(agent) ->
           {:error, @unauthenticated}
