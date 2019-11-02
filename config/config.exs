@@ -22,6 +22,20 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 
+config :mime, :types, %{
+  "application/json" => ["json"],
+  "text/csv" => ["csv"]
+}
+
+config :assessment, AssessmentWeb.Guardian,
+  issuer: "Assessment",
+  secret_key: "MDLMflIpKod5YCnkdiY7C4E3ki2rgcAAMwfBl0+vyC5uqJNgoibfQmAh7J3uZWVK",
+  # optional
+  allowed_algos: ["HS256"],
+  ttl: {1, :days},
+  allowed_drift: 2000,
+  verify_issuer: true
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
