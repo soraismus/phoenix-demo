@@ -50,16 +50,21 @@ defmodule Assessment.Accounts do
       #|> Repo.get_by(%{username: username})
       #|> Utilities.prohibit_nil(@no_resource)
 
-      password_digest = Comeonin.Bcrypt.hashpwsalt(password)
-
       query =
         from u in Agent,
           inner_join: c in assoc(u, :credential),
-          where: u.username == ^username and c.password_digest == ^password_digest
+          where: u.username == ^username,
+          preload: [credential: c]
 
       case Repo.one(query) do
-        %Agent{} = agent -> {:ok, agent}
-        nil -> {:error, @unauthenticated}
+        (%Agent{} = agent) ->
+          if Comeonin.Bcrypt.checkpw(password, agent.credential.password_digest) do
+            {:ok, agent}
+          else
+            {:error, @unauthenticated}
+          end
+        nil ->
+          {:error, @unauthenticated}
       end
   end
 

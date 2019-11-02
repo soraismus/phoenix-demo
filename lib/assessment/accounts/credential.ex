@@ -17,6 +17,7 @@ defmodule Assessment.Accounts.Credential do
   @doc false
   def validate(credential, attrs) do
     credential
+    # |> Map.update!("password", &normalize/1)
     |> cast(attrs, [:password])
     |> validate_required([:password])
   end
@@ -35,5 +36,11 @@ defmodule Assessment.Accounts.Credential do
       _ ->
         changeset
     end
+  end
+
+  defp normalize(password) do
+    password
+    |> String.trim()
+    |> String.downcase()
   end
 end
