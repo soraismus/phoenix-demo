@@ -2,7 +2,7 @@ defmodule AssessmentWeb.CourierController do
   use AssessmentWeb, :controller
 
   alias Assessment.Accounts
-  alias Assessment.Accounts.Courier
+  alias Assessment.Accounts.Agent
 
   def index(conn, _params) do
     couriers = Accounts.list_couriers()
@@ -14,9 +14,9 @@ defmodule AssessmentWeb.CourierController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"courier" => courier_params}) do
-    case Accounts.create_courier(courier_params) do
-      {:ok, courier} ->
+  def create(conn, %{"agent" => agent_params}) do
+    case Accounts.create_courier(agent_params) do
+      {:ok, %Agent{courier: courier}} ->
         conn
         |> put_flash(:info, "Courier created successfully.")
         |> redirect(to: courier_path(conn, :show, courier))
@@ -31,11 +31,11 @@ defmodule AssessmentWeb.CourierController do
   end
 
   def delete(conn, %{"id" => id}) do
-    {:ok, courier} = Accounts.get_courier(id)
-    {:ok, _courier} = Accounts.delete_courier(courier)
-
-    conn
-    |> put_flash(:info, "Courier deleted successfully.")
-    |> redirect(to: courier_path(conn, :index))
+    with {:ok, courier} = Accounts.get_courier(id),
+         {:ok, _} = Accounts.delete_courier(courier) do
+      conn
+      |> put_flash(:info, "Administrator deleted successfully.")
+      |> redirect(to: courier_path(conn, :index))
+    end
   end
 end
