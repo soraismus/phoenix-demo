@@ -10,6 +10,7 @@ defmodule Assessment.Accounts do
   alias Ecto.Changeset
 
   @no_resource :no_resource
+  @unauthenticated :unauthenticated
 
   @doc """
   Gets a single agent.
@@ -32,21 +33,34 @@ defmodule Assessment.Accounts do
   end
 
   @doc """
-  Gets a single agent.
+  Gets a single agent corresponding to a username and password.
 
   ## Examples
 
-      iex> get_agent_by_username("abc")
+      iex> get_agent_by_username_and_password("abc", "uvw")
       {:ok, %Agent{}}
 
-      iex> get_agent_by_username("dec")
+      iex> get_agent_by_username_and_password("dec", "xyz")
       {:error, :no_resource}
 
   """
-  def get_agent_by_username(username) when is_binary(username) do
-    Agent
-    |> Repo.get_by(%{username: username})
-    |> Utilities.prohibit_nil(@no_resource)
+  def get_agent_by_username_and_password(username, password)
+    when is_binary(username) and is_binary(password) do
+      #Agent
+      #|> Repo.get_by(%{username: username})
+      #|> Utilities.prohibit_nil(@no_resource)
+
+      password_digest = Comeonin.Bcrypt.hashpwsalt(password)
+
+      query =
+        from u in Agent,
+          inner_join: c in assoc(u, :credential),
+          where: u.username == ^username and c.password_digest == ^password_digest
+
+      case Repo.one(query) do
+        %Agent{} = agent -> {:ok, agent}
+        nil -> {:error, @unauthenticated}
+      end
   end
 
   @doc """
@@ -267,8 +281,8 @@ defmodule Assessment.Accounts do
   defp create_account(key, fun, attrs) do
     %Agent{}
     |> Agent.changeset(attrs)
-    |> Ecto.Changeset.cast_assoc(key, with: fun)
-    |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
+    |> Changeset.cast_assoc(key, with: fun)
+    |> Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
     |> Repo.insert()
   end
 

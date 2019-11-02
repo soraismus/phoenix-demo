@@ -15,10 +15,15 @@ defmodule Assessment.Accounts.Credential do
   end
 
   @doc false
-  def changeset(credential, attrs) do
+  def validate(credential, attrs) do
     credential
     |> cast(attrs, [:password])
     |> validate_required([:password])
+  end
+
+  @doc false
+  def changeset(credential, attrs) do
+    validate(credential, attrs)
     |> hash_password()
   end
 
