@@ -10,7 +10,7 @@ defmodule AssessmentWeb.CourierController do
   end
 
   def new(conn, _params) do
-    changeset = Accounts.change_courier(%Courier{})
+    changeset = Accounts.change_courier()
     render(conn, "new.html", changeset: changeset)
   end
 

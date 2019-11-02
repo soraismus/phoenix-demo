@@ -1,4 +1,10 @@
 defmodule Assessment.Utilities do
+  def bind_value({:ok, value}, fun), do: fun.(value)
+  def bind_value({:error, value}, _fun), do: {:error, value}
+
+  def bind_error({:ok, value}, _fun), do: {:ok, value}
+  def bind_error({:error, value}, fun), do: fun.(value)
+
   def map_error({:ok, value}, _fun), do: {:ok, value}
   def map_error({:error, value}, fun), do: {:error, fun.(value)}
 

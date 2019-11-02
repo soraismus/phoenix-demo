@@ -10,7 +10,7 @@ defmodule AssessmentWeb.PharmacyController do
   end
 
   def new(conn, _params) do
-    changeset = Accounts.change_pharmacy(%Pharmacy{})
+    changeset = Accounts.change_pharmacy()
     render(conn, "new.html", changeset: changeset)
   end
 

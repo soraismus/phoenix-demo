@@ -11,89 +11,6 @@ defmodule Assessment.Accounts do
   @no_resource :no_resource
 
   @doc """
-  Returns the list of agents.
-
-  ## Examples
-
-      iex> list_agents()
-      [%Agent{}, ...]
-
-  """
-  def list_agents do
-    Repo.all(Agent)
-  end
-
-  @doc """
-  Gets a single agent.
-
-  ## Examples
-
-      iex> get_agent(123)
-      {:ok, %Agent{}}
-
-      iex> get_agent(456)
-      {:error, :no_resource}
-
-  """
-  def get_agent(id) do
-    Agent
-    |> Repo.get(id)
-    |> Utilities.prohibit_nil(@no_resource)
-  end
-
-  @doc """
-  Creates a agent.
-
-  ## Examples
-
-      iex> create_agent(%{field: value})
-      {:ok, %Agent{}}
-
-      iex> create_agent(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_agent(attrs \\ %{}) do
-    %Agent{}
-    |> Agent.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Deletes a Agent.
-
-  ## Examples
-
-      iex> delete_agent(agent)
-      {:ok, %Agent{}}
-
-      iex> delete_agent(agent)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_agent(%Agent{} = agent) do
-    Repo.delete(agent)
-  end
-
-  defp set_username(%{agent: %{username: username}, username: _} = account)
-    when is_binary(username) do
-      %{account | username: username}
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking agent changes.
-
-  ## Examples
-
-      iex> change_agent(agent)
-      %Ecto.Changeset{source: %Agent{}}
-
-  """
-  def change_agent(%Agent{} = agent) do
-    Agent.changeset(agent, %{})
-  end
-
-  @doc """
   Returns the list of administrators.
 
   ## Examples
@@ -102,12 +19,7 @@ defmodule Assessment.Accounts do
       [%Administrator{}, ...]
 
   """
-  def list_administrators do
-    Administrator
-    |> Repo.all()
-    |> Repo.preload(:agent)
-    |> Enum.map(&set_username/1)
-  end
+  def list_administrators(), do: list_accounts(Administrator)
 
   @doc """
   Gets a single administrator.
@@ -121,13 +33,7 @@ defmodule Assessment.Accounts do
       {:error, :no_resource}
 
   """
-  def get_administrator(id) do
-    Administrator
-    |> Repo.get(id)
-    |> Repo.preload(:agent)
-    |> set_username()
-    |> Utilities.prohibit_nil(@no_resource)
-  end
+  def get_administrator(id), do: get_account(Administrator, id)
 
   @doc """
   Creates a administrator.
@@ -142,14 +48,11 @@ defmodule Assessment.Accounts do
 
   """
   def create_administrator(attrs \\ %{}) do
-    %Agent{}
-    |> Agent.changeset(attrs)
-    |> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
-    |> Repo.insert()
+    create_account(:administrator, &Administrator.changeset/2, attrs)
   end
 
   @doc """
-  Deletes a Administrator.
+  Deletes a Administrator and its corresponding Agent.
 
   ## Examples
 
@@ -161,29 +64,19 @@ defmodule Assessment.Accounts do
 
   """
   def delete_administrator(%Administrator{} = administrator) do
-    # Because, when the database deletes an agent, it also deletes the
-    # agent's corresponding administrator (or courier or pharmacy),
-    # the effect-ful expression `Repo.delete(administrator)` is not needed.
-    # Deleting `administrator.agent` alone is sufficient.
-    administrator.agent
-    |> Repo.delete()
-    |> Utilities.map_value(fn (_agent) -> administrator end)
+    delete_account(administrator)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking administrator changes.
+  Returns an `%Ecto.Changeset{}` for tracking agent-cum-administrator changes.
 
   ## Examples
 
-      iex> change_administrator(administrator)
-      %Ecto.Changeset{source: %Administrator{}}
+      iex> change_administrator()
+      %Ecto.Changeset{source: %Agent{}}
 
   """
-  def change_administrator() do
-    %Agent{}
-    |> Agent.changeset(%{})
-    |> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
-  end
+  def change_administrator(), do: change_agent()
 
   @doc """
   Returns the list of pharmacies.
@@ -194,12 +87,7 @@ defmodule Assessment.Accounts do
       [%Pharmacy{}, ...]
 
   """
-  def list_pharmacies do
-    Pharmacy
-    |> Repo.all()
-    |> Repo.preload(:agent)
-    |> Enum.map(&set_username/1)
-  end
+  def list_pharmacies(), do: list_accounts(Pharmacy)
 
   @doc """
   Gets a single pharmacy.
@@ -213,13 +101,7 @@ defmodule Assessment.Accounts do
       {:error, :no_resource}
 
   """
-  def get_pharmacy(id) do
-    Pharmacy
-    |> Repo.get(id)
-    |> Repo.preload(:agent)
-    |> set_username()
-    |> Utilities.prohibit_nil(@no_resource)
-  end
+  def get_pharmacy(id), do: get_account(Pharmacy, id)
 
   @doc """
   Creates a pharmacy.
@@ -234,14 +116,11 @@ defmodule Assessment.Accounts do
 
   """
   def create_pharmacy(attrs \\ %{}) do
-    %Agent{}
-    |> Agent.changeset(attrs)
-    |> Ecto.Changeset.cast_assoc(:pharmacy, with: &Pharmacy.changeset/2)
-    |> Repo.insert()
+    create_account(:pharmacy, &Pharmacy.changeset/2, attrs)
   end
 
   @doc """
-  Deletes a Pharmacy.
+  Deletes a Pharmacy and its corresponding Agent.
 
   ## Examples
 
@@ -253,21 +132,19 @@ defmodule Assessment.Accounts do
 
   """
   def delete_pharmacy(%Pharmacy{} = pharmacy) do
-    Repo.delete(pharmacy)
+    delete_account(pharmacy)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking pharmacy changes.
+  Returns an `%Ecto.Changeset{}` for tracking agent-cum-pharmacy changes.
 
   ## Examples
 
-      iex> change_pharmacy(pharmacy)
-      %Ecto.Changeset{source: %Pharmacy{}}
+      iex> change_pharmacy()
+      %Ecto.Changeset{source: %Agent{}}
 
   """
-  def change_pharmacy(%Pharmacy{} = pharmacy) do
-    Pharmacy.changeset(pharmacy, %{})
-  end
+  def change_pharmacy(), do: change_agent()
 
   @doc """
   Returns the list of couriers.
@@ -278,12 +155,7 @@ defmodule Assessment.Accounts do
       [%Courier{}, ...]
 
   """
-  def list_couriers do
-    Courier
-    |> Repo.all()
-    |> Repo.preload(:agent)
-    |> Enum.map(&set_username/1)
-  end
+  def list_couriers(), do: list_accounts(Courier)
 
   @doc """
   Gets a single courier.
@@ -297,13 +169,7 @@ defmodule Assessment.Accounts do
       {:error, :no_resource}
 
   """
-  def get_courier(id) do
-    Courier
-    |> Repo.get(id)
-    |> Repo.preload(:agent)
-    |> set_username()
-    |> Utilities.prohibit_nil(@no_resource)
-  end
+  def get_courier(id), do: get_account(Courier, id)
 
   @doc """
   Creates a courier.
@@ -318,14 +184,11 @@ defmodule Assessment.Accounts do
 
   """
   def create_courier(attrs \\ %{}) do
-    %Agent{}
-    |> Agent.changeset(attrs)
-    |> Ecto.Changeset.cast_assoc(:courier, with: &Courier.changeset/2)
-    |> Repo.insert()
+    create_account(:courier, &Courier.changeset/2, attrs)
   end
 
   @doc """
-  Deletes a Courier.
+  Deletes a Courier and its corresponding Agent.
 
   ## Examples
 
@@ -337,19 +200,56 @@ defmodule Assessment.Accounts do
 
   """
   def delete_courier(%Courier{} = courier) do
-    Repo.delete(courier)
+    delete_account(courier)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking courier changes.
+  Returns an `%Ecto.Changeset{}` for tracking agent-cum-courier changes.
 
   ## Examples
 
-      iex> change_courier(courier)
-      %Ecto.Changeset{source: %Courier{}}
+      iex> change_courier()
+      %Ecto.Changeset{source: %Agent{}}
 
   """
-  def change_courier(%Courier{} = courier) do
-    Courier.changeset(courier, %{})
+  def change_courier(), do: change_agent()
+
+  defp change_agent(), do: Agent.changeset(%Agent{}, %{})
+
+  defp create_account(key, fun, attrs) do
+    %Agent{}
+    |> Agent.changeset(attrs)
+    |> Ecto.Changeset.cast_assoc(key, with: fun)
+    |> Repo.insert()
+  end
+
+  defp delete_account(%{agent: %Agent{}} = account) do
+    # Because, when the database deletes an agent, it also deletes the
+    # agent's corresponding pharmacy (or administrator or courier),
+    # the effect-ful expression `Repo.delete(pharmacy)` is not needed.
+    # Deleting `pharmacy.agent` alone is sufficient.
+    account.agent
+    |> Repo.delete()
+    |> Utilities.map_value(fn (_agent) -> account end)
+  end
+
+  defp get_account(account_module, id) do
+    account_module
+    |> Repo.get(id)
+    |> Repo.preload(:agent)
+    |> Utilities.prohibit_nil(@no_resource)
+    |> Utilities.map_value(&set_username/1)
+  end
+
+  defp list_accounts(account_module) do
+    account_module
+    |> Repo.all()
+    |> Repo.preload(:agent)
+    |> Enum.map(&set_username/1)
+  end
+
+  defp set_username(%{agent: %{username: username}, username: _} = account)
+    when is_binary(username) do
+      %{account | username: username}
   end
 end
