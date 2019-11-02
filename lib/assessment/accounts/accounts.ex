@@ -46,24 +46,16 @@ defmodule Assessment.Accounts do
   """
   def get_agent_by_username_and_password(username, password)
     when is_binary(username) and is_binary(password) do
-      #Agent
-      #|> Repo.get_by(%{username: username})
-      #|> Utilities.prohibit_nil(@no_resource)
-
-      query =
-        from u in Agent,
-          inner_join: c in assoc(u, :credential),
-          where: u.username == ^username,
-          preload: [credential: c]
-
-      case Repo.one(query) do
-        (%Agent{} = agent) ->
-          if Comeonin.Bcrypt.checkpw(password, agent.credential.password_digest) do
-            {:ok, agent}
-          else
-            {:error, @unauthenticated}
-          end
-        nil ->
+      agent =
+        Agent
+        |> Repo.get_by(username: username)
+        |> Repo.preload([:administrator, :courier, :credential, :pharmacy])
+      cond do
+        is_nil(agent) ->
+          {:error, @unauthenticated}
+        Comeonin.Bcrypt.checkpw(password, agent.credential.password_digest) ->
+          {:ok, agent}
+        true ->
           {:error, @unauthenticated}
       end
   end
