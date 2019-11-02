@@ -4,6 +4,11 @@
 
   <li>
     <strong>Email:</strong>
+    <%= @administrator.username %>
+  </li>
+
+  <li>
+    <strong>Email:</strong>
     <%= @administrator.email %>
   </li>
 

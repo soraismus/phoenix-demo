@@ -2,25 +2,21 @@ defmodule AssessmentWeb.AdministratorController do
   use AssessmentWeb, :controller
 
   alias Assessment.Accounts
-  alias Assessment.Accounts.Administrator
+  alias Assessment.Accounts.{Administrator,Agent}
 
   def index(conn, _params) do
     administrators = Accounts.list_administrators()
     render(conn, "index.html", administrators: administrators)
   end
 
-  #def new(conn, _params) do
-  #  changeset = Accounts.change_administrator(%Administrator{})
-  #  render(conn, "new.html", changeset: changeset)
-  #end
   def new(conn, _params) do
     changeset = Accounts.change_administrator()
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"administrator" => administrator_params}) do
-    case Accounts.create_administrator(administrator_params) do
-      {:ok, administrator} ->
+  def create(conn, %{"agent" => agent_params}) do
+    case Accounts.create_administrator(agent_params) do
+      {:ok, %Agent{administrator: administrator}} ->
         conn
         |> put_flash(:info, "Administrator created successfully.")
         |> redirect(to: administrator_path(conn, :show, administrator))

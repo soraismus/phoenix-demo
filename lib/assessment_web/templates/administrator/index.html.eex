@@ -11,6 +11,7 @@
   <tbody>
 <%= for administrator <- @administrators do %>
     <tr>
+      <td><%= administrator.username %></td>
       <td><%= administrator.email %></td>
 
       <td class="text-right">
