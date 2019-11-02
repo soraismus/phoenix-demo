@@ -23,6 +23,10 @@ defmodule AssessmentWeb.Router do
     resources "/orders", OrderController
     resources "/patients", PatientController, except: [:edit, :update]
     resources "/pharmacies", PharmacyController, except: [:edit, :update]
+
+    get "/login", SessionController, :new
+    post "/session", SessionController, :create
+    delete "/session", SessionController, :delete
   end
 
   # Other scopes may use custom stacks.
