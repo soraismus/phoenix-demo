@@ -2,7 +2,7 @@ defmodule AssessmentWeb.AdministratorController do
   use AssessmentWeb, :controller
 
   alias Assessment.Accounts
-  alias Assessment.Accounts.{Administrator,Agent}
+  alias Assessment.Accounts.Agent
 
   def index(conn, _params) do
     administrators = Accounts.list_administrators()
@@ -31,11 +31,11 @@ defmodule AssessmentWeb.AdministratorController do
   end
 
   def delete(conn, %{"id" => id}) do
-    {:ok, administrator} = Accounts.get_administrator(id)
-    {:ok, _administrator} = Accounts.delete_administrator(administrator)
-
-    conn
-    |> put_flash(:info, "Administrator deleted successfully.")
-    |> redirect(to: administrator_path(conn, :index))
+    with {:ok, administrator} = Accounts.get_administrator(id),
+         {:ok, _} = Accounts.delete_administrator(administrator) do
+      conn
+      |> put_flash(:info, "Administrator deleted successfully.")
+      |> redirect(to: administrator_path(conn, :index))
+    end
   end
 end

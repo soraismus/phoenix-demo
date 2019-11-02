@@ -161,7 +161,13 @@ defmodule Assessment.Accounts do
 
   """
   def delete_administrator(%Administrator{} = administrator) do
-    Repo.delete(administrator)
+    # Because, when the database deletes an agent, it also deletes the
+    # agent's corresponding administrator (or courier or pharmacy),
+    # the effect-ful expression `Repo.delete(administrator)` is not needed.
+    # Deleting `administrator.agent` alone is sufficient.
+    administrator.agent
+    |> Repo.delete()
+    |> Utilities.map_value(fn (_agent) -> administrator end)
   end
 
   @doc """
