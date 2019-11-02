@@ -11,6 +11,35 @@ defmodule Assessment.Accounts do
   @no_resource :no_resource
 
   @doc """
+  Gets a single agent.
+
+  ## Examples
+
+      iex> get_agent_by_username("abc")
+      {:ok, %Agent{}}
+
+      iex> get_agent_by_username("dec")
+      {:error, :no_resource}
+
+  """
+  def get_agent_by_username(username) when is_binary(username) do
+    Agent
+    |> Repo.get_by(%{username: username})
+    |> Utilities.prohibit_nil(@no_resource)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking agent changes.
+
+  ## Examples
+
+      iex> change_agent()
+      %Ecto.Changeset{source: %Agent{}}
+
+  """
+  def change_agent(), do: Agent.changeset(%Agent{}, %{})
+
+  @doc """
   Returns the list of administrators.
 
   ## Examples
@@ -213,8 +242,6 @@ defmodule Assessment.Accounts do
 
   """
   def change_courier(), do: change_agent()
-
-  defp change_agent(), do: Agent.changeset(%Agent{}, %{})
 
   defp create_account(key, fun, attrs) do
     %Agent{}
