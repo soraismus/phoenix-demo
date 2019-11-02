@@ -4,14 +4,6 @@ defmodule AssessmentWeb.SessionController do
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
-  #plug(
-  #  Guardian.Plug.Pipeline,
-  #  error_handler: AssessmentWeb.SessionController,
-  #  module: AssessmentWeb.Guardian
-  #)
-  #plug(Guardian.Plug.VerifyHeader, realm: "Token")
-  #plug(Guardian.Plug.LoadResource, allow_blank: true)
-
   def new(conn, _params) do
     changeset = Accounts.change_agent()
     render(conn, "new.html", changeset: changeset)
@@ -21,16 +13,21 @@ defmodule AssessmentWeb.SessionController do
     case Accounts.get_agent_by_username(username) do
       {:ok, agent} ->
         conn
-        |> put_flash(:info, "Administrator created successfully.")
-        |> redirect(to: page_path(conn, :index))
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        |> put_flash(:info, "Welcome back!")
+        |> put_session(:agent_id, agent.id)
+        |> configure_session(renew: true)
+        |> redirect(to: "/")
       {:error, :no_resource} ->
-        render(conn, AssessmentWeb.PageView, "index.html")
+        conn
+        |> put_flash(:error, "Invalid username")
+        |> redirect(to: session_path(conn, :new))
     end
   end
 
-  def delete(conn, _params) do
-    text(conn, "delete session")
+  def delete(conn, _) do
+    conn
+    |> put_flash(:info, "Logged out")
+    |> configure_session(drop: true)
+    |> redirect(to: "/")
   end
 end
