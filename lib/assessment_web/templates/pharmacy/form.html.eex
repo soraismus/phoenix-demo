@@ -5,23 +5,33 @@
     </div>
   <% end %>
 
-  <div class="form-group">
-    <%= label f, :name, class: "control-label" %>
-    <%= text_input f, :name, class: "form-control" %>
-    <%= error_tag f, :name %>
-  </div>
+  <%= inputs_for f, :pharmacy, fn fa -> %>
+    <div class="form-group">
+      <%= label fa, :name, class: "control-label" %>
+      <%= text_input fa, :name, class: "form-control" %>
+      <%= error_tag fa, :name %>
+    </div>
+  <% end %>
 
   <div class="form-group">
-    <%= label f, :address, class: "control-label" %>
-    <%= text_input f, :address, class: "form-control" %>
-    <%= error_tag f, :address %>
+    <%= label f, :username, class: "control-label" %>
+    <%= text_input f, :username, class: "form-control" %>
+    <%= error_tag f, :username %>
   </div>
 
-  <div class="form-group">
-    <%= label f, :email, class: "control-label" %>
-    <%= text_input f, :email, class: "form-control" %>
-    <%= error_tag f, :email %>
-  </div>
+  <%= inputs_for f, :pharmacy, fn fa -> %>
+    <div class="form-group">
+      <%= label fa, :address, class: "control-label" %>
+      <%= text_input fa, :address, class: "form-control" %>
+      <%= error_tag fa, :address %>
+    </div>
+
+    <div class="form-group">
+      <%= label fa, :email, class: "control-label" %>
+      <%= text_input fa, :email, class: "form-control" %>
+      <%= error_tag fa, :email %>
+    </div>
+  <% end %>
 
   <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>

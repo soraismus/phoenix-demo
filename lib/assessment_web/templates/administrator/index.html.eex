@@ -3,8 +3,8 @@
 <table class="table">
   <thead>
     <tr>
+      <th>Username</th>
       <th>Email</th>
-
       <th></th>
     </tr>
   </thead>

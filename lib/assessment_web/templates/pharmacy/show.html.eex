@@ -8,6 +8,11 @@
   </li>
 
   <li>
+    <strong>Username:</strong>
+    <%= @pharmacy.username %>
+  </li>
+
+  <li>
     <strong>Address:</strong>
     <%= @pharmacy.address %>
   </li>

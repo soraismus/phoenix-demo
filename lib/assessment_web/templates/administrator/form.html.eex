@@ -11,13 +11,13 @@
     <%= error_tag f, :username %>
   </div>
 
-  <div class="form-group">
-    <%= inputs_for f, :administrator, fn fa -> %>
+  <%= inputs_for f, :administrator, fn fa -> %>
+    <div class="form-group">
       <%= label fa, :email, class: "control-label" %>
       <%= text_input fa, :email, class: "form-control" %>
       <%= error_tag fa, :email %>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 
   <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
