@@ -7,6 +7,7 @@ defmodule Assessment.Accounts.Administrator do
   schema "administrators" do
     field :email, :string
     belongs_to :agent, Agent
+    field :username, :string, virtual: true
 
     timestamps()
   end

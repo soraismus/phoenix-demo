@@ -9,6 +9,7 @@ defmodule Assessment.Accounts.Courier do
     field :email, :string
     field :name, :string
     belongs_to :agent, Agent
+    field :username, :string, virtual: true
 
     timestamps()
   end
