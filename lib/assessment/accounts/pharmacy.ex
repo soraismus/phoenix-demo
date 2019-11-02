@@ -9,7 +9,6 @@ defmodule Assessment.Accounts.Pharmacy do
     field :email, :string
     field :name, :string
     belongs_to :agent, Agent
-    field :username, :string, virtual: true
 
     timestamps()
   end
@@ -17,12 +16,10 @@ defmodule Assessment.Accounts.Pharmacy do
   @doc false
   def changeset(pharmacy, attrs) do
     pharmacy
-    |> cast(attrs, [:name, :address, :email, :agent_id])
-    |> validate_required([:name, :address, :email, :agent_id])
+    |> cast(attrs, [:name, :address, :email])
+    |> validate_required([:name, :address, :email])
     |> unique_constraint(:name)
     |> unique_constraint(:address)
     |> unique_constraint(:email)
-    |> unique_constraint(:agent_id)
-    |> foreign_key_constraint(:agent_id)
   end
 end
