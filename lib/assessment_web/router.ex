@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
+  alias Assessment.Accounts
 
   @error :error
 
@@ -42,7 +43,7 @@ defmodule AssessmentWeb.Router do
         conn
         |> clear_session()
         |> put_flash(@error, "Login required")
-        |> redirect(to: page_path(conn, :index))
+        |> redirect(to: "/")
         |> halt()
       agent_id ->
         conn

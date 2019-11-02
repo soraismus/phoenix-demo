@@ -11,11 +11,19 @@
     <%= error_tag f, :username %>
   </div>
 
-  <%= inputs_for f, :administrator, fn fa -> %>
+  <%= inputs_for f, :administrator, fn f1 -> %>
     <div class="form-group">
-      <%= label fa, :email, class: "control-label" %>
-      <%= text_input fa, :email, class: "form-control" %>
-      <%= error_tag fa, :email %>
+      <%= label f1, :email, class: "control-label" %>
+      <%= text_input f1, :email, class: "form-control" %>
+      <%= error_tag f1, :email %>
+    </div>
+  <% end %>
+
+  <%= inputs_for f, :credential, fn f1 -> %>
+    <div class="form-group">
+      <%= label f1, :password, class: "control-label" %>
+      <%= password_input f1, :password, class: "form-control" %>
+      <%= error_tag f1, :password %>
     </div>
   <% end %>
 

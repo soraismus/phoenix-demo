@@ -7,6 +7,7 @@ defmodule Assessment.Accounts do
 
   alias Assessment.{Repo,Utilities}
   alias Assessment.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
+  alias Comeonin.Bcrypt
   alias Ecto.Changeset
 
   @no_resource :no_resource
