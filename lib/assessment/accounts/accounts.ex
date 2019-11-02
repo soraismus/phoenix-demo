@@ -7,7 +7,6 @@ defmodule Assessment.Accounts do
 
   alias Assessment.{Repo,Utilities}
   alias Assessment.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
-  alias Comeonin.Bcrypt
   alias Ecto.Changeset
 
   @no_resource :no_resource
@@ -269,6 +268,7 @@ defmodule Assessment.Accounts do
     %Agent{}
     |> Agent.changeset(attrs)
     |> Ecto.Changeset.cast_assoc(key, with: fun)
+    |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
     |> Repo.insert()
   end
 
@@ -364,7 +364,6 @@ defmodule Assessment.Accounts do
   def create_credential(attrs \\ %{}) do
     %Credential{}
     |> Credential.changeset(attrs)
-    |> hash_password()
     |> Repo.insert()
   end
 
@@ -395,15 +394,5 @@ defmodule Assessment.Accounts do
   """
   def change_credential(%Credential{} = credential) do
     Credential.changeset(credential, %{})
-  end
-
-  defp hash_password(changeset) do
-    case changeset do
-      %Changeset{valid?: true, changes: %{password: password}} ->
-        changeset
-        |> Changeset.put_change(:password_digest, Bcrypt.hashpwsalt(password))
-      _ ->
-        changeset
-    end
   end
 end

@@ -12,7 +12,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
     username: "admin",
     administrator: %{
       email: "admin@example.com"
-  }})
+    },
+    credential: %{
+      password: "admin"
+    }
+  })
 
 {:ok, _better_rx} =
   Accounts.create_pharmacy(%{
@@ -21,7 +25,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
       name: "BetterRx",
       address: "1275 Kinnear Road, Columbus, OH 43212",
       email: "admin@betterrx.com",
-  }})
+    },
+    credential: %{
+      password: "better_rx"
+    }
+  })
 
 {:ok, _best_rx} =
   Accounts.create_pharmacy(%{
@@ -30,7 +38,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
       name: "BestRx",
       address: "123 Austin St., Austin, TX 78702",
       email: "admin@bestrx.com",
-  }})
+    },
+    credential: %{
+      password: "best_rx"
+    }
+  })
 
 {:ok, _drugsrus} =
   Accounts.create_pharmacy(%{
@@ -39,7 +51,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
       name: "Drugs R Us",
       address: "4925 LA Ave., Los Angeles, CA 90056",
       email: "admin@drugsrus.com",
-  }})
+    },
+    credential: %{
+      password: "drugsrus"
+    }
+  })
 
 {:ok, _same_day_delivery} =
   Accounts.create_courier(%{
@@ -48,7 +64,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
       name: "Same Day Delivery",
       address: "900 Trenton Lane, Trenton, NJ 08536",
       email: "admin@samedaydelivery.com",
-  }})
+    },
+    credential: %{
+      password: "same_day_delivery"
+    }
+  })
 
 {:ok, _previous_day_delivery} =
   Accounts.create_courier(%{
@@ -57,7 +77,11 @@ alias Assessment.{Accounts,OrderStates,Patients}
       name: "Previous Day Delivery",
       address: "7433 LA Ct., Los Angeles, CA 90056",
       email: "admin@previousdaydelivery.com",
-  }})
+    },
+    credential: %{
+      password: "previous_day_delivery"
+    }
+  })
 
 {:ok, _john_doe} =
   Patients.create_patient(%{
