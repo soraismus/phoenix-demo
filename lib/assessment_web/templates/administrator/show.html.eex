@@ -9,5 +9,4 @@
 
 </ul>
 
-<span><%= link "Edit", to: administrator_path(@conn, :edit, @administrator) %></span>
 <span><%= link "Back", to: administrator_path(@conn, :index) %></span>

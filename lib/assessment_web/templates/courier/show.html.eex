@@ -19,5 +19,4 @@
 
 </ul>
 
-<span><%= link "Edit", to: courier_path(@conn, :edit, @courier) %></span>
 <span><%= link "Back", to: courier_path(@conn, :index) %></span>

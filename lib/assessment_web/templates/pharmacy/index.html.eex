@@ -19,7 +19,6 @@
 
       <td class="text-right">
         <span><%= link "Show", to: pharmacy_path(@conn, :show, pharmacy), class: "btn btn-default btn-xs" %></span>
-        <span><%= link "Edit", to: pharmacy_path(@conn, :edit, pharmacy), class: "btn btn-default btn-xs" %></span>
         <span><%= link "Delete", to: pharmacy_path(@conn, :delete, pharmacy), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
       </td>
     </tr>

@@ -173,8 +173,10 @@ defmodule Assessment.Accounts do
       %Ecto.Changeset{source: %Administrator{}}
 
   """
-  def change_administrator(%Administrator{} = administrator) do
-    Administrator.changeset(administrator, %{})
+  def change_administrator() do
+    %Agent{}
+    |> Agent.changeset(%{})
+    |> Ecto.Changeset.cast_assoc(:administrator, with: &Administrator.changeset/2)
   end
 
   @doc """

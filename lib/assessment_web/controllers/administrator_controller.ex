@@ -9,8 +9,12 @@ defmodule AssessmentWeb.AdministratorController do
     render(conn, "index.html", administrators: administrators)
   end
 
+  #def new(conn, _params) do
+  #  changeset = Accounts.change_administrator(%Administrator{})
+  #  render(conn, "new.html", changeset: changeset)
+  #end
   def new(conn, _params) do
-    changeset = Accounts.change_administrator(%Administrator{})
+    changeset = Accounts.change_administrator()
     render(conn, "new.html", changeset: changeset)
   end
 

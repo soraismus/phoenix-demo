@@ -19,5 +19,4 @@
 
 </ul>
 
-<span><%= link "Edit", to: pharmacy_path(@conn, :edit, @pharmacy) %></span>
 <span><%= link "Back", to: pharmacy_path(@conn, :index) %></span>

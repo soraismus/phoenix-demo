@@ -14,5 +14,4 @@
 
 </ul>
 
-<span><%= link "Edit", to: patient_path(@conn, :edit, @patient) %></span>
 <span><%= link "Back", to: patient_path(@conn, :index) %></span>
