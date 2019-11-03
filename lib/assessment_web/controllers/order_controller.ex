@@ -7,6 +7,9 @@ defmodule AssessmentWeb.OrderController do
   @ok :ok
   @error :error
 
+  #plug :authorize_order_management when action in [:edit, :update, :delete]
+  plug :authorize_order_management
+
   def index(conn, _params) do
     orders = Orders.list_orders()
     render(conn, "index.html", orders: orders)
@@ -62,6 +65,19 @@ defmodule AssessmentWeb.OrderController do
       |> redirect(to: order_path(conn, :index))
     end
   end
+
+  defp authorize_order_management(conn, _) do
+    if conn.assigns.logged_in? do
+      conn
+    else
+      IO.puts("conn is --> #{conn.request_path}")
+      conn
+      |> put_flash(:error, "You must be logged in to manage orders.")
+      |> put_session(:request_path, conn.request_path)
+      |> redirect(to: session_path(conn, :new))
+      |> halt()
+    end
+  end
 end
 
 
@@ -74,23 +90,10 @@ end
 
 
   #plug :require_existing_author
-  #plug :authorize_page when action in [:edit, :update, :delete]
 
   #defp require_existing_author(conn, _) do
   #  author = CMS.ensure_author_exists(conn.assigns.current_user)
   #  assign(conn, :current_author, author)
-  #end
-
-  #defp authorize_page(conn, _) do
-  #  page = CMS.get_page!(conn.params["id"])
-  #  if conn.assigns.current_author.id == page.author_id do
-  #    assign(conn, :page, page)
-  #  else
-  #    conn
-  #    |> put_flash(:error, "You can't modify that page")
-  #    |> redirect(to: Routes.cms_page_path(conn, :index))
-  #    |> halt()
-  #  end
   #end
 
   #def ensure_author_exists(%Accounts.User{} = user) do

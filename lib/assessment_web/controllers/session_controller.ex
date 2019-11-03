@@ -5,10 +5,6 @@ defmodule AssessmentWeb.SessionController do
   alias Assessment.Accounts.{Agent,Credential}
   alias Ecto.Changeset
 
-  @ok :ok
-  @error :error
-  @unauthenticated :unauthenticated
-
   def new(conn, _params) do
     conn
     |> assign(:changeset, Accounts.change_agent())
@@ -20,18 +16,21 @@ defmodule AssessmentWeb.SessionController do
     if changeset.valid? do
       %{"username" => username, "credential" => %{"password" => password}} = params
       case Accounts.get_agent_by_username_and_password(username, password) do
-        {@ok, agent} ->
+        {:ok, agent} ->
+          redirect_path = case get_session(conn, :request_path) do
+              nil -> page_path(conn, :index)
+              request_path -> request_path
+            end
           conn
           |> configure_session(renew: true)
           |> put_flash(:info, "Welcome back!")
           |> put_session(:agent_id, agent.id)
-          |> assign(:logged_in, true)
-          |> redirect(to: page_path(conn, :index))
-        {@error, @unauthenticated} ->
+          |> delete_session(:request_path)
+          |> redirect(to: redirect_path)
+        {:error, :unauthenticated} ->
           conn
           |> clear_session()
-          |> put_flash(@error, "Invalid username/password combination")
-          |> assign(:logged_in, false)
+          |> put_flash(:error, "Invalid username/password combination")
           |> redirect(to: session_path(conn, :new))
       end
     else
