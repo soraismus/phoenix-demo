@@ -3,7 +3,11 @@ defmodule Assessment.Sessions do
   The Sessions context.
   """
 
-  def get_session(agent_params) do
-    {:ok, "session"}
+  alias Assessment.Accounts.{Agent,Credential}
+
+  def session_changeset(params) do
+    %Agent{}
+    |> Agent.changeset(params)
+    |> Ecto.Changeset.cast_assoc(:credential, with: &Credential.validate/2)
   end
 end

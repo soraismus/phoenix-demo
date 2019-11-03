@@ -2,8 +2,7 @@ defmodule AssessmentWeb.SessionController do
   use AssessmentWeb, :controller
 
   alias Assessment.Accounts
-  alias Assessment.Accounts.{Agent,Credential}
-  alias Ecto.Changeset
+  alias Assessment.Sessions
 
   def new(conn, _params) do
     conn
@@ -12,7 +11,7 @@ defmodule AssessmentWeb.SessionController do
   end
 
   def create(conn, %{"agent" => params}) do
-    changeset = session_changeset(params)
+    changeset = Sessions.session_changeset(params)
     if changeset.valid? do
       %{"username" => username, "credential" => %{"password" => password}} = params
       case Accounts.get_agent_by_username_and_password(username, password) do
@@ -52,7 +51,6 @@ defmodule AssessmentWeb.SessionController do
   end
 
   defp login(conn, agent_id) do
-    IO.puts("login agent_id: #{agent_id}")
     conn
     |> put_flash(:info, "Welcome back!")
     |> AssessmentWeb.Guardian.Plug.sign_in(%{agent_id: agent_id})
@@ -68,11 +66,5 @@ defmodule AssessmentWeb.SessionController do
     conn
     |> delete_session(:request_path)
     |> redirect(to: get_redirect_path(conn))
-  end
-
-  defp session_changeset(params) do
-    %Agent{}
-    |> Agent.changeset(params)
-    |> Changeset.cast_assoc(:credential, with: &Credential.validate/2)
   end
 end
