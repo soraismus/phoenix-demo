@@ -3,7 +3,6 @@ defmodule AssessmentWeb.Router do
   import Assessment.Utilities, only: [prohibit_nil: 1]
   alias Guardian.Plug.Pipeline, as: GuardianPipeline
   alias Guardian.Plug.VerifySession, as: Guardian_VerifySession
-  alias Assessment.Accounts
   alias AssessmentWeb.Guardian
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.AuthErrorHandler
@@ -46,29 +45,30 @@ defmodule AssessmentWeb.Router do
   # end
 
   defp authenticate_agent(conn, _) do
-    case GuardianPlug.current_resource(conn) do
-      nil ->
+    case get_agent(conn) do
+      {:ok, agent} ->
+        conn
+        |> assign(:current_user, agent)
+      {:error, _} ->
         conn
         |> clear_session()
         |> put_flash(:error, "Login required")
         |> redirect(to: "/")
         |> halt()
-      resource ->
-        conn
-        |> assign(:current_user, resource)
     end
   end
 
   defp check_for_login(conn, _) do
-    assign(conn, :logged_in?, logged_in?(conn))
+    assign(conn, :logged_in?, !is_nil(GuardianPlug.current_token(conn)))
   end
 
-  defp logged_in?(conn) do
+  defp get_agent(conn) do
     with {:ok, token} <- conn |> GuardianPlug.current_token() |> prohibit_nil(),
-         {:ok, resource, _} <- Guardian.resource_from_token(token) do
-      !is_nil(resource)
+         {:ok, agent, _claims} <- Guardian.resource_from_token(token) do
+      {:ok, agent}
     else
-      _ -> false
+      _ ->
+        {:error, :no_agent}
     end
   end
 end
