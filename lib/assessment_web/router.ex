@@ -56,17 +56,15 @@ defmodule AssessmentWeb.Router do
   end
 
   defp check_for_login(conn, _) do
-    token_result =
-      conn
-        |> AssessmentWeb.Guardian.Plug.current_token()
-        |> AssessmentWeb.Guardian.resource_from_token()
-    case token_result do
-      {:ok, resource, _claims} ->
-        conn
-        |> assign(:logged_in?, !is_nil(resource))
-      {:error, _} ->
-        conn
-        |> assign(:logged_in?, false)
-    end
+    logged_in? =
+      case AssessmentWeb.Guardian.Plug.current_token(conn) do
+        nil -> false
+        token ->
+          case AssessmentWeb.Guardian.resource_from_token(token) do
+            {:ok, resource, _claims} -> !is_nil(resource)
+            _ -> false
+          end
+      end
+    assign(conn, :logged_in?, logged_in?)
   end
 end
