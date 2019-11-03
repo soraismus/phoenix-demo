@@ -3,6 +3,7 @@ defmodule AssessmentWeb.OrderController do
 
   alias Assessment.Orders
   alias Assessment.Orders.Order
+  alias AssessmentWeb.GuardianController
 
   plug :authorize_order_management
 

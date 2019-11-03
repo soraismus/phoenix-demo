@@ -1,11 +1,12 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
-  import Assessment.Utilities, only: [prohibit_nil: 1]
+  import Assessment.Utilities, only: [nilify_error: 1]
   alias Guardian.Plug.Pipeline, as: GuardianPipeline
   alias Guardian.Plug.VerifySession, as: Guardian_VerifySession
   alias AssessmentWeb.Guardian
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.AuthErrorHandler
+  alias AssessmentWeb.GuardianController
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -45,15 +46,6 @@ defmodule AssessmentWeb.Router do
   # end
 
   defp authenticate_agent(conn, _) do
-    assign(conn, :agent, get_agent_or_nil(conn))
-  end
-
-  defp get_agent_or_nil(conn) do
-    with {:ok, token} <- conn |> GuardianPlug.current_token() |> prohibit_nil(),
-         {:ok, agent, _claims} <- Guardian.resource_from_token(token) do
-      agent
-    else
-      _ -> nil
-    end
+    assign(conn, :agent, GuardianController.identify_agent(conn) |> nilify_error())
   end
 end
