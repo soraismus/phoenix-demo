@@ -23,7 +23,7 @@
             <% end %>
           </ul>
         </nav>
-        <span class="logo"></span>
+        <a href="<%= page_path(@conn, :index) %>"><span class="logo"></span></a>
       </header>
 
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
