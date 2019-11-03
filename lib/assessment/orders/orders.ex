@@ -6,6 +6,7 @@ defmodule Assessment.Orders do
   import Ecto.Query, warn: false
   alias Assessment.{Repo,Utilities}
   alias Assessment.Orders.Order
+  alias Assessment.OrderStates.OrderState
   alias Ecto.Changeset
 
 
@@ -44,6 +45,7 @@ defmodule Assessment.Orders do
     |> Repo.get(id)
     |> Repo.preload([:patient, :pharmacy, :courier, :order_state])
     |> Utilities.prohibit_nil(@no_resource)
+    |> Utilities.map_value(&set_order_state_description/1)
   end
 
   @doc """
@@ -110,5 +112,9 @@ defmodule Assessment.Orders do
   """
   def change_order(%Order{} = order) do
     Order.changeset(order, %{})
+  end
+
+  defp set_order_state_description(%{order_state: %OrderState{} = order_state} = order) do
+    %{order | order_state_description: order_state.description}
   end
 end
