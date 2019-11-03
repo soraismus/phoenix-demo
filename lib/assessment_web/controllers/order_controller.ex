@@ -7,7 +7,6 @@ defmodule AssessmentWeb.OrderController do
   @ok :ok
   @error :error
 
-  #plug :authorize_order_management when action in [:edit, :update, :delete]
   plug :authorize_order_management
 
   def index(conn, _params) do
@@ -70,7 +69,6 @@ defmodule AssessmentWeb.OrderController do
     if conn.assigns.logged_in? do
       conn
     else
-      IO.puts("conn is --> #{conn.request_path}")
       conn
       |> put_flash(:error, "You must be logged in to manage orders.")
       |> put_session(:request_path, conn.request_path)
@@ -79,31 +77,3 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 end
-
-
-
-
-
-
-
-
-
-
-  #plug :require_existing_author
-
-  #defp require_existing_author(conn, _) do
-  #  author = CMS.ensure_author_exists(conn.assigns.current_user)
-  #  assign(conn, :current_author, author)
-  #end
-
-  #def ensure_author_exists(%Accounts.User{} = user) do
-  #  %Author{user_id: user.id}
-  #  |> Ecto.Changeset.change()
-  #  |> Ecto.Changeset.unique_constraint(:user_id)
-  #  |> Repo.insert()
-  #  |> handle_existing_author()
-  #end
-  #defp handle_existing_author({:ok, author}), do: author
-  #defp handle_existing_author({:error, changeset}) do
-  #  Repo.get_by!(Author, user_id: changeset.data.user_id)
-  #end
