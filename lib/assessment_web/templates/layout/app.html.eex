@@ -17,11 +17,7 @@
         <nav role="navigation">
           <ul class="nav nav-pills pull-right">
             <%= if @logged_in? do %>
- <%= form_for @conn, session_path(@conn, :delete), [method: :delete, as: :user], fn _ -> %>
-  <div class="form-group">
-    <%= submit "logout" %>
-  </div>
-<% end %>
+              <%= render "logout.html", assigns %>
             <% else %>
               <li><a href="<%= session_path(@conn, :new) %>">Log in</a></li>
             <% end %>
