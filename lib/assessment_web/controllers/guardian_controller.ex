@@ -6,7 +6,7 @@ defmodule AssessmentWeb.GuardianController do
 
   def identify_agent(%Plug.Conn{} = conn) do
     with {:ok, token} <- conn |> GuardianPlug.current_token() |> prohibit_nil(),
-         {:ok, agent, _claims} <- Guardian.resource_from_token(token) do
+         {:ok, (%Agent{} = agent), _claims} <- Guardian.resource_from_token(token) do
       {:ok, agent}
     else
       _ ->

@@ -1,6 +1,7 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
+  alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
   alias AssessmentWeb.GuardianController
@@ -18,11 +19,26 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def create(conn, %{"order" => order_params}) do
-    case Orders.create_order(order_params) do
-      {:ok, order} ->
-        conn
-        |> put_flash(:info, "Order created successfully.")
-        |> redirect(to: order_path(conn, :show, order))
+    with {:ok, account} <- get_account(conn) do
+      case account do
+        %Administrator{} ->
+          with {:ok, order} <- Orders.create_order(order_params) do
+            conn
+            |> put_flash(:info, "Order created successfully.")
+            |> redirect(to: order_path(conn, :show, order))
+          end
+        %Pharmacy{} ->
+          with {:ok, order} <- Orders.create_order(order_params) do
+            conn
+            |> put_flash(:info, "Order created successfully.")
+            |> redirect(to: order_path(conn, :show, order))
+          end
+        _ ->
+          conn
+          |> put_flash(:error, "Not authorized to create an order")
+          |> redirect(to: page_path(conn, :index))
+      end
+    else
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -72,6 +88,25 @@ defmodule AssessmentWeb.OrderController do
       |> put_session(:request_path, conn.request_path)
       |> redirect(to: session_path(conn, :new))
       |> halt()
+    end
+  end
+
+  defp authenticate_administrator(conn) do
+    GuardianController.identify_administrator(conn.assigns.agent)
+  end
+
+  defp get_account(%Agent{} = agent) do
+    case agent.account_type do
+      "administrator" -> {:ok, agent.administrator}
+      "courier"       -> {:ok, agent.courier}
+      "pharmacy"      -> {:ok, agent.pharmacy}
+      _               -> {:error, :invalid_account_type}
+    end
+  end
+  defp get_account(%Plug.Conn{} = conn) do
+    case conn.assigns.agent do
+      nil -> {:error, :not_authenticated}
+      agent -> get_account(agent)
     end
   end
 end
