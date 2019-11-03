@@ -4,21 +4,13 @@ defmodule AssessmentWeb.Router do
 
   @error :error
 
-  defp determine_session_state(conn, _) do
-    if get_session(conn, :agent_id) do
-      assign(conn, :logged_in?, true)
-    else
-      assign(conn, :logged_in?, false)
-    end
-  end
-
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :determine_session_state
+    plug :check_for_login
   end
 
   pipeline :api do
@@ -57,6 +49,15 @@ defmodule AssessmentWeb.Router do
       agent_id ->
         conn
         |> assign(:current_user, Accounts.get_agent(agent_id))
+    end
+  end
+
+  defp check_for_login(conn, _) do
+    case get_session(conn, :agent_id) do
+      nil ->
+        assign(conn, :logged_in?, false)
+      _ ->
+        assign(conn, :logged_in?, true)
     end
   end
 end
