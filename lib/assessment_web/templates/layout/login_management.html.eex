@@ -1,4 +1,4 @@
-<%= if @logged_in? do %>
+<%= if @agent do %>
   <%= render "logout.html", assigns %>
 <% else %>
   <li><a href="<%= session_path(@conn, :new) %>">Log in</a></li>

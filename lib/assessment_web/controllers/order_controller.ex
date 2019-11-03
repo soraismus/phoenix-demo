@@ -66,7 +66,7 @@ defmodule AssessmentWeb.OrderController do
   end
 
   defp authorize_order_management(conn, _) do
-    if conn.assigns.logged_in? do
+    if conn.assigns.agent do
       conn
     else
       conn
