@@ -16,7 +16,7 @@
       <header class="header">
         <nav role="navigation">
           <ul class="nav nav-pills pull-right">
-            <%= if @conn.assigns.logged_in? do %>
+            <%= if @logged_in? do %>
  <%= form_for @conn, session_path(@conn, :delete), [method: :delete, as: :user], fn _ -> %>
   <div class="form-group">
     <%= submit "logout" %>
