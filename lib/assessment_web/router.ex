@@ -1,6 +1,7 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
   alias Assessment.Accounts
+  alias Assessment.Utilities
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -56,14 +57,14 @@ defmodule AssessmentWeb.Router do
   end
 
   defp check_for_login(conn, _) do
+    alias AssessmentWeb.Guardian
+    alias AssessmentWeb.Guardian.Plug
     logged_in? =
-      case AssessmentWeb.Guardian.Plug.current_token(conn) do
-        nil -> false
-        token ->
-          case AssessmentWeb.Guardian.resource_from_token(token) do
-            {:ok, resource, _claims} -> !is_nil(resource)
-            _ -> false
-          end
+      with {:ok, token} <- conn |> Plug.current_token() |> Utilities.prohibit_nil(),
+           {:ok, resource, _} <- Guardian.resource_from_token(token) do
+              !is_nil(resource)
+      else
+        _ -> false
       end
     assign(conn, :logged_in?, logged_in?)
   end
