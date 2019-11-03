@@ -63,3 +63,44 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 end
+
+
+
+
+
+
+
+
+
+
+  #plug :require_existing_author
+  #plug :authorize_page when action in [:edit, :update, :delete]
+
+  #defp require_existing_author(conn, _) do
+  #  author = CMS.ensure_author_exists(conn.assigns.current_user)
+  #  assign(conn, :current_author, author)
+  #end
+
+  #defp authorize_page(conn, _) do
+  #  page = CMS.get_page!(conn.params["id"])
+  #  if conn.assigns.current_author.id == page.author_id do
+  #    assign(conn, :page, page)
+  #  else
+  #    conn
+  #    |> put_flash(:error, "You can't modify that page")
+  #    |> redirect(to: Routes.cms_page_path(conn, :index))
+  #    |> halt()
+  #  end
+  #end
+
+  #def ensure_author_exists(%Accounts.User{} = user) do
+  #  %Author{user_id: user.id}
+  #  |> Ecto.Changeset.change()
+  #  |> Ecto.Changeset.unique_constraint(:user_id)
+  #  |> Repo.insert()
+  #  |> handle_existing_author()
+  #end
+  #defp handle_existing_author({:ok, author}), do: author
+  #defp handle_existing_author({:error, changeset}) do
+  #  Repo.get_by!(Author, user_id: changeset.data.user_id)
+  #end

@@ -25,11 +25,13 @@ defmodule AssessmentWeb.SessionController do
           |> configure_session(renew: true)
           |> put_flash(:info, "Welcome back!")
           |> put_session(:agent_id, agent.id)
+          |> assign(:logged_in, true)
           |> redirect(to: page_path(conn, :index))
         {@error, @unauthenticated} ->
           conn
           |> clear_session()
           |> put_flash(@error, "Invalid username/password combination")
+          |> assign(:logged_in, false)
           |> redirect(to: session_path(conn, :new))
       end
     else
