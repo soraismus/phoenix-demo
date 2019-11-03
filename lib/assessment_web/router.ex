@@ -2,7 +2,10 @@ defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
   alias Assessment.Accounts
 
+  @agent_id :agent_id
+  @current_user :current_user
   @error :error
+  @logged_in? :logged_in?
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -39,7 +42,7 @@ defmodule AssessmentWeb.Router do
   # end
 
   defp authenticate_agent(conn, _) do
-    case get_session(conn, :agent_id) do
+    case get_session(conn, @agent_id) do
       nil ->
         conn
         |> clear_session()
@@ -48,16 +51,12 @@ defmodule AssessmentWeb.Router do
         |> halt()
       agent_id ->
         conn
-        |> assign(:current_user, Accounts.get_agent(agent_id))
+        |> assign(@current_user, Accounts.get_agent(agent_id))
     end
   end
 
   defp check_for_login(conn, _) do
-    case get_session(conn, :agent_id) do
-      nil ->
-        assign(conn, :logged_in?, false)
-      _ ->
-        assign(conn, :logged_in?, true)
-    end
+    conn
+    |> assign(@logged_in?, !is_nil(get_session(conn, @agent_id)))
   end
 end
