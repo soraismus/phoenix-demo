@@ -29,8 +29,9 @@ defmodule AssessmentWeb.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    {@ok, administrator} = Accounts.get_administrator(id)
-    render(conn, "show.html", administrator: administrator)
+    with {@ok, administrator} = Accounts.get_administrator(id) do
+      render(conn, "show.html", administrator: administrator)
+    end
   end
 
   def delete(conn, %{"id" => id}) do

@@ -1,15 +1,19 @@
 defmodule Assessment.Orders.Order do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Assessment.Accounts.{Courier,Pharmacy}
+  alias Assessment.OrderStates.OrderState
+  alias Assessment.Patients.Patient
 
+  @required_params ~w(pickup_date pickup_time patient_id pharmacy_id courier_id)a
 
   schema "orders" do
     field :pickup_date, :date
     field :pickup_time, :time
-    field :patient_id, :id
-    field :pharmacy_id, :id
-    field :courier_id, :id
-    field :order_state_id, :id
+    belongs_to :patient, Patient
+    belongs_to :pharmacy, Pharmacy
+    belongs_to :courier, Courier
+    belongs_to :order_state, OrderState
 
     timestamps()
   end
@@ -17,7 +21,11 @@ defmodule Assessment.Orders.Order do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:pickup_date, :pickup_time])
-    |> validate_required([:pickup_date, :pickup_time])
+    |> cast(attrs, @required_params)
+    |> validate_required(@required_params)
+    |> foreign_key_constraint(:patient_id)
+    |> foreign_key_constraint(:pharmacy_id)
+    |> foreign_key_constraint(:courier_id)
+    |> foreign_key_constraint(:order_state_id)
   end
 end

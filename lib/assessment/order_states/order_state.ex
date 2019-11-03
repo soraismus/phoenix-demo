@@ -1,10 +1,12 @@
 defmodule Assessment.OrderStates.OrderState do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Assessment.Orders.Order
 
 
   schema "order_states" do
     field :description, :string
+    has_many :orders, Order
 
     timestamps()
   end

@@ -4,9 +4,13 @@ defmodule Assessment.Orders do
   """
 
   import Ecto.Query, warn: false
-  alias Assessment.Repo
-
+  alias Assessment.{Repo,Utilities}
   alias Assessment.Orders.Order
+  alias Ecto.Changeset
+
+
+  @no_resource :no_resource
+  @active_order_state_id 1
 
   @doc """
   Returns the list of orders.
@@ -18,24 +22,29 @@ defmodule Assessment.Orders do
 
   """
   def list_orders do
-    Repo.all(Order)
+    Order
+    |> Repo.all()
+    |> Repo.preload([:patient, :pharmacy, :courier, :order_state])
   end
 
   @doc """
   Gets a single order.
 
-  Raises `Ecto.NoResultsError` if the Order does not exist.
-
   ## Examples
 
-      iex> get_order!(123)
-      %Order{}
+      iex> get_order(123)
+      {:ok, %Order{}}
 
-      iex> get_order!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_order(456)
+      {:error, %Order{}}
 
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order(id) do
+    Order
+    |> Repo.get(id)
+    |> Repo.preload([:patient, :pharmacy, :courier, :order_state])
+    |> Utilities.prohibit_nil(@no_resource)
+  end
 
   @doc """
   Creates a order.
@@ -52,6 +61,7 @@ defmodule Assessment.Orders do
   def create_order(attrs \\ %{}) do
     %Order{}
     |> Order.changeset(attrs)
+    |> Changeset.put_change(:order_state_id, @active_order_state_id)
     |> Repo.insert()
   end
 

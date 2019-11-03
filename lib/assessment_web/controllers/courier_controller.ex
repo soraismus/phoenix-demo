@@ -29,8 +29,9 @@ defmodule AssessmentWeb.CourierController do
   end
 
   def show(conn, %{"id" => id}) do
-    {@ok, courier} = Accounts.get_courier(id)
-    render(conn, "show.html", courier: courier)
+    with {@ok, courier} = Accounts.get_courier(id) do
+      render(conn, "show.html", courier: courier)
+    end
   end
 
   def delete(conn, %{"id" => id}) do

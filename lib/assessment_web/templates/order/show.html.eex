@@ -3,6 +3,26 @@
 <ul>
 
   <li>
+    <strong>Patient:</strong>
+    <%= @order.patient.name %>
+  </li>
+
+  <li>
+    <strong>Pharmacy:</strong>
+    <%= @order.pharmacy.name %>
+  </li>
+
+  <li>
+    <strong>Courier:</strong>
+    <%= @order.courier.name %>
+  </li>
+
+  <li>
+    <strong>Order state:</strong>
+    <%= @order.order_state.description %>
+  </li>
+
+  <li>
     <strong>Pickup date:</strong>
     <%= @order.pickup_date %>
   </li>

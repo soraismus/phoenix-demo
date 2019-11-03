@@ -29,8 +29,9 @@ defmodule AssessmentWeb.PharmacyController do
   end
 
   def show(conn, %{"id" => id}) do
-    {@ok, pharmacy} = Accounts.get_pharmacy(id)
-    render(conn, "show.html", pharmacy: pharmacy)
+    with {@ok, pharmacy} = Accounts.get_pharmacy(id) do
+      render(conn, "show.html", pharmacy: pharmacy)
+    end
   end
 
   def delete(conn, %{"id" => id}) do

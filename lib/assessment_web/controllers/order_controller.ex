@@ -29,35 +29,37 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    order = Orders.get_order!(id)
-    render(conn, "show.html", order: order)
+    with {@ok, order} <- Orders.get_order(id) do
+      render(conn, "show.html", order: order)
+    end
   end
 
   def edit(conn, %{"id" => id}) do
-    order = Orders.get_order!(id)
-    changeset = Orders.change_order(order)
-    render(conn, "edit.html", order: order, changeset: changeset)
+    with {@ok, order} <- Orders.get_order(id) do
+      changeset = Orders.change_order(order)
+      render(conn, "edit.html", order: order, changeset: changeset)
+    end
   end
 
   def update(conn, %{"id" => id, "order" => order_params}) do
-    order = Orders.get_order!(id)
-
-    case Orders.update_order(order, order_params) do
-      {@ok, order} ->
-        conn
-        |> put_flash(:info, "Order updated successfully.")
-        |> redirect(to: order_path(conn, :show, order))
-      {@error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", order: order, changeset: changeset)
+    with {@ok, order} <- Orders.get_order(id) do
+      case Orders.update_order(order, order_params) do
+        {@ok, order} ->
+          conn
+          |> put_flash(:info, "Order updated successfully.")
+          |> redirect(to: order_path(conn, :show, order))
+        {@error, %Ecto.Changeset{} = changeset} ->
+          render(conn, "edit.html", order: order, changeset: changeset)
+      end
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    order = Orders.get_order!(id)
-    {@ok, _order} = Orders.delete_order(order)
-
-    conn
-    |> put_flash(:info, "Order deleted successfully.")
-    |> redirect(to: order_path(conn, :index))
+    with {@ok, order} <- Orders.get_order(id),
+         {@ok, _order} = Orders.delete_order(order) do
+      conn
+      |> put_flash(:info, "Order deleted successfully.")
+      |> redirect(to: order_path(conn, :index))
+    end
   end
 end

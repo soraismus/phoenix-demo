@@ -3,6 +3,10 @@
 <table class="table">
   <thead>
     <tr>
+      <th>Patient</th>
+      <th>Pharmacy</th>
+      <th>Courier</th>
+      <th>Order state</th>
       <th>Pickup date</th>
       <th>Pickup time</th>
 
@@ -12,6 +16,10 @@
   <tbody>
 <%= for order <- @orders do %>
     <tr>
+      <td><%= order.patient.name %></td>
+      <td><%= order.pharmacy.name %></td>
+      <td><%= order.courier.name %></td>
+      <td><%= order.order_state.description %></td>
       <td><%= order.pickup_date %></td>
       <td><%= order.pickup_time %></td>
 

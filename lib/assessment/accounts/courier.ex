@@ -2,6 +2,7 @@ defmodule Assessment.Accounts.Courier do
   use Ecto.Schema
   import Ecto.Changeset
   alias Assessment.Accounts.Agent
+  alias Assessment.Orders.Order
 
 
   schema "couriers" do
@@ -10,6 +11,7 @@ defmodule Assessment.Accounts.Courier do
     field :name, :string
     belongs_to :agent, Agent
     field :username, :string, virtual: true
+    has_many :orders, Order
 
     timestamps()
   end
