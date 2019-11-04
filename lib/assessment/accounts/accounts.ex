@@ -25,9 +25,15 @@ defmodule Assessment.Accounts do
 
   """
   def get_agent(id) do
-    Agent
-    |> Repo.get(id)
-    |> Repo.preload([:administrator, :courier, :pharmacy])
+    query =
+      from a in Agent,
+      left_join: ad in assoc(a, :administrator),
+      left_join: c in assoc(a, :courier),
+      left_join: ph in assoc(a, :pharmacy),
+      where: a.id == ^id,
+      preload: [administrator: ad, courier: c, pharmacy: ph]
+    query
+    |> Repo.one()
     |> Utilities.prohibit_nil(@no_resource)
     |> Utilities.map_value(&set_account_type/1)
   end
