@@ -1,4 +1,4 @@
-alias Assessment.{Accounts,OrderStates,Patients}
+alias Assessment.{Accounts,Orders,OrderStates,Patients}
 
 [{:ok, _active}, {:ok, _canceled}, {:ok, _delivered}, {:ok, _undeliverable}] =
   Enum.map(
@@ -18,7 +18,7 @@ alias Assessment.{Accounts,OrderStates,Patients}
     }
   })
 
-{:ok, _better_rx} =
+{:ok, better_rx} =
   Accounts.create_pharmacy(%{
     username: "better_rx",
     pharmacy: %{
@@ -31,7 +31,7 @@ alias Assessment.{Accounts,OrderStates,Patients}
     }
   })
 
-{:ok, _best_rx} =
+{:ok, best_rx} =
   Accounts.create_pharmacy(%{
     username: "best_rx",
     pharmacy: %{
@@ -57,7 +57,7 @@ alias Assessment.{Accounts,OrderStates,Patients}
     }
   })
 
-{:ok, _same_day_delivery} =
+{:ok, same_day_delivery} =
   Accounts.create_courier(%{
     username: "same_day_delivery",
     courier: %{
@@ -70,7 +70,7 @@ alias Assessment.{Accounts,OrderStates,Patients}
     }
   })
 
-{:ok, _previous_day_delivery} =
+{:ok, previous_day_delivery} =
   Accounts.create_courier(%{
     username: "previous_day_delivery",
     courier: %{
@@ -83,8 +83,77 @@ alias Assessment.{Accounts,OrderStates,Patients}
     }
   })
 
-{:ok, _john_doe} =
+{:ok, john_doe} =
   Patients.create_patient(%{
     name: "John Doe",
     address: "123 Mockingbird Ln., Anywhere, DE 00000"
+  })
+
+now = Time.utc_now()
+today = Date.utc_today()
+future = Date.add(today, 5)
+
+{:ok, _order0} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: better_rx.pharmacy.id,
+    courier_id: same_day_delivery.courier.id,
+    pickup_date: today,
+    pickup_time: now
+  })
+{:ok, _order1} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: better_rx.pharmacy.id,
+    courier_id: same_day_delivery.courier.id,
+    pickup_date: future,
+    pickup_time: now
+  })
+{:ok, _order2} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: best_rx.pharmacy.id,
+    courier_id: same_day_delivery.courier.id,
+    pickup_date: today,
+    pickup_time: now
+  })
+{:ok, _order3} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: best_rx.pharmacy.id,
+    courier_id: same_day_delivery.courier.id,
+    pickup_date: future,
+    pickup_time: now
+  })
+{:ok, _order4} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: better_rx.pharmacy.id,
+    courier_id: previous_day_delivery.courier.id,
+    pickup_date: today,
+    pickup_time: now
+  })
+{:ok, _order5} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: better_rx.pharmacy.id,
+    courier_id: previous_day_delivery.courier.id,
+    pickup_date: future,
+    pickup_time: now
+  })
+{:ok, _order6} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: best_rx.pharmacy.id,
+    courier_id: previous_day_delivery.courier.id,
+    pickup_date: today,
+    pickup_time: now
+  })
+{:ok, _order7} =
+  Orders.create_order(%{
+    patient_id: john_doe.id,
+    pharmacy_id: best_rx.pharmacy.id,
+    courier_id: previous_day_delivery.courier.id,
+    pickup_date: future,
+    pickup_time: now
   })
