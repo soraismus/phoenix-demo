@@ -21,7 +21,8 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def create(conn, %{"order" => order_params}) do
-    with {:ok, account} <- get_account(conn) do
+    with {:ok, account} <- get_account(conn),
+         {:ok, new_params} <- normalize_create_params(order_params, account) do
       case account do
         %Administrator{} ->
           with {:ok, order} <- Orders.create_order(order_params) do
@@ -109,6 +110,112 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
+
+
+
+
+  defp normalize_courier_id(params, id) do
+    params
+    |> Map.delete("courier")
+    |> Map.put(:courier_id, id)
+  end
+
+  defp normalize_create_params(%{"patient_id" => patient_id} = params, identity) do
+    whitelist = ~w(courier_id patient_id pharmacy_id pickup_date pickup_time)
+    sanitized_params = Map.take(params, whitelist)
+    with {:ok, new_params} <- normalize_identity(sanitized_params, identity),
+         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")) do
+      normalized_params = Map.put(new_params ,"order_state_id", 1)
+      {:ok, normalized_params}
+    end
+  end
+  defp normalize_create_params(_params, _identity), do: {:error, :invalid_order}
+
+  defp normalize_date(nil), do: {:ok, Date.to_iso8601(Date.utc_today())}
+  defp normalize_date("all"), do: {:ok, :all}
+  defp normalize_date("today"), do: {:ok, Date.to_iso8601(Date.utc_today())}
+  defp normalize_date(%{"day" => day, "month" => month, "year" => year}) do
+    normalize_date("#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}")
+  end
+  defp normalize_date(iso8601_date), do: Date.from_iso8601(iso8601_date)
+
+  defp normalize_date_component(component) when is_binary(component) do
+    if String.length(component) == 1 do
+      "0#{component}"
+    else
+      component
+    end
+  end
+
+  # The main purpose of the following `normalize_identity` function is
+  # to prevent pharmacies from acccessing other pharmacies' data
+  # and to prevent couriers from acccessing other couriers' data.
+  defp normalize_identity(params, {Courier, %{id: id}}) do
+    if !Map.has_key?(params, "courier") || id == String.to_integer(params["courier"]) do
+      params
+      |> normalize_courier_id(id)
+      |> normalize_identity()
+    else
+      {:error, :not_authorized}
+    end
+  end
+  defp normalize_identity(params, {Pharmacy, %{id: id}}) do
+    if !Map.has_key?(params, "pharmacy") || id == String.to_integer(params["pharmacy"]) do
+      params
+      |> normalize_pharmacy_id(id)
+      |> normalize_identity()
+    else
+      {:error, :not_authorized}
+    end
+  end
+  defp normalize_identity(params, _identity), do: normalize_identity(params)
+  defp normalize_identity(%{"courier" => courier_id} = params) do
+    params
+    |> normalize_courier_id(courier_id)
+    |> normalize_identity()
+  end
+  defp normalize_identity(%{"pharmacy" => pharmacy_id} = params) do
+    params
+    |> normalize_pharmacy_id(pharmacy_id)
+    |> normalize_identity()
+  end
+  defp normalize_identity(params), do: {:ok, params}
+
+  defp normalize_index_params(params, identity) do
+    sanitized_params = Map.take(params, ~w(pharmacy courier state pickup_date))
+    with {:ok, new_params} <- normalize_identity(sanitized_params, identity),
+         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")),
+         {:ok, order_state} <- normalize_order_state(Map.get(new_params, "state")) do
+      normalized_params = new_params
+        |> Map.delete("pickup_date")
+        |> Map.put(:pickup_date, pickup_date)
+        |> Map.delete("state")
+        |> Map.put(:order_state_id, order_state)
+      {:ok, normalized_params}
+    end
+  end
+
+  defp normalize_order_state(order_state) do
+    case order_state do
+      nil             -> {:ok, 1}
+      "active"        -> {:ok, 1}
+      "all"           -> {:ok, :all}
+      "canceled"      -> {:ok, 2}
+      "delivered"     -> {:ok, 3}
+      "undeliverable" -> {:ok, 4}
+      _               -> {:error, :bad_order_state}
+    end
+  end
+
+  defp normalize_pharmacy_id(params, id) do
+    params
+    |> Map.delete("pharmacy")
+    |> Map.put(:pharmacy_id, id)
+  end
+
+
+
+
   defmodule ErrorController do
     use AssessmentWeb, :controller
 
@@ -126,6 +233,12 @@ defmodule AssessmentWeb.OrderController do
       conn
       |> put_flash(:error, "Not authorized to create an order")
       |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_format}) do
+      conn
+      |> put_flash(:error, "Internal error: Failure to recognize format of pickup date.")
+      |> render("new.html", changeset: Orders.change_order(%Order{}))
     end
   end
 end
