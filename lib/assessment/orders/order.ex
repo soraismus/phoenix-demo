@@ -24,6 +24,9 @@ defmodule Assessment.Orders.Order do
     order
     |> cast(attrs, @required_params ++ [:order_state_description])
     |> validate_required(@required_params)
+    |> validate_number(:courier_id, greater_than: 0)
+    |> validate_number(:patient_id, greater_than: 0)
+    |> validate_number(:pharmacy_id, greater_than: 0)
     |> validate_order_state_description()
     |> set_order_state_id()
     |> unique_constraint(

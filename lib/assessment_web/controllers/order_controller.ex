@@ -1,11 +1,11 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
-  import Assessment.Utilities, only: [get_date_today: 0, nilify_error: 1, to_integer: 1]
+  import Assessment.Utilities,
+    only: [get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
-  alias AssessmentWeb.GuardianController
 
   plug :authorize_order_management
 
@@ -13,10 +13,10 @@ defmodule AssessmentWeb.OrderController do
 
   def index(conn, params) do
     with {:ok, account} <- get_account(conn),
-         {:ok, new_params} <- normalize_index_params(params, account) do
-      orders = Orders.list_orders(new_params)
+         {:ok, normalized_params} <- normalize_index_params(params, account) do
+      orders = Orders.list_orders(normalized_params)
       conn
-      |> assign(:normalized_params, new_params)
+      |> assign(:normalized_params, normalized_params)
       |> render("index.html", orders: orders)
     end
   end
@@ -51,8 +51,24 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, order} <- Orders.get_order(id) do
-      render(conn, "show.html", order: order)
+    with {:ok, account} <- get_account(conn),
+         {:ok, order} <- Orders.get_order(id) do
+      case account do
+        %Administrator{} ->
+          render(conn, "show.html", order: order)
+        %Courier{} ->
+          if account.id == order.courier_id do
+            render(conn, "show.html", order: order)
+          else
+            {:error, :not_authorized}
+          end
+        %Pharmacy{} ->
+          if account.id == order.pharmacy_id do
+            render(conn, "show.html", order: order)
+          else
+            {:error, :not_authorized}
+          end
+      end
     end
   end
 
@@ -97,10 +113,6 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  defp authenticate_administrator(conn) do
-    GuardianController.identify_administrator(conn.assigns.agent)
-  end
-
   defp get_account(%Agent{} = agent) do
     case agent.account_type do
       "administrator" -> {:ok, agent.administrator}
@@ -141,7 +153,7 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_create_params(_params, _account), do: {:error, :invalid_order}
 
-  defp normalize_date(nil), do: {:ok, get_date_today() }
+  defp normalize_date(nil), do: {:ok, get_date_today()}
   defp normalize_date("all"), do: {:ok, :all}
   defp normalize_date("today"), do: {:ok, get_date_today() }
   defp normalize_date(%{"day" => day, "month" => month, "year" => year}) do
@@ -161,7 +173,8 @@ defmodule AssessmentWeb.OrderController do
   # to prevent pharmacies from acccessing other pharmacies' data
   # and to prevent couriers from acccessing other couriers' data.
   defp normalize_account(params, %Courier{id: id}) do
-    if !Map.has_key?(params, "courier_id") || id == String.to_integer(params["courier_id"]) do
+    lacks_courier? = !Map.has_key?(params, "courier_id")
+    if lacks_courier? || id == nilify_error(to_integer(params["courier_id"])) do
       params
       |> normalize_courier_id(id)
       |> normalize_account()
@@ -170,7 +183,8 @@ defmodule AssessmentWeb.OrderController do
     end
   end
   defp normalize_account(params, %Pharmacy{id: id}) do
-    if !Map.has_key?(params, "pharmacy_id") || id == String.to_integer(params["pharmacy_id"]) do
+    lacks_pharmacy? = !Map.has_key?(params, "pharmacy_id")
+    if lacks_pharmacy? || id == nilify_error(to_integer(params["pharmacy_id"])) do
       params
       |> normalize_pharmacy_id(id)
       |> normalize_account()
@@ -180,14 +194,24 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_account(params, _account), do: normalize_account(params)
   defp normalize_account(%{"courier_id" => courier_id} = params) do
-    params
-    |> normalize_courier_id(courier_id)
-    |> normalize_account()
+    with {:ok, checked_courier_id} <- to_integer(courier_id) do
+      params
+      |> normalize_courier_id(checked_courier_id)
+      |> normalize_account()
+    else
+      _ -> {:error, :invalid_courier_id}
+    end
   end
   defp normalize_account(%{"pharmacy_id" => pharmacy_id} = params) do
-    params
-    |> normalize_pharmacy_id(pharmacy_id)
-    |> normalize_account()
+    IO.inspect("normalize_account")
+    IO.inspect(pharmacy_id)
+    with {:ok, checked_pharmacy_id} <- to_integer(pharmacy_id) do
+      params
+      |> normalize_pharmacy_id(checked_pharmacy_id)
+      |> normalize_account()
+    else
+      _ -> {:error, :invalid_pharmacy_id}
+    end
   end
   defp normalize_account(params), do: {:ok, params}
 
@@ -210,26 +234,6 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  defp get_qualifier(
-    account,
-    %{order_state_id: order_state_id, pickup_date: pickup_date} = params) do
-      count =
-        case account do
-          %Courier{} -> 4
-          %Pharmacy{} -> 4
-          _ -> 3
-        end
-      today? = (get_date_today() == pickup_date)
-      cond do
-        Enum.count(params) > count ->
-          "#{if today? do "Today's " else "" end}Matching"
-        order_state_id == 1 ->
-          "#{if today? do "Today's " else "" end}Active"
-        true ->
-          "All#{if today? do " of Today's" else "" end}"
-      end
-  end
-
   defp normalize_order_state(order_state) do
     case order_state do
       nil             -> {:ok, 1}
@@ -238,12 +242,16 @@ defmodule AssessmentWeb.OrderController do
       "canceled"      -> {:ok, 2}
       "delivered"     -> {:ok, 3}
       "undeliverable" -> {:ok, 4}
-      _               -> {:error, :bad_order_state}
+      _               -> {:error, :invalid_order_state}
     end
   end
 
   defp normalize_patient(nil), do: {:ok, :all}
-  defp normalize_patient(patient_id), do: to_integer(patient_id)
+  defp normalize_patient(patient_id) do
+    patient_id
+    |> to_integer()
+    |> map_error(fn (_) -> :invalid_patient_id end)
+  end
 
   defp normalize_pharmacy_id(params, id) do
     params
@@ -264,6 +272,12 @@ defmodule AssessmentWeb.OrderController do
     def call(conn, {:error, :invalid_account_type}) do
       conn
       |> put_flash(:error, "Not authorized to create an order")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_courier_id}) do
+      conn
+      |> put_flash(:error, "Invalid courier id")
       |> redirect(to: page_path(conn, :index))
     end
 
@@ -288,6 +302,24 @@ defmodule AssessmentWeb.OrderController do
     def call(conn, {:error, :invalid_order}) do
       conn
       |> put_flash(:error, "Invalid order")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_order_state}) do
+      conn
+      |> put_flash(:error, "Invalid order state")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_patient_id}) do
+      conn
+      |> put_flash(:error, "Invalid patient id")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_pharmacy_id}) do
+      conn
+      |> put_flash(:error, "Invalid pharmacy id")
       |> redirect(to: page_path(conn, :index))
     end
 
