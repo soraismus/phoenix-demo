@@ -48,7 +48,13 @@ defmodule Assessment.Orders do
   """
   def list_orders(params), do: Repo.all(create_query(params))
   defp create_query(params) do
-    query = Order
+    query =
+      from o in Order,
+      inner_join: c in assoc(o, :courier),
+      inner_join: os in assoc(o, :order_state),
+      inner_join: p in assoc(o, :patient),
+      inner_join: ph in assoc(o, :pharmacy),
+      preload: [courier: c, order_state: os, patient: p, pharmacy: ph]
     query = if Map.has_key?(params, :courier_id) do
               query |> where([o], o.courier_id == ^params.courier_id)
             else
@@ -75,8 +81,6 @@ defmodule Assessment.Orders do
               query
             end
     query
-    |> preload([:courier, :order_state, :patient, :pharmacy])
-    |> select([o], o)
   end
 
   @doc """
