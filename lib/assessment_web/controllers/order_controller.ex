@@ -25,13 +25,13 @@ defmodule AssessmentWeb.OrderController do
          {:ok, new_params} <- normalize_create_params(order_params, account) do
       case account do
         %Administrator{} ->
-          with {:ok, order} <- Orders.create_order(order_params) do
+          with {:ok, order} <- Orders.create_order(new_params) do
             conn
             |> put_flash(:info, "Order created successfully.")
             |> redirect(to: order_path(conn, :show, order))
           end
         %Pharmacy{} ->
-          with {:ok, order} <- Orders.create_order(order_params) do
+          with {:ok, order} <- Orders.create_order(new_params) do
             conn
             |> put_flash(:info, "Order created successfully.")
             |> redirect(to: order_path(conn, :show, order))
@@ -116,20 +116,28 @@ defmodule AssessmentWeb.OrderController do
 
   defp normalize_courier_id(params, id) do
     params
-    |> Map.delete("courier")
+    |> Map.delete("courier_id")
     |> Map.put(:courier_id, id)
   end
 
-  defp normalize_create_params(%{"patient_id" => patient_id} = params, identity) do
+  defp normalize_create_params(%{"patient_id" => patient_id} = params, account) do
     whitelist = ~w(courier_id patient_id pharmacy_id pickup_date pickup_time)
     sanitized_params = Map.take(params, whitelist)
-    with {:ok, new_params} <- normalize_identity(sanitized_params, identity),
+    with {:ok, new_params} <- normalize_account(sanitized_params, account),
          {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")) do
-      normalized_params = Map.put(new_params ,"order_state_id", 1)
+      normalized_params =
+        new_params
+        |> Map.delete("patient_id")
+        |> Map.put(:patient_id, patient_id)
+        |> Map.delete("pickup_date")
+        |> Map.put(:pickup_date, pickup_date)
+        |> Map.delete("pickup_time")
+        |> Map.put(:pickup_time, Map.get(new_params, "pickup_time"))
+        |> Map.put(:order_state_id, 1)
       {:ok, normalized_params}
     end
   end
-  defp normalize_create_params(_params, _identity), do: {:error, :invalid_order}
+  defp normalize_create_params(_params, _account), do: {:error, :invalid_order}
 
   defp normalize_date(nil), do: {:ok, Date.to_iso8601(Date.utc_today())}
   defp normalize_date("all"), do: {:ok, :all}
@@ -147,53 +155,39 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  # The main purpose of the following `normalize_identity` function is
+  # The main purpose of the following `normalize_account` function is
   # to prevent pharmacies from acccessing other pharmacies' data
   # and to prevent couriers from acccessing other couriers' data.
-  defp normalize_identity(params, {Courier, %{id: id}}) do
-    if !Map.has_key?(params, "courier") || id == String.to_integer(params["courier"]) do
+  defp normalize_account(params, %Courier{id: id}) do
+    if !Map.has_key?(params, "courier_id") || id == String.to_integer(params["courier_id"]) do
       params
       |> normalize_courier_id(id)
-      |> normalize_identity()
+      |> normalize_account()
     else
       {:error, :not_authorized}
     end
   end
-  defp normalize_identity(params, {Pharmacy, %{id: id}}) do
-    if !Map.has_key?(params, "pharmacy") || id == String.to_integer(params["pharmacy"]) do
+  defp normalize_account(params, %Pharmacy{id: id}) do
+    if !Map.has_key?(params, "pharmacy_id") || id == String.to_integer(params["pharmacy_id"]) do
       params
       |> normalize_pharmacy_id(id)
-      |> normalize_identity()
+      |> normalize_account()
     else
       {:error, :not_authorized}
     end
   end
-  defp normalize_identity(params, _identity), do: normalize_identity(params)
-  defp normalize_identity(%{"courier" => courier_id} = params) do
+  defp normalize_account(params, _account), do: normalize_account(params)
+  defp normalize_account(%{"courier_id" => courier_id} = params) do
     params
     |> normalize_courier_id(courier_id)
-    |> normalize_identity()
+    |> normalize_account()
   end
-  defp normalize_identity(%{"pharmacy" => pharmacy_id} = params) do
+  defp normalize_account(%{"pharmacy_id" => pharmacy_id} = params) do
     params
     |> normalize_pharmacy_id(pharmacy_id)
-    |> normalize_identity()
+    |> normalize_account()
   end
-  defp normalize_identity(params), do: {:ok, params}
-
-  defp normalize_index_params(params, identity) do
-    sanitized_params = Map.take(params, ~w(pharmacy courier state pickup_date))
-    with {:ok, new_params} <- normalize_identity(sanitized_params, identity),
-         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")),
-         {:ok, order_state} <- normalize_order_state(Map.get(new_params, "state")) do
-      normalized_params = new_params
-        |> Map.delete("pickup_date")
-        |> Map.put(:pickup_date, pickup_date)
-        |> Map.delete("state")
-        |> Map.put(:order_state_id, order_state)
-      {:ok, normalized_params}
-    end
-  end
+  defp normalize_account(params), do: {:ok, params}
 
   defp normalize_order_state(order_state) do
     case order_state do
@@ -209,7 +203,7 @@ defmodule AssessmentWeb.OrderController do
 
   defp normalize_pharmacy_id(params, id) do
     params
-    |> Map.delete("pharmacy")
+    |> Map.delete("pharmacy_id")
     |> Map.put(:pharmacy_id, id)
   end
 
@@ -226,6 +220,12 @@ defmodule AssessmentWeb.OrderController do
     def call(conn, {:error, :invalid_account_type}) do
       conn
       |> put_flash(:error, "Not authorized to create an order")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :invalid_order}) do
+      conn
+      |> put_flash(:error, "Invalid order")
       |> redirect(to: page_path(conn, :index))
     end
 
