@@ -8,6 +8,8 @@ defmodule AssessmentWeb.OrderController do
 
   plug :authorize_order_management
 
+  action_fallback(AssessmentWeb.OrderController.ErrorController)
+
   def index(conn, _params) do
     orders = Orders.list_orders()
     render(conn, "index.html", orders: orders)
@@ -38,9 +40,6 @@ defmodule AssessmentWeb.OrderController do
           |> put_flash(:error, "Not authorized to create an order")
           |> redirect(to: page_path(conn, :index))
       end
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
     end
   end
 
@@ -107,6 +106,26 @@ defmodule AssessmentWeb.OrderController do
     case conn.assigns.agent do
       nil -> {:error, :not_authenticated}
       agent -> get_account(agent)
+    end
+  end
+
+  defmodule ErrorController do
+    use AssessmentWeb, :controller
+
+    def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
+      render(conn, "new.html", changeset: changeset)
+    end
+
+    def call(conn, {:error, :invalid_account_type}) do
+      conn
+      |> put_flash(:error, "Not authorized to create an order")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :not_authenticated}) do
+      conn
+      |> put_flash(:error, "Not authorized to create an order")
+      |> redirect(to: page_path(conn, :index))
     end
   end
 end

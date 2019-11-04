@@ -26,6 +26,9 @@ defmodule Assessment.Orders.Order do
     |> validate_required(@required_params)
     |> validate_order_state_description()
     |> set_order_state_id()
+    |> unique_constraint(
+        :pickup_date,
+        name: :orders_pickup_date_patient_id_pharmacy_id_courier_id_index)
     |> foreign_key_constraint(:patient_id)
     |> foreign_key_constraint(:pharmacy_id)
     |> foreign_key_constraint(:courier_id)
