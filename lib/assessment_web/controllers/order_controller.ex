@@ -310,7 +310,7 @@ defmodule AssessmentWeb.OrderController do
   defmodule ErrorController do
     use AssessmentWeb, :controller
 
-    def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
+    def call(conn, {:error, {:create_order, %Ecto.Changeset{} = changeset}}) do
       render(conn, "new.html", changeset: changeset)
     end
 

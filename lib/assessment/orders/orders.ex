@@ -112,7 +112,7 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> create_order(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      {:error, {:create_order, %Ecto.Changeset{}}}
 
   """
   def create_order(attrs \\ %{}) do
@@ -120,6 +120,7 @@ defmodule Assessment.Orders do
     |> Order.changeset(attrs)
     |> Changeset.put_change(:order_state_id, @active_order_state_id)
     |> Repo.insert()
+    |> Map.map_error(fn (changeset) -> {:create_order, changeset} end)
   end
 
   @doc """
@@ -152,11 +153,15 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> delete_order(order)
-      {:error, %Ecto.Changeset{}}
+      {:error, {:delete_order, {%Order{}, %Ecto.Changeset{}}}}
 
   """
   def delete_order(%Order{} = order) do
-    Repo.delete(order)
+    order
+    |> Repo.delete()
+    |> Utilities.map_error(fn
+          (changeset) -> {:delete_order, {order, changeset}}
+        end)
   end
 
   @doc """
