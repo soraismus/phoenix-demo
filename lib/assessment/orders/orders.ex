@@ -13,20 +13,71 @@ defmodule Assessment.Orders do
   @no_resource :no_resource
   @active_order_state_id 1
 
-  #@doc """
-  #Returns the list of orders.
-  #
-  ### Examples
-  #
-  #    iex> list_orders()
-  #    [%Order{}, ...]
-  #
-  #"""
-  #def list_orders do
-  #  Order
-  #  |> Repo.all()
-  #  |> Repo.preload([:patient, :pharmacy, :courier, :order_state])
-  #end
+  @doc """
+  Returns the list of orders.
+
+  ## Examples
+
+      iex> list_orders(%{})
+      [%Order{}, ...]
+
+      iex> list_orders(%{pickup_date: :all})
+      [%Order{}, ...]
+
+      iex> list_orders(%{pickup_date: %Date{year: _, month: _, day: _}})
+      [%Order{}, ...]
+
+      iex> list_orders(%{order_state_id: :all})
+      [%Order{}, ...]
+
+      iex> list_orders(%{order_state_id: 1})
+      [%Order{}, ...]
+
+      iex> list_orders(%{patient_id: :all})
+      [%Order{}, ...]
+
+      iex> list_orders(%{patient_id: 1})
+      [%Order{}, ...]
+
+      iex> list_orders(%{courier_id: 1, pharmacy_id: 1})
+      [%Order{}, ...]
+
+      iex> list_orders(%{courier_id: 1, pickup_date: :all, pharmacy_id: 1})
+      [%Order{}, ...]
+
+  """
+  def list_orders(params), do: Repo.all(create_query(params))
+  defp create_query(params) do
+    query = Order
+    query = if Map.has_key?(params, :courier_id) do
+              query |> where([o], o.courier_id == ^params.courier_id)
+            else
+              query
+            end
+    query = if Map.has_key?(params, :order_state_id) && params.order_state_id != :all do
+              query |> where([o], o.order_state_id == ^params.order_state_id)
+            else
+              query
+            end
+    query = if Map.has_key?(params, :patient_id) && params.patient_id != :all do
+              query |> where([o], o.patient_id == ^params.patient_id)
+            else
+              query
+            end
+    query = if Map.has_key?(params, :pharmacy_id) do
+              query |> where([o], o.pharmacy_id == ^params.pharmacy_id)
+            else
+              query
+            end
+    query = if Map.has_key?(params, :pickup_date) && params.pickup_date != :all do
+              query |> where([o], o.pickup_date == ^params.pickup_date)
+            else
+              query
+            end
+    query
+    |> preload([:courier, :order_state, :patient, :pharmacy])
+    |> select([o], o)
+  end
 
   @doc """
   Gets a single order.
@@ -117,45 +168,4 @@ defmodule Assessment.Orders do
   defp set_order_state_description(%{order_state: %OrderState{} = order_state} = order) do
     %{order | order_state_description: order_state.description}
   end
-
-
-
-
-
-
-
-  def list_orders(params), do: Repo.all(create_query(params))
-  defp create_query(params) do
-    query = Order
-    query = if Map.has_key?(params, :courier_id) do
-              query |> where([o], o.courier_id == ^params.courier_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :order_state_id) && params.order_state_id != :all do
-              query |> where([o], o.order_state_id == ^params.order_state_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :patient_id) && params.patient_id != :all do
-              query |> where([o], o.patient_id == ^params.patient_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :pharmacy_id) do
-              query |> where([o], o.pharmacy_id == ^params.pharmacy_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :pickup_date) && params.pickup_date != :all do
-              query |> where([o], o.pickup_date == ^params.pickup_date)
-            else
-              query
-            end
-    query
-    |> preload([:courier, :order_state, :patient, :pharmacy])
-    |> select([o], o)
-  end
-
-
 end
