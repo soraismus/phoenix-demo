@@ -32,7 +32,8 @@ defmodule Assessment.Orders.Order do
     |> set_order_state_id()
     |> unique_constraint(
         :pickup_date,
-        name: :orders_pickup_date_patient_id_pharmacy_id_courier_id_index)
+        name: :orders_pickup_date_patient_id_pharmacy_id_courier_id_index,
+        message: "An order with this pickup date, this patient, this pharmacy, and this courier already exists.")
     |> foreign_key_constraint(:patient_id)
     |> foreign_key_constraint(:pharmacy_id)
     |> foreign_key_constraint(:courier_id)
