@@ -15,7 +15,10 @@ defmodule AssessmentWeb.OrderController do
     with {:ok, account} <- get_account(conn),
          {:ok, new_params} <- normalize_index_params(params, account) do
       orders = Orders.list_orders(new_params)
-      render(conn, "index.html", orders: orders)
+      qualifier = get_qualifier(account, new_params, Map.get(params, "pickup_date"))
+      conn
+      |> assign(:qualifier, qualifier)
+      |> render("index.html", orders: orders)
     end
   end
 
@@ -114,10 +117,6 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-
-
-
-
   defp normalize_courier_id(params, id) do
     params
     |> Map.delete("courier_id")
@@ -143,9 +142,10 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_create_params(_params, _account), do: {:error, :invalid_order}
 
-  defp normalize_date(nil), do: {:ok, Date.to_iso8601(Date.utc_today())}
+  defp get_date_today(), do: Date.to_iso8601(Date.utc_today())
+  defp normalize_date(nil), do: {:ok, get_date_today() }
   defp normalize_date("all"), do: {:ok, :all}
-  defp normalize_date("today"), do: {:ok, Date.to_iso8601(Date.utc_today())}
+  defp normalize_date("today"), do: {:ok, get_date_today() }
   defp normalize_date(%{"day" => day, "month" => month, "year" => year}) do
     normalize_date("#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}")
   end
@@ -198,7 +198,7 @@ defmodule AssessmentWeb.OrderController do
     sanitized_params = Map.take(params, whitelist)
     with {:ok, new_params} <- normalize_account(sanitized_params, account),
          {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")),
-         {:ok, order_state_id} <- normalize_order_state(Map.get(new_params, "state")),
+         {:ok, order_state_id} <- normalize_order_state(Map.get(new_params, "order_state")),
          {:ok, patient_id} <- normalize_patient(Map.get(new_params, "patient_id")) do
       normalized_params =
         new_params
@@ -206,9 +206,36 @@ defmodule AssessmentWeb.OrderController do
         |> Map.put(:patient_id, patient_id)
         |> Map.delete("pickup_date")
         |> Map.put(:pickup_date, pickup_date)
+        |> Map.delete("order_state")
         |> Map.put(:order_state_id, order_state_id)
       {:ok, normalized_params}
     end
+  end
+
+  defp get_qualifier(
+    account,
+    %{order_state_id: order_state_id} = params,
+    pickup_date) do
+      IO.inspect(pickup_date)
+      IO.inspect(params)
+      count =
+        case account do
+          %Courier{} -> 4
+          %Pharmacy{} -> 4
+          _ -> 3
+        end
+      {:ok, pickup_date} = normalize_date(pickup_date)
+      IO.inspect(pickup_date)
+      IO.inspect(get_date_today())
+      today? = pickup_date == get_date_today()
+      cond do
+        Enum.count(params) > count ->
+          "#{if today? do "Today's " else "" end}Matching"
+        order_state_id == 1 ->
+          "#{if today? do "Today's " else "" end}Active"
+        true ->
+          "All#{if today? do " of Today's" else "" end}"
+      end
   end
 
   defp normalize_order_state(order_state) do
@@ -248,6 +275,12 @@ defmodule AssessmentWeb.OrderController do
       |> redirect(to: page_path(conn, :index))
     end
 
+    def call(conn, {:error, :invalid_date}) do
+      conn
+      |> put_flash(:error, "Internal error: Failure to recognize format of pickup date.")
+      |> render("new.html", changeset: Orders.change_order(%Order{}))
+    end
+
     def call(conn, {:error, :invalid_format}) do
       conn
       |> put_flash(:error, "Internal error: Failure to recognize format of pickup date.")
@@ -268,7 +301,13 @@ defmodule AssessmentWeb.OrderController do
 
     def call(conn, {:error, :not_authenticated}) do
       conn
-      |> put_flash(:error, "Not authorized to create an order")
+      |> put_flash(:error, "Not authorized")
+      |> redirect(to: page_path(conn, :index))
+    end
+
+    def call(conn, {:error, :not_authorized}) do
+      conn
+      |> put_flash(:error, "Not authorized")
       |> redirect(to: page_path(conn, :index))
     end
   end
