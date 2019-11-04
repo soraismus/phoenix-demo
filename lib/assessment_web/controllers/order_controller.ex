@@ -1,6 +1,7 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
+  import Assessment.Utilities, only: [to_integer: 1]
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
@@ -10,9 +11,12 @@ defmodule AssessmentWeb.OrderController do
 
   action_fallback(AssessmentWeb.OrderController.ErrorController)
 
-  def index(conn, _params) do
-    orders = Orders.list_orders()
-    render(conn, "index.html", orders: orders)
+  def index(conn, params) do
+    with {:ok, account} <- get_account(conn),
+         {:ok, new_params} <- normalize_index_params(params, account) do
+      orders = Orders.list_orders(new_params)
+      render(conn, "index.html", orders: orders)
+    end
   end
 
   def new(conn, _params) do
@@ -189,6 +193,24 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_account(params), do: {:ok, params}
 
+  defp normalize_index_params(params, account) do
+    whitelist = ~w(courier_id order_state patient_id pharmacy_id pickup_date)
+    sanitized_params = Map.take(params, whitelist)
+    with {:ok, new_params} <- normalize_account(sanitized_params, account),
+         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")),
+         {:ok, order_state_id} <- normalize_order_state(Map.get(new_params, "state")),
+         {:ok, patient_id} <- normalize_patient(Map.get(new_params, "patient_id")) do
+      normalized_params =
+        new_params
+        |> Map.delete("patient_id")
+        |> Map.put(:patient_id, patient_id)
+        |> Map.delete("pickup_date")
+        |> Map.put(:pickup_date, pickup_date)
+        |> Map.put(:order_state_id, order_state_id)
+      {:ok, normalized_params}
+    end
+  end
+
   defp normalize_order_state(order_state) do
     case order_state do
       nil             -> {:ok, 1}
@@ -200,6 +222,9 @@ defmodule AssessmentWeb.OrderController do
       _               -> {:error, :bad_order_state}
     end
   end
+
+  defp normalize_patient(nil), do: {:ok, :all}
+  defp normalize_patient(patient_id), do: to_integer(patient_id)
 
   defp normalize_pharmacy_id(params, id) do
     params
@@ -223,6 +248,18 @@ defmodule AssessmentWeb.OrderController do
       |> redirect(to: page_path(conn, :index))
     end
 
+    def call(conn, {:error, :invalid_format}) do
+      conn
+      |> put_flash(:error, "Internal error: Failure to recognize format of pickup date.")
+      |> render("new.html", changeset: Orders.change_order(%Order{}))
+    end
+
+    def call(conn, {:error, :invalid_integer_format}) do
+      conn
+      |> put_flash(:error, "Internal error: Failure to recognize resource format.")
+      |> render("new.html", changeset: Orders.change_order(%Order{}))
+    end
+
     def call(conn, {:error, :invalid_order}) do
       conn
       |> put_flash(:error, "Invalid order")
@@ -233,12 +270,6 @@ defmodule AssessmentWeb.OrderController do
       conn
       |> put_flash(:error, "Not authorized to create an order")
       |> redirect(to: page_path(conn, :index))
-    end
-
-    def call(conn, {:error, :invalid_format}) do
-      conn
-      |> put_flash(:error, "Internal error: Failure to recognize format of pickup date.")
-      |> render("new.html", changeset: Orders.change_order(%Order{}))
     end
   end
 end
