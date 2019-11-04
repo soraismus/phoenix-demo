@@ -6,6 +6,7 @@ defmodule Assessment.Orders.Order do
   alias Assessment.Patients.Patient
 
   @required_params ~w(pickup_date pickup_time patient_id pharmacy_id courier_id)a
+  @order_state_descriptions ~w(active canceled delivered undeliverable)s
 
   schema "orders" do
     field :pickup_date, :date
@@ -38,10 +39,8 @@ defmodule Assessment.Orders.Order do
     |> foreign_key_constraint(:order_state_id)
   end
 
-  @order_state_descriptions ~w(active canceled delivered undeliverable)s
   defp validate_order_state_description(changeset) do
     validate_change(changeset, :order_state_description, fn (:order_state_description, description) ->
-        IO.puts("description is #{description}")
         if description in @order_state_descriptions do
           []
         else

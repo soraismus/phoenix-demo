@@ -80,8 +80,10 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def update(conn, %{"id" => id, "order" => order_params}) do
-    with {:ok, order} <- Orders.get_order(id) do
-      case Orders.update_order(order, order_params) do
+    with {:ok, account} <- get_account(conn),
+         {:ok, order} <- Orders.get_order(id),
+         {:ok, new_params} <- normalize_edit_params(order_params, account) do
+      case Orders.update_order(order, new_params) do
         {:ok, order} ->
           conn
           |> put_flash(:info, "Order updated successfully.")
@@ -153,6 +155,34 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_create_params(_params, _account), do: {:error, :invalid_order}
 
+  defp normalize_edit_params(%{"patient_id" => patient_id} = params, account) do
+    whitelist =
+      ~w( courier_id
+          order_state_description
+          patient_id
+          pharmacy_id
+          pickup_date
+          pickup_time
+        )
+    sanitized_params = Map.take(params, whitelist)
+    with {:ok, new_params} <- normalize_account(sanitized_params, account),
+         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")) do
+      normalized_params =
+        new_params
+        |> Map.delete("order_state_description")
+        |> Map.put(:order_state_description, Map.get(params, "order_state_description"))
+        |> Map.delete("patient_id")
+        |> Map.put(:patient_id, patient_id)
+        |> Map.delete("pickup_date")
+        |> Map.put(:pickup_date, pickup_date)
+        |> Map.delete("pickup_time")
+        |> Map.put(:pickup_time, Map.get(new_params, "pickup_time"))
+        |> Map.put(:order_state_id, 1)
+      {:ok, normalized_params}
+    end
+  end
+  defp normalize_edit_params(_params, _account), do: {:error, :invalid_order}
+
   defp normalize_date(nil), do: {:ok, get_date_today()}
   defp normalize_date("all"), do: {:ok, :all}
   defp normalize_date("today"), do: {:ok, get_date_today() }
@@ -203,8 +233,6 @@ defmodule AssessmentWeb.OrderController do
     end
   end
   defp normalize_account(%{"pharmacy_id" => pharmacy_id} = params) do
-    IO.inspect("normalize_account")
-    IO.inspect(pharmacy_id)
     with {:ok, checked_pharmacy_id} <- to_integer(pharmacy_id) do
       params
       |> normalize_pharmacy_id(checked_pharmacy_id)
@@ -258,9 +286,6 @@ defmodule AssessmentWeb.OrderController do
     |> Map.delete("pharmacy_id")
     |> Map.put(:pharmacy_id, id)
   end
-
-
-
 
   defmodule ErrorController do
     use AssessmentWeb, :controller
