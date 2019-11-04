@@ -131,13 +131,16 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> update_order(order, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      {:error, {:update_order, {%Order{}, %Ecto.Changeset{}}}}
 
   """
   def update_order(%Order{} = order, attrs) do
     order
     |> Order.changeset(attrs)
     |> Repo.update()
+    |> Utilities.map_error(fn
+          (changeset) -> {:update_order, {order, changeset}}
+        end)
   end
 
   @doc """

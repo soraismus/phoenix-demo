@@ -85,36 +85,27 @@ defmodule AssessmentWeb.OrderController do
          {:ok, new_params} <- normalize_edit_params(order_params, account) do
       case account do
         %Administrator{} ->
-          case Orders.update_order(order, new_params) do
-            {:ok, order} ->
-              conn
-              |> put_flash(:info, "Order updated successfully.")
-              |> redirect(to: order_path(conn, :show, order))
-            {:error, %Ecto.Changeset{} = changeset} ->
-              render(conn, "edit.html", order: order, changeset: changeset)
+          with {:ok, order} <- Orders.update_order(order, new_params) do
+            conn
+            |> put_flash(:info, "Order updated successfully.")
+            |> redirect(to: order_path(conn, :show, order))
           end
         %Courier{} ->
           if account.id == order.courier_id do
-            case Orders.update_order(order, new_params) do
-              {:ok, order} ->
-                conn
-                |> put_flash(:info, "Order updated successfully.")
-                |> redirect(to: order_path(conn, :show, order))
-              {:error, %Ecto.Changeset{} = changeset} ->
-                render(conn, "edit.html", order: order, changeset: changeset)
+            with {:ok, order} <- Orders.update_order(order, new_params) do
+              conn
+              |> put_flash(:info, "Order updated successfully.")
+              |> redirect(to: order_path(conn, :show, order))
             end
           else
             {:error, :not_authorized}
           end
         %Pharmacy{} ->
           if account.id == order.pharmacy_id do
-            case Orders.update_order(order, new_params) do
-              {:ok, order} ->
-                conn
-                |> put_flash(:info, "Order updated successfully.")
-                |> redirect(to: order_path(conn, :show, order))
-              {:error, %Ecto.Changeset{} = changeset} ->
-                render(conn, "edit.html", order: order, changeset: changeset)
+            with {:ok, order} <- Orders.update_order(order, new_params) do
+              conn
+              |> put_flash(:info, "Order updated successfully.")
+              |> redirect(to: order_path(conn, :show, order))
             end
           else
             {:error, :not_authorized}
@@ -321,6 +312,10 @@ defmodule AssessmentWeb.OrderController do
 
     def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
       render(conn, "new.html", changeset: changeset)
+    end
+
+    def call(conn, {:error, {:update_order, {%Order{} = order, %Ecto.Changeset{} = changeset}}}) do
+      render(conn, "edit.html", order: order, changeset: changeset)
     end
 
     def call(conn, {:error, :invalid_account_type}) do
