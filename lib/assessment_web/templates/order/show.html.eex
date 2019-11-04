@@ -29,7 +29,7 @@
 
   <li>
     <strong>Pickup time:</strong>
-    <%= @order.pickup_time %>
+    <%= format_time(@order.pickup_time) %>
   </li>
 
 </ul>

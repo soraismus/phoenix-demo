@@ -2,6 +2,10 @@ defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
   alias Assessment.Utilities
 
+  def format_time(%Time{} = time) do
+    time |> Time.to_iso8601() |> String.slice(0..4)
+  end
+
   def get_qualifier(conn, %{order_state_id: order_state_id, pickup_date: pickup_date} = params) do
     IO.inspect(params)
     count =
