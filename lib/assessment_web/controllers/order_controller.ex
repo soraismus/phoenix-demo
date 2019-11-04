@@ -83,13 +83,42 @@ defmodule AssessmentWeb.OrderController do
     with {:ok, account} <- get_account(conn),
          {:ok, order} <- Orders.get_order(id),
          {:ok, new_params} <- normalize_edit_params(order_params, account) do
-      case Orders.update_order(order, new_params) do
-        {:ok, order} ->
-          conn
-          |> put_flash(:info, "Order updated successfully.")
-          |> redirect(to: order_path(conn, :show, order))
-        {:error, %Ecto.Changeset{} = changeset} ->
-          render(conn, "edit.html", order: order, changeset: changeset)
+      case account do
+        %Administrator{} ->
+          case Orders.update_order(order, new_params) do
+            {:ok, order} ->
+              conn
+              |> put_flash(:info, "Order updated successfully.")
+              |> redirect(to: order_path(conn, :show, order))
+            {:error, %Ecto.Changeset{} = changeset} ->
+              render(conn, "edit.html", order: order, changeset: changeset)
+          end
+        %Courier{} ->
+          if account.id == order.courier_id do
+            case Orders.update_order(order, new_params) do
+              {:ok, order} ->
+                conn
+                |> put_flash(:info, "Order updated successfully.")
+                |> redirect(to: order_path(conn, :show, order))
+              {:error, %Ecto.Changeset{} = changeset} ->
+                render(conn, "edit.html", order: order, changeset: changeset)
+            end
+          else
+            {:error, :not_authorized}
+          end
+        %Pharmacy{} ->
+          if account.id == order.pharmacy_id do
+            case Orders.update_order(order, new_params) do
+              {:ok, order} ->
+                conn
+                |> put_flash(:info, "Order updated successfully.")
+                |> redirect(to: order_path(conn, :show, order))
+              {:error, %Ecto.Changeset{} = changeset} ->
+                render(conn, "edit.html", order: order, changeset: changeset)
+            end
+          else
+            {:error, :not_authorized}
+          end
       end
     end
   end
