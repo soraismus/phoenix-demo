@@ -8,6 +8,8 @@ defmodule Assessment.Utilities do
   def bind_error({@ok, value}, _fun), do: {@ok, value}
   def bind_error({@error, value}, fun), do: fun.(value)
 
+  def get_date_today(), do: Date.to_iso8601(Date.utc_today())
+
   def map_error({@ok, value}, _fun), do: {@ok, value}
   def map_error({@error, value}, fun), do: {@error, fun.(value)}
 

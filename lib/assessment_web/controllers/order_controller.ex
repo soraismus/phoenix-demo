@@ -1,7 +1,7 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
-  import Assessment.Utilities, only: [to_integer: 1]
+  import Assessment.Utilities, only: [get_date_today: 0, nilify_error: 1, to_integer: 1]
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
@@ -15,9 +15,8 @@ defmodule AssessmentWeb.OrderController do
     with {:ok, account} <- get_account(conn),
          {:ok, new_params} <- normalize_index_params(params, account) do
       orders = Orders.list_orders(new_params)
-      qualifier = get_qualifier(account, new_params, Map.get(params, "pickup_date"))
       conn
-      |> assign(:qualifier, qualifier)
+      |> assign(:normalized_params, new_params)
       |> render("index.html", orders: orders)
     end
   end
@@ -142,7 +141,6 @@ defmodule AssessmentWeb.OrderController do
   end
   defp normalize_create_params(_params, _account), do: {:error, :invalid_order}
 
-  defp get_date_today(), do: Date.to_iso8601(Date.utc_today())
   defp normalize_date(nil), do: {:ok, get_date_today() }
   defp normalize_date("all"), do: {:ok, :all}
   defp normalize_date("today"), do: {:ok, get_date_today() }
@@ -214,20 +212,14 @@ defmodule AssessmentWeb.OrderController do
 
   defp get_qualifier(
     account,
-    %{order_state_id: order_state_id} = params,
-    pickup_date) do
-      IO.inspect(pickup_date)
-      IO.inspect(params)
+    %{order_state_id: order_state_id, pickup_date: pickup_date} = params) do
       count =
         case account do
           %Courier{} -> 4
           %Pharmacy{} -> 4
           _ -> 3
         end
-      {:ok, pickup_date} = normalize_date(pickup_date)
-      IO.inspect(pickup_date)
-      IO.inspect(get_date_today())
-      today? = pickup_date == get_date_today()
+      today? = (get_date_today() == pickup_date)
       cond do
         Enum.count(params) > count ->
           "#{if today? do "Today's " else "" end}Matching"
