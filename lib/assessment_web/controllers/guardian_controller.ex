@@ -4,6 +4,19 @@ defmodule AssessmentWeb.GuardianController do
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.Guardian
 
+  def get_administrator(%Agent{} = agent) do
+    case agent.account_type do
+      "administrator" -> {:ok, agent.administrator}
+      _               -> {:error, :not_authorized}
+    end
+  end
+  def get_administrator(%Plug.Conn{} = conn) do
+    case conn.assigns.agent do
+      nil -> {:error, :not_authenticated}
+      agent -> get_administrator(agent)
+    end
+  end
+
   def get_account(%Agent{} = agent) do
     case agent.account_type do
       "administrator" -> {:ok, agent.administrator}
@@ -26,25 +39,6 @@ defmodule AssessmentWeb.GuardianController do
     else
       _ ->
         {:error, :not_authenticated}
-    end
-  end
-
-  def identify_administrator(%Agent{} = agent) do
-    identify_account(agent, "administrator")
-  end
-
-  def identify_courier(%Agent{} = agent) do
-    identify_account(agent, "courier")
-  end
-
-  def identify_pharmacy(%Agent{} = agent) do
-    identify_account(agent, "pharmacy")
-  end
-
-  defp identify_account(agent, account_type) do
-    case agent.account_type do
-      ^account_type -> {:ok, agent[String.to_atom(account_type)]}
-      _ -> {:error, :not_authorized}
     end
   end
 end

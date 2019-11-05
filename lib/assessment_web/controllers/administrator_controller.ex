@@ -49,7 +49,6 @@ defmodule AssessmentWeb.AdministratorController do
     else
       conn
       |> put_flash(:error, "Not authorized")
-      |> put_session(:request_path, conn.request_path)
       |> redirect(to: page_path(conn, :index))
       |> halt()
     end
