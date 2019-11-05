@@ -49,7 +49,7 @@ defmodule AssessmentWeb.PharmacyController do
     else
       conn
       |> put_flash(:error, "You must be logged in as an administrator to manage pharmacies.")
-      |> put_session(:request_path, conn.request_path)
+      |> put_session(:request_path, :ignore)
       |> redirect(to: session_path(conn, :new))
       |> halt()
     end

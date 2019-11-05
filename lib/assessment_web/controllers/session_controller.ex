@@ -46,6 +46,7 @@ defmodule AssessmentWeb.SessionController do
   defp get_redirect_path(conn) do
     case get_session(conn, :request_path) do
       nil -> page_path(conn, :index)
+      :ignore -> page_path(conn, :index)
       request_path -> request_path
     end
   end
