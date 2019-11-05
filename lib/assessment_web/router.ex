@@ -1,7 +1,9 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
   import Assessment.Utilities, only: [nilify_error: 1]
-  alias Guardian.Plug.Pipeline, as: GuardianPipeline
+  alias Guardian.Plug.LoadResource, as: Guardian_LoadResource
+  alias Guardian.Plug.Pipeline, as: Guardian_Pipeline
+  alias Guardian.Plug.VerifyHeader, as: Guardian_VerifyHeader
   alias Guardian.Plug.VerifySession, as: Guardian_VerifySession
   alias AssessmentWeb.Guardian
   alias AssessmentWeb.AuthErrorHandler
@@ -14,13 +16,9 @@ defmodule AssessmentWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug GuardianPipeline, module: Guardian, error_handler: AuthErrorHandler
+    plug Guardian_Pipeline, module: Guardian, error_handler: AuthErrorHandler
     plug Guardian_VerifySession
     plug :authenticate_agent
-  end
-
-  pipeline :api do
-    plug :accepts, ["json"]
   end
 
   scope "/", AssessmentWeb do
@@ -39,10 +37,21 @@ defmodule AssessmentWeb.Router do
     delete "/logout", SessionController, :delete
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", AssessmentWeb do
-  #   pipe_through :api
-  # end
+  pipeline :api do
+    plug :accepts, ["json", "csv"]
+    plug ProperCase.Plug.SnakeCaseParams
+    plug Guardian_Pipeline,
+      error_handler: AssessmentWeb.SessionController,
+      module: AssessmentWeb.Guardian
+    plug Guardian_VerifyHeader, realm: "Token"
+    plug Guardian_LoadResource, allow_blank: true
+  end
+
+  scope "/api", AssessmentWeb.Api do
+    pipe_through :api
+
+    get "/administrators",     AdministratorController, :index
+  end
 
   defp authenticate_agent(conn, _) do
     assign(conn, :agent, GuardianController.identify_agent(conn) |> nilify_error())
