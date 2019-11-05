@@ -4,8 +4,7 @@ defmodule AssessmentWeb.AdministratorController do
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
-  @ok :ok
-  @error :error
+  plug :authorize_admin_management
 
   def index(conn, _params) do
     administrators = Accounts.list_administrators()
@@ -19,27 +18,40 @@ defmodule AssessmentWeb.AdministratorController do
 
   def create(conn, %{"agent" => agent_params}) do
     case Accounts.create_administrator(agent_params) do
-      {@ok, %Agent{administrator: administrator}} ->
+      {:ok, %Agent{administrator: administrator}} ->
         conn
         |> put_flash(:info, "Administrator created successfully.")
         |> redirect(to: administrator_path(conn, :show, administrator))
-      {@error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, administrator} = Accounts.get_administrator(id) do
+    with {:ok, administrator} = Accounts.get_administrator(id) do
       render(conn, "show.html", administrator: administrator)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    with {@ok, administrator} = Accounts.get_administrator(id),
-         {@ok, _} = Accounts.delete_administrator(administrator) do
+    with {:ok, administrator} = Accounts.get_administrator(id),
+         {:ok, _} = Accounts.delete_administrator(administrator) do
       conn
       |> put_flash(:info, "Administrator deleted successfully.")
       |> redirect(to: administrator_path(conn, :index))
+    end
+  end
+
+  defp authorize_admin_management(conn, _) do
+    agent = conn.assigns.agent
+    if agent && agent.account_type == "administrator" do
+      conn
+    else
+      conn
+      |> put_flash(:error, "Not authorized")
+      |> put_session(:request_path, conn.request_path)
+      |> redirect(to: page_path(conn, :index))
+      |> halt()
     end
   end
 end
