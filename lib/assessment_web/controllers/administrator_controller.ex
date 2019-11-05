@@ -48,8 +48,9 @@ defmodule AssessmentWeb.AdministratorController do
       conn
     else
       conn
-      |> put_flash(:error, "not authorized")
-      |> redirect(to: page_path(conn, :index))
+      |> put_flash(:error, "You must be logged in as an administrator to manage administrators.")
+      |> put_session(:request_path, conn.request_path)
+      |> redirect(to: session_path(conn, :new))
       |> halt()
     end
   end

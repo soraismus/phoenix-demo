@@ -1,23 +1,8 @@
 defmodule AssessmentWeb.GuardianController do
   import Assessment.Utilities, only: [prohibit_nil: 1]
-  import AssessmentWeb.Router.Helpers, only: [page_path: 2]
-  import Phoenix.Controller, only: [put_flash: 3, redirect: 2]
-  import Plug.Conn, only: [halt: 1]
   alias Assessment.Accounts.Agent
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.Guardian
-
-  def authenticate_administrator(%Plug.Conn{} = conn, _) do
-    agent = conn.assigns.agent
-    if agent && agent.account_type == "administrator" do
-      conn
-    else
-      conn
-      |> put_flash(:error, "not authorized")
-      |> redirect(to: page_path(conn, :index))
-      |> halt()
-    end
-  end
 
   def get_account(%Agent{} = agent) do
     case agent.account_type do

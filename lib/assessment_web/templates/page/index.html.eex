@@ -7,6 +7,9 @@
     <h4>Resources</h4>
     <ul>
       <li>
+        <a href="<%= order_path(@conn, :index) %>">Orders</a>
+      </li>
+      <li>
         <a href="<%= administrator_path(@conn, :index) %>">Administrators</a>
       </li>
       <li>
@@ -17,9 +20,6 @@
       </li>
       <li>
         <a href="<%= patient_path(@conn, :index) %>">Patients</a>
-      </li>
-      <li>
-        <a href="<%= order_path(@conn, :index) %>">Orders</a>
       </li>
     </ul>
   </div>

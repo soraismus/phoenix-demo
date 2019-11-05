@@ -1,6 +1,5 @@
 defmodule AssessmentWeb.PharmacyController do
   use AssessmentWeb, :controller
-  import AssessmentWeb.GuardianController, only: [authenticate_administrator: 2]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
@@ -40,6 +39,19 @@ defmodule AssessmentWeb.PharmacyController do
       conn
       |> put_flash(:info, "Pharmacy deleted successfully.")
       |> redirect(to: pharmacy_path(conn, :index))
+    end
+  end
+
+  defp authenticate_administrator(conn, _) do
+    agent = conn.assigns.agent
+    if agent && agent.account_type == "administrator" do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You must be logged in as an administrator to manage pharmacies.")
+      |> put_session(:request_path, conn.request_path)
+      |> redirect(to: session_path(conn, :new))
+      |> halt()
     end
   end
 end
