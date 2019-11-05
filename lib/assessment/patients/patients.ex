@@ -4,8 +4,7 @@ defmodule Assessment.Patients do
   """
 
   import Ecto.Query, warn: false
-  alias Assessment.Repo
-
+  alias Assessment.{Repo,Utilities}
   alias Assessment.Patients.Patient
 
   @doc """
@@ -24,18 +23,20 @@ defmodule Assessment.Patients do
   @doc """
   Gets a single patient.
 
-  Raises `Ecto.NoResultsError` if the Patient does not exist.
-
   ## Examples
 
-      iex> get_patient!(123)
-      %Patient{}
+      iex> get_patient(123)
+      {:ok, %Patient{}}
 
-      iex> get_patient!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_patient(456)
+      {:error, :no_resource}
 
   """
-  def get_patient!(id), do: Repo.get!(Patient, id)
+  def get_patient(id) do
+    Patient
+    |> Repo.get(id)
+    |> Utilities.prohibit_nil(:no_resource)
+  end
 
   @doc """
   Creates a patient.

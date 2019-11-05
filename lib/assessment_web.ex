@@ -40,18 +40,6 @@ defmodule AssessmentWeb do
       import AssessmentWeb.Router.Helpers
       import AssessmentWeb.ErrorHelpers
       import AssessmentWeb.Gettext
-
-      def is_administrator?(agent) do
-        !is_nil(agent) && agent.account_type == "administrator"
-      end
-
-      def is_courier?(agent) do
-        !is_nil(agent) && agent.account_type == "courier"
-      end
-
-      def is_pharmacy?(agent) do
-        !is_nil(agent) && agent.account_type == "pharmacy"
-      end
     end
   end
 

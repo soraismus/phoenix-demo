@@ -28,17 +28,18 @@ defmodule AssessmentWeb.PatientController do
   end
 
   def show(conn, %{"id" => id}) do
-    patient = Patients.get_patient!(id)
-    render(conn, "show.html", patient: patient)
+    with {:ok, patient} <- Patients.get_patient(id) do
+      render(conn, "show.html", patient: patient)
+    end
   end
 
   def delete(conn, %{"id" => id}) do
-    patient = Patients.get_patient!(id)
-    {:ok, _patient} = Patients.delete_patient(patient)
-
-    conn
-    |> put_flash(:info, "Patient deleted successfully.")
-    |> redirect(to: patient_path(conn, :index))
+    with {:ok, patient} <- Patients.get_patient(id),
+         {:ok, _patient} = Patients.delete_patient(patient) do
+      conn
+      |> put_flash(:info, "Patient deleted successfully.")
+      |> redirect(to: patient_path(conn, :index))
+    end
   end
 
   defp authenticate_administrator(conn, _) do

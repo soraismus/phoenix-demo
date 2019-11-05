@@ -1,7 +1,9 @@
 defmodule Assessment.Utilities do
+  alias Assessment.Utilities.ToJson
+
   @type ok_or_error(a, b) :: {:ok, a} | {:error, b}
   @type value_or_nil(a) :: a | nil
-  @type json :: Map.t(binary(), binary()) | list(Map.t(binary(), binary()))
+  @type json :: binary() | Map.t(binary(), json) | list(json)
 
   @ok :ok
   @error :error
@@ -69,12 +71,23 @@ defmodule Assessment.Utilities do
     |> Enum.reduce(
           %{},
           fn ({k, v}, memo) ->
-            Map.put(memo, to_string(k), to_string(v))
+            try do
+              Map.put(memo, to_string(k), ToJson.to_json(v))
+            rescue
+              Protocol.UndefinedError ->
+                Map.put(memo, to_string(k), to_string(v))
+            end
           end)
   end
 
   defprotocol ToJson do
+    @type json :: binary() | Map.t(binary(), json) | list(json)
+    @spec to_json(term()) :: json
     def to_json(value)
+  end
+
+  defimpl ToJson, for: Atom do
+    def to_json(atom), do: to_string(atom)
   end
 
   defimpl ToJson, for: List do
@@ -83,5 +96,13 @@ defmodule Assessment.Utilities do
       structs
       |> Enum.map(&ToJson.to_json/1)
     end
+  end
+
+  defimpl ToJson, for: Number do
+    def to_json(number), do: to_string(number)
+  end
+
+  defimpl ToJson, for: String do
+    def to_json(string), do: string
   end
 end

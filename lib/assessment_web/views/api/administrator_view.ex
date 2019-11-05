@@ -12,9 +12,7 @@ defmodule AssessmentWeb.Api.AdministratorView do
   end
 
   def render("show.json", %{administrator: administrator}) do
-    %{
-      administrator: ToJson.to_json(administrator),
-    }
+    %{administrator: ToJson.to_json(administrator)}
   end
 
   defimpl ToJson, for: Administrator do

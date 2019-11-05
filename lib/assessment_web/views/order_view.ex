@@ -20,6 +20,8 @@ defmodule AssessmentWeb.OrderView do
     time |> Time.to_iso8601() |> String.slice(0..4)
   end
 
+  def get_default_time(), do: {13, 0, 0}
+
   def get_qualifier(conn, %{order_state_id: order_state_id, pickup_date: pickup_date} = params) do
     count =
       case conn.assigns.agent.account_type do
@@ -40,7 +42,9 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
-  def get_default_time(), do: {13, 0, 0}
+  def is_pharmacy?(agent) do
+    !is_nil(agent) && agent.account_type == "pharmacy"
+  end
 
   def next_order_state(conn) do
     case conn.params["order_state"] do
