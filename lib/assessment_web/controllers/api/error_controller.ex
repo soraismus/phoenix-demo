@@ -13,6 +13,33 @@ defmodule AssessmentWeb.Api.ErrorController do
     |> json(%{errors: %{resource => ["does not exist"]}})
   end
 
+  def call(conn, {:error, %{error: :already_has_order_state} = errors}) do
+    resource = errors.resource
+    description = errors.description
+    conn
+    |> put_status(400)
+    |> json(%{errors: %{resource => ["is already #{description}"]}})
+  end
+
+  defp check_elibility(order, order_state_description) do
+    cond do
+      order.order_state_description == order_state_description ->
+        {:error, %{ error: :already_has_order_state,
+                    order_state_description: order_state_description
+                  }}
+      order.order_state_description == @canceled ->
+        {:error, %{ error: :already_canceled,
+                    order_state_description: order_state_description
+                  }}
+      order.order_state_description == @delivered ->
+        {:error, %{ error: :already_delivered,
+                    order_state_description: order_state_description
+                  }}
+      true ->
+        {:ok, {order, order_state_description}}
+    end
+  end
+
   defp translate_error({msg, opts}) do
     # When using gettext, we typically pass the strings we want
     # to translate as a static argument:
