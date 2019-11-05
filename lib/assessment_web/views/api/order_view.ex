@@ -5,6 +5,10 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("cancel.json", %{order: order}) do
+    %{canceled: %{order: ToJson.to_json(order)}}
+  end
+
   def render("create.json", %{order: order}) do
     %{created: %{order: ToJson.to_json(order)}}
   end
@@ -22,15 +26,19 @@ defmodule AssessmentWeb.Api.OrderView do
 
   defimpl ToJson, for: Order do
     def to_json(%Order{} = order) do
-      fields = ~w(id patient pharmacy courier order_state pickup_date pickup_time)a
+      fields = ~w(id patient pharmacy courier pickup_date pickup_time)a
       order
       |> Utilities.to_json(fields)
+      |> Map.put("order_state", to_description(order.order_state_id))
     end
-  end
-
-  defimpl ToJson, for: OrderState do
-    def to_json(%OrderState{} = order_state) do
-      order_state.description
+    defp to_description(order_state_id) do
+      case order_state_id do
+        1 -> "active"
+        2 -> "canceled"
+        3 -> "delivered"
+        4 -> "undeliverable"
+        _ -> raise "invalid order state id"
+      end
     end
   end
 

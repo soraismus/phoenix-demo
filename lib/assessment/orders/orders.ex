@@ -104,7 +104,7 @@ defmodule Assessment.Orders do
   end
 
   @doc """
-  Creates a order.
+  Creates an order.
 
   ## Examples
 
@@ -126,7 +126,7 @@ defmodule Assessment.Orders do
   end
 
   @doc """
-  Updates a order.
+  Updates an order.
 
   ## Examples
 
@@ -141,6 +141,25 @@ defmodule Assessment.Orders do
     order
     |> Order.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Updates an order's order_state.
+
+  ## Examples
+
+      iex> update_order_state(order, order_state)
+      {:ok, %Order{}}
+
+      iex> update_order_state(order, %{field: bad_value})
+      {:error, :invalid_order_state}
+
+  """
+  def update_order_state(%Order{} = order, order_state_description) do
+    order
+    |> Order.changeset(%{order_state_description: order_state_description})
+    |> Repo.update()
+    |> Utilities.map_error(fn (_) -> :invalid_order_state end)
   end
 
   @doc """

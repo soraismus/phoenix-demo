@@ -1,11 +1,21 @@
 defmodule AssessmentWeb.Api.OrderController do
   use AssessmentWeb, :controller
+  import Assessment.Utilities, only: [error_data: 1]
   alias Assessment.Orders
 
   action_fallback(AssessmentWeb.Api.ErrorController)
 
+  def cancel(conn, %{"id" => id}) do
+    data = %{resource: "order ##{id}"}
+    with {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, new_order} <- Orders.update_order_state(order, "canceled") do
+      conn
+      |> put_status(:created)
+      |> render("cancel.json", order: new_order)
+    end
+  end
+
   def create(conn, %{"order" => params}) do
-    # pickup_date pickup_time patient_id pharmacy_id order_state_id courier_id
     with {:ok, order} <- Orders.create_order(params) do
       conn
       |> put_status(:created)
@@ -19,7 +29,8 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, order} <- Orders.get_order(id) do
+    data = %{resource: "order ##{id}"}
+    with {:ok, order} <- Orders.get_order(id) |> error_data(data).() do
       conn
       |> render("show.json", order: order)
     end

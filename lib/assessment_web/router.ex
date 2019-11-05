@@ -50,25 +50,27 @@ defmodule AssessmentWeb.Router do
   scope "/api", AssessmentWeb.Api do
     pipe_through :api
 
-    get "/administrators",     AdministratorController, :index
-    get "/administrators/:id", AdministratorController, :show
-    post "/administrators",    AdministratorController, :create
+    get    "/administrators",     AdministratorController, :index
+    get    "/administrators/:id", AdministratorController, :show
+    post   "/administrators",     AdministratorController, :create
 
-    get "/couriers",           CourierController,       :index
-    get "/couriers/:id",       CourierController,       :show
-    post "/couriers",          CourierController,       :create
+    get    "/couriers",           CourierController,       :index
+    get    "/couriers/:id",       CourierController,       :show
+    post   "/couriers",           CourierController,       :create
 
-    get "/orders",             OrderController,         :index
-    get "/orders/:id",         OrderController,         :show
-    post "/orders",            OrderController,         :create
+    delete "/orders/:id",         OrderController,         :cancel
+    get    "/orders",             OrderController,         :index
+    get    "/orders/:id",         OrderController,         :show
+    post   "/orders",             OrderController,         :create
+    post   "/orders/:id/cancel",  OrderController,         :cancel
 
-    get "/patients",           PatientController,       :index
-    get "/patients/:id",       PatientController,       :show
-    post "/patients",          PatientController,       :create
+    get    "/patients",           PatientController,       :index
+    get    "/patients/:id",       PatientController,       :show
+    post   "/patients",           PatientController,       :create
 
-    get "/pharmacies",         PharmacyController,      :index
-    get "/pharmacies/:id",     PharmacyController,      :show
-    post "/pharmacies",        PharmacyController,       :create
+    get    "/pharmacies",         PharmacyController,      :index
+    get    "/pharmacies/:id",     PharmacyController,      :show
+    post   "/pharmacies",         PharmacyController,      :create
   end
 
   defp authenticate_agent(conn, _) do
