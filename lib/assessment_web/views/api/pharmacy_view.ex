@@ -4,6 +4,10 @@ defmodule AssessmentWeb.Api.PharmacyView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("create.json", %{pharmacy: pharmacy}) do
+    %{created: %{pharmacy: ToJson.to_json(pharmacy)}}
+  end
+
   def render("index.json", %{pharmacies: pharmacies}) do
     %{
       count: length(pharmacies),

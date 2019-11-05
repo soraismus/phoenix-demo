@@ -120,6 +120,9 @@ defmodule Assessment.Orders do
     |> Order.changeset(attrs)
     |> Changeset.put_change(:order_state_id, @active_order_state_id)
     |> Repo.insert()
+    |> Utilities.map_value(fn (order) ->
+          Repo.preload(order, [:patient, :pharmacy, :courier, :order_state])
+        end)
   end
 
   @doc """

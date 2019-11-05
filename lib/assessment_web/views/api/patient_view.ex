@@ -4,6 +4,10 @@ defmodule AssessmentWeb.Api.PatientView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("create.json", %{patient: patient}) do
+    %{created: %{patient: ToJson.to_json(patient)}}
+  end
+
   def render("index.json", %{patients: patients}) do
     %{
       count: length(patients),

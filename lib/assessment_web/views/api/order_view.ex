@@ -5,6 +5,10 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("create.json", %{order: order}) do
+    %{created: %{order: ToJson.to_json(order)}}
+  end
+
   def render("index.json", %{orders: orders}) do
     %{
       count: length(orders),

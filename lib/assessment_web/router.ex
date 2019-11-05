@@ -60,12 +60,15 @@ defmodule AssessmentWeb.Router do
 
     get "/orders",             OrderController,         :index
     get "/orders/:id",         OrderController,         :show
+    post "/orders",            OrderController,         :create
 
     get "/patients",           PatientController,       :index
     get "/patients/:id",       PatientController,       :show
+    post "/patients",          PatientController,       :create
 
     get "/pharmacies",         PharmacyController,      :index
     get "/pharmacies/:id",     PharmacyController,      :show
+    post "/pharmacies",        PharmacyController,       :create
   end
 
   defp authenticate_agent(conn, _) do
