@@ -3,6 +3,7 @@ defmodule AssessmentWeb.OrderController do
 
   import Assessment.Utilities,
     only: [error_data: 1, get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
+  import AssessmentWeb.GuardianController, only: [get_account: 1]
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
@@ -111,21 +112,6 @@ defmodule AssessmentWeb.OrderController do
       |> put_session(:request_path, conn.request_path)
       |> redirect(to: session_path(conn, :new))
       |> halt()
-    end
-  end
-
-  defp get_account(%Agent{} = agent) do
-    case agent.account_type do
-      "administrator" -> {:ok, agent.administrator}
-      "courier"       -> {:ok, agent.courier}
-      "pharmacy"      -> {:ok, agent.pharmacy}
-      _               -> {:error, :invalid_account_type}
-    end
-  end
-  defp get_account(%Plug.Conn{} = conn) do
-    case conn.assigns.agent do
-      nil -> {:error, :not_authenticated}
-      agent -> get_account(agent)
     end
   end
 
@@ -290,17 +276,14 @@ defmodule AssessmentWeb.OrderController do
     use AssessmentWeb, :controller
 
     def call(conn, {:error, %{error: (%Changeset{} = changeset), view: view} = data}) do
-      render(conn, view, changeset: changeset, order: Map.get(data, :order))
+      conn
+      |> render(view, changeset: changeset, order: Map.get(data, :order))
     end
 
     def call(conn, {:error, %{error: :not_authorized, msg: msg}}) do
       conn
       |> put_flash(:error, msg)
       |> redirect(to: page_path(conn, :index))
-    end
-
-    def call(conn, {:error, {:update_order, {%Order{} = order, %Ecto.Changeset{} = changeset}}}) do
-      render(conn, "edit.html", order: order, changeset: changeset)
     end
 
     def call(conn, {:error, :invalid_account_type}) do

@@ -4,7 +4,7 @@ defmodule AssessmentWeb.GuardianController do
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.Guardian
 
-  defp get_account(%Agent{} = agent) do
+  def get_account(%Agent{} = agent) do
     case agent.account_type do
       "administrator" -> {:ok, agent.administrator}
       "courier"       -> {:ok, agent.courier}
@@ -12,7 +12,7 @@ defmodule AssessmentWeb.GuardianController do
       _               -> {:error, :invalid_account_type}
     end
   end
-  defp get_account(%Plug.Conn{} = conn) do
+  def get_account(%Plug.Conn{} = conn) do
     case conn.assigns.agent do
       nil -> {:error, :not_authenticated}
       agent -> get_account(agent)

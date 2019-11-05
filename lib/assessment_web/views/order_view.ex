@@ -1,6 +1,6 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
-  alias Assessment.Utilities
+  import Assessment.Utilities, only: [get_date_today: 0]
 
   def format_time(%Time{} = time) do
     time |> Time.to_iso8601() |> String.slice(0..4)
@@ -14,7 +14,7 @@ defmodule AssessmentWeb.OrderView do
         "pharmacy" -> 4
         _ -> 3
       end
-    today? = (Utilities.get_date_today() == pickup_date)
+    today? = (get_date_today() == pickup_date)
     cond do
       Enum.count(params) > count ->
         "#{if today? do "Today's " else "" end}Matching"
@@ -26,4 +26,6 @@ defmodule AssessmentWeb.OrderView do
         "#{if today? do "Today's " else "" end}Matching"
     end
   end
+
+  def get_time_now(), do: Time.utc_now() |> format_time()
 end
