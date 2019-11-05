@@ -6,6 +6,7 @@ defmodule AssessmentWeb.OrderController do
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
+  alias Ecto.Changeset
 
   plug :authorize_order_management
 
@@ -26,49 +27,57 @@ defmodule AssessmentWeb.OrderController do
     render(conn, "new.html", changeset: changeset)
   end
 
+  defp error_data(%{} = data) do
+    fn (ok_or_error) ->
+      map_error(ok_or_error, fn (value) -> Map.put(data, :error, value) end)
+    end
+  end
+
   def create(conn, %{"order" => order_params}) do
+    data = %{msg: "Not authorized to create an order", view: "new.html"}
     with {:ok, account} <- get_account(conn),
-         {:ok, new_params} <- normalize_create_params(order_params, account) do
-      case account do
-        %Administrator{} ->
-          with {:ok, order} <- Orders.create_order(new_params) do
-            conn
-            |> put_flash(:info, "Order created successfully.")
-            |> redirect(to: order_path(conn, :show, order))
-          end
-        %Pharmacy{} ->
-          with {:ok, order} <- Orders.create_order(new_params) do
-            conn
-            |> put_flash(:info, "Order created successfully.")
-            |> redirect(to: order_path(conn, :show, order))
-          end
-        _ ->
-          conn
-          |> put_flash(:error, "Not authorized to create an order")
-          |> redirect(to: page_path(conn, :index))
-      end
+         {:ok, new_params} <- normalize_create_params(order_params, account),
+         {:ok, _} <- authorize_admin_or_pharmacy(account) |> error_data(data).(),
+         {:ok, order} <- Orders.create_order(new_params) |> error_data(data).() do
+      conn
+      |> put_flash(:info, "Order created successfully.")
+      |> redirect(to: order_path(conn, :show, order))
+    end
+  end
+
+  defp add_msg(msg) do
+    fn ({:error, _label} = error) ->
+      map_error(error, fn (label) -> {label, msg} end)
+    end
+  end
+
+  defp authorize_admin_or_pharmacy(account) do
+    case account do
+      %Administrator{} -> {:ok, account}
+      %Pharmacy{} -> {:ok, account}
+      _ -> {:error, :not_authorized}
     end
   end
 
   def show(conn, %{"id" => id}) do
+    data = %{msg: "Invalid order id"}
     with {:ok, account} <- get_account(conn),
-         {:ok, order} <- Orders.get_order(id) do
-      case account do
-        %Administrator{} ->
-          render(conn, "show.html", order: order)
-        %Courier{} ->
-          if account.id == order.courier_id do
-            render(conn, "show.html", order: order)
-          else
-            {:error, :not_authorized}
-          end
-        %Pharmacy{} ->
-          if account.id == order.pharmacy_id do
-            render(conn, "show.html", order: order)
-          else
-            {:error, :not_authorized}
-          end
-      end
+         {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, _} <- authorize(account, order, "Not authorized to view order") do
+      render(conn, "show.html", order: order)
+    end
+  end
+
+  defp authorize(account, order, msg) do
+    authorized? = case account do
+      %Administrator{} -> true
+      %Courier{} -> account.id == order.courier_id
+      %Pharmacy{} -> account.id == order.pharmacy_id
+    end
+    if authorized? do
+      {:ok, account}
+    else
+      {:error, %{error: :not_authorized, msg: msg}}
     end
   end
 
@@ -80,43 +89,48 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def update(conn, %{"id" => id, "order" => order_params}) do
-    with {:ok, account} <- get_account(conn),
-         {:ok, order} <- Orders.get_order(id),
-         {:ok, new_params} <- normalize_edit_params(order_params, account) do
-      case account do
-        %Administrator{} ->
-          with {:ok, order} <- Orders.update_order(order, new_params) do
-            conn
-            |> put_flash(:info, "Order updated successfully.")
-            |> redirect(to: order_path(conn, :show, order))
-          end
-        %Courier{} ->
-          if account.id == order.courier_id do
-            with {:ok, order} <- Orders.update_order(order, new_params) do
-              conn
-              |> put_flash(:info, "Order updated successfully.")
-              |> redirect(to: order_path(conn, :show, order))
-            end
-          else
-            {:error, :not_authorized}
-          end
-        %Pharmacy{} ->
-          if account.id == order.pharmacy_id do
-            with {:ok, order} <- Orders.update_order(order, new_params) do
-              conn
-              |> put_flash(:info, "Order updated successfully.")
-              |> redirect(to: order_path(conn, :show, order))
-            end
-          else
-            {:error, :not_authorized}
-          end
+    data = %{msg: "Invalid order id", view: "edit.html"}
+    authorize = fn (account, order) ->
+        authorized? = case account do
+          %Administrator{} -> true
+          %Courier{} -> account.id == order.courier_id
+          %Pharmacy{} -> account.id == order.pharmacy_id
+        end
+        if authorized? do
+          {:ok, account}
+        else
+          {:error, %{error: :not_authorized, msg: "Not authorized to view order"}}
+        end
       end
+    with {:ok, account} <- get_account(conn),
+         {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, _} <- authorize.(account, order),
+         {:ok, new_params} <- normalize_edit_params(order_params, account),
+         {:ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
+      conn
+      |> put_flash(:info, "Order updated successfully.")
+      |> redirect(to: order_path(conn, :show, order))
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:ok, order} <- Orders.get_order(id),
-         {:ok, _order} = Orders.delete_order(order) do
+    data = %{msg: "Invalid order id"}
+    authorize = fn (account, order) ->
+        authorized? = case account do
+          %Administrator{} -> true
+          %Courier{} -> account.id == order.courier_id
+          %Pharmacy{} -> account.id == order.pharmacy_id
+        end
+        if authorized? do
+          {:ok, account}
+        else
+          {:error, %{error: :not_authorized, msg: "Not authorized to delete order"}}
+        end
+      end
+    with {:ok, account} <- get_account(conn),
+         {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, _} <- authorize.(account, order),
+         {:ok, _order} <- Orders.delete_order(order) do
       conn
       |> put_flash(:info, "Order deleted successfully.")
       |> redirect(to: order_path(conn, :index))
@@ -310,8 +324,14 @@ defmodule AssessmentWeb.OrderController do
   defmodule ErrorController do
     use AssessmentWeb, :controller
 
-    def call(conn, {:error, {:create_order, %Ecto.Changeset{} = changeset}}) do
-      render(conn, "new.html", changeset: changeset)
+    def call(conn, {:error, %{error: (%Changeset{} = changeset), view: view}}) do
+      render(conn, view, changeset: changeset)
+    end
+
+    def call(conn, {:error, %{error: :not_authorized, msg: msg}}) do
+      conn
+      |> put_flash(:error, msg)
+      |> redirect(to: page_path(conn, :index))
     end
 
     def call(conn, {:error, {:update_order, {%Order{} = order, %Ecto.Changeset{} = changeset}}}) do
@@ -383,5 +403,12 @@ defmodule AssessmentWeb.OrderController do
       |> put_flash(:error, "Not authorized")
       |> redirect(to: page_path(conn, :index))
     end
+
+    def call(conn, {:error, {:not_authorized, msg}}) do
+      conn
+      |> put_flash(:error, msg)
+      |> redirect(to: page_path(conn, :index))
+    end
+
   end
 end

@@ -92,7 +92,7 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> get_order(456)
-      {:error, %Order{}}
+      {:error, :no_resource}
 
   """
   def get_order(id) do
@@ -112,7 +112,7 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> create_order(%{field: bad_value})
-      {:error, {:create_order, %Ecto.Changeset{}}}
+      {:error, %Ecto.Changeset{}}
 
   """
   def create_order(attrs \\ %{}) do
@@ -120,7 +120,6 @@ defmodule Assessment.Orders do
     |> Order.changeset(attrs)
     |> Changeset.put_change(:order_state_id, @active_order_state_id)
     |> Repo.insert()
-    |> Map.map_error(fn (changeset) -> {:create_order, changeset} end)
   end
 
   @doc """
@@ -132,16 +131,13 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> update_order(order, %{field: bad_value})
-      {:error, {:update_order, {%Order{}, %Ecto.Changeset{}}}}
+      {:error, %Ecto.Changeset{}}
 
   """
   def update_order(%Order{} = order, attrs) do
     order
     |> Order.changeset(attrs)
     |> Repo.update()
-    |> Utilities.map_error(fn
-          (changeset) -> {:update_order, {order, changeset}}
-        end)
   end
 
   @doc """
@@ -153,15 +149,11 @@ defmodule Assessment.Orders do
       {:ok, %Order{}}
 
       iex> delete_order(order)
-      {:error, {:delete_order, {%Order{}, %Ecto.Changeset{}}}}
+      {:error, %Ecto.Changeset{}}
 
   """
   def delete_order(%Order{} = order) do
-    order
-    |> Repo.delete()
-    |> Utilities.map_error(fn
-          (changeset) -> {:delete_order, {order, changeset}}
-        end)
+    Repo.delete(order)
   end
 
   @doc """
