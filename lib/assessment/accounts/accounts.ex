@@ -287,6 +287,9 @@ defmodule Assessment.Accounts do
     |> Changeset.cast_assoc(key, with: fun)
     |> Changeset.cast_assoc(:credential, with: &Credential.changeset/2)
     |> Repo.insert()
+    |> Utilities.map_value(fn (%{^key => account, username: username} = agent) ->
+          %{agent | key => %{account | username: username}}
+        end)
   end
 
   defp delete_account(%{agent: %Agent{}} = account) do

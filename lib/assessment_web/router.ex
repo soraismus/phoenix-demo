@@ -56,6 +56,7 @@ defmodule AssessmentWeb.Router do
 
     get "/couriers",           CourierController,       :index
     get "/couriers/:id",       CourierController,       :show
+    post "/couriers",          CourierController,       :create
 
     get "/orders",             OrderController,         :index
     get "/orders/:id",         OrderController,         :show

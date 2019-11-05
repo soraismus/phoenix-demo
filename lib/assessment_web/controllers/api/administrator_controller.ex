@@ -1,29 +1,33 @@
 defmodule AssessmentWeb.Api.AdministratorController do
   use AssessmentWeb, :controller
+  import Assessment.Utilities, only: [error_data: 1]
   alias Assessment.Accounts
-  alias Assessment.Accounts.Agent
 
   action_fallback(AssessmentWeb.Api.ErrorController)
 
-  def create(conn, %{"administrator" => %{"username" => u, "password" => p, "email" => e}}) do
-    agent_params =
+  def create(conn, %{"administrator" => params}) do
+    params =
       %{}
-      |> Map.put("username", u)
-      |> Map.put("credential", %{"password" => p})
-      |> Map.put("administrator", %{"email" => e})
-    with {:ok, agent} <- Accounts.create_administrator(agent_params) do
-      render(conn, "create.json", administrator: agent.administrator)
+      |> Map.put("username", Map.get(params, "username"))
+      |> Map.put("credential", Map.take(params, ["password"]))
+      |> Map.put("administrator", Map.take(params, ["email"]))
+    with {:ok, agent} <- Accounts.create_administrator(params) do
+      conn
+      |> put_status(:created)
+      |> render("create.json", administrator: agent.administrator)
     end
   end
 
   def index(conn, _params) do
-    administrators = Accounts.list_administrators()
-    render(conn, "index.json", administrators: administrators)
+    conn
+    |> render("index.json", administrators: Accounts.list_administrators())
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, administrator} <- Accounts.get_administrator(id) do
-      render(conn, "show.json", administrator: administrator)
+    data = %{resource: "administrator ##{id}"}
+    with {:ok, administrator} <- Accounts.get_administrator(id) |> error_data(data).() do
+      conn
+      |> render("show.json", administrator: administrator)
     end
   end
 end

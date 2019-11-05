@@ -2,7 +2,15 @@ defmodule AssessmentWeb.Api.ErrorController do
   use AssessmentWeb, :controller
 
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
-    json(conn, %{errors: translate_errors(changeset)})
+    conn
+    |> put_status(400)
+    |> json(%{errors: translate_errors(changeset)})
+  end
+
+  def call(conn, {:error, %{error: :no_resource, resource: resource}}) do
+    conn
+    |> put_status(:not_found)
+    |> json(%{errors: %{resource => ["does not exist"]}})
   end
 
   defp translate_error({msg, opts}) do

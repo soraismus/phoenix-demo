@@ -4,6 +4,10 @@ defmodule AssessmentWeb.Api.CourierView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("create.json", %{courier: courier}) do
+    %{created: %{courier: ToJson.to_json(courier)}}
+  end
+
   def render("index.json", %{couriers: couriers}) do
     %{
       count: length(couriers),
