@@ -35,7 +35,7 @@
 
   <div class="form-group">
     <%= label f, :pickup_time, class: "control-label" %>
-    <%= time_select f, :pickup_time, value: Time.utc_now(), class: "form-control" %>
+    <%= time_select f, :pickup_time, value: get_default_time(), class: "form-control" %>
     <%= error_tag f, :pickup_time %>
   </div>
 

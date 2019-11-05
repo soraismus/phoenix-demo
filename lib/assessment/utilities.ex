@@ -24,7 +24,13 @@ defmodule Assessment.Utilities do
   end
 
   @spec get_date_today() :: binary()
-  def get_date_today(), do: Date.to_iso8601(Date.utc_today())
+  def get_date_today() do
+    :calendar.local_time()
+    |> elem(0)
+    |> Date.from_erl()
+    |> elem(1)
+    |> Date.to_iso8601()
+  end
 
   @spec map_error(ok_or_error(a, b), (b -> c)) :: ok_or_error(a, c)
         when a: var, b: var, c: var

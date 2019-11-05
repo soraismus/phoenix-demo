@@ -1,6 +1,6 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
-  import Assessment.Utilities, only: [get_date_today: 0]
+  import Assessment.Utilities, only: [get_date_today: 0, nilify_error: 1]
 
   def format_time(%Time{} = time) do
     time |> Time.to_iso8601() |> String.slice(0..4)
@@ -27,5 +27,5 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
-  def get_time_now(), do: Time.utc_now() |> format_time()
+  def get_default_time(), do: {13, 0, 0}
 end
