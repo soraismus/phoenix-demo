@@ -13,11 +13,19 @@ defmodule AssessmentWeb.Api.OrderView do
     %{created: %{order: ToJson.to_json(order)}}
   end
 
+  def render("deliver.json", %{order: order}) do
+    %{delivered: %{order: ToJson.to_json(order)}}
+  end
+
   def render("index.json", %{orders: orders}) do
     %{
       count: length(orders),
       orders: ToJson.to_json(orders),
     }
+  end
+
+  def render("mark_undeliverable.json", %{order: order}) do
+    %{undeliverable: %{order: ToJson.to_json(order)}}
   end
 
   def render("show.json", %{order: order}) do
@@ -46,7 +54,6 @@ defmodule AssessmentWeb.Api.OrderView do
     def to_json(%Time{} = time) do
       format_time(time)
     end
-
     defp format_time(%Time{} = time) do
       time |> Time.to_iso8601() |> String.slice(0..4)
     end

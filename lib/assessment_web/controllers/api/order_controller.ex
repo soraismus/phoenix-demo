@@ -10,7 +10,6 @@ defmodule AssessmentWeb.Api.OrderController do
     with {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
          {:ok, new_order} <- Orders.update_order_state(order, "canceled") do
       conn
-      |> put_status(:created)
       |> render("cancel.json", order: new_order)
     end
   end
@@ -23,9 +22,27 @@ defmodule AssessmentWeb.Api.OrderController do
     end
   end
 
+  def deliver(conn, %{"id" => id}) do
+    data = %{resource: "order ##{id}"}
+    with {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, new_order} <- Orders.update_order_state(order, "delivered") do
+      conn
+      |> render("deliver.json", order: new_order)
+    end
+  end
+
   def index(conn, _params) do
     orders = Orders.list_orders(%{})
     conn |> render("index.json", orders: orders)
+  end
+
+  def mark_undeliverable(conn, %{"id" => id}) do
+    data = %{resource: "order ##{id}"}
+    with {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
+         {:ok, new_order} <- Orders.update_order_state(order, "undeliverable") do
+      conn
+      |> render("mark_undeliverable.json", order: new_order)
+    end
   end
 
   def show(conn, %{"id" => id}) do

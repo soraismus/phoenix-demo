@@ -63,6 +63,8 @@ defmodule AssessmentWeb.Router do
     get    "/orders/:id",         OrderController,         :show
     post   "/orders",             OrderController,         :create
     post   "/orders/:id/cancel",  OrderController,         :cancel
+    post   "/orders/:id/deliver", OrderController,         :deliver
+    post   "/orders/:id/mark_undeliverable", OrderController, :mark_undeliverable
 
     get    "/patients",           PatientController,       :index
     get    "/patients/:id",       PatientController,       :show
