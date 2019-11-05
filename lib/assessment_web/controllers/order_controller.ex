@@ -2,7 +2,7 @@ defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
   import Assessment.Utilities,
-    only: [get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
+    only: [error_data: 1, get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
   alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
@@ -27,12 +27,6 @@ defmodule AssessmentWeb.OrderController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  defp error_data(%{} = data) do
-    fn (ok_or_error) ->
-      map_error(ok_or_error, fn (value) -> Map.put(data, :error, value) end)
-    end
-  end
-
   def create(conn, %{"order" => order_params}) do
     data = %{msg: "Not authorized to create an order", view: "new.html"}
     with {:ok, account} <- get_account(conn),
@@ -42,12 +36,6 @@ defmodule AssessmentWeb.OrderController do
       conn
       |> put_flash(:info, "Order created successfully.")
       |> redirect(to: order_path(conn, :show, order))
-    end
-  end
-
-  defp add_msg(msg) do
-    fn ({:error, _label} = error) ->
-      map_error(error, fn (label) -> {label, msg} end)
     end
   end
 
