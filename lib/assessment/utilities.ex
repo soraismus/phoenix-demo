@@ -1,19 +1,22 @@
 defmodule Assessment.Utilities do
-  @ok :ok
-  @error :error
-
   @type ok_or_error(a, b) :: {:ok, a} | {:error, b}
   @type value_or_nil(a) :: a | nil
 
-  @spec bind_error(ok_or_error(a, b), (b -> ok_or_error(a, c))) :: ok_or_error(a, c) when a: var, b: var, c: var
+  @ok :ok
+  @error :error
+
+  @spec bind_error(ok_or_error(a, b), (b -> ok_or_error(a, c))) :: ok_or_error(a, c)
+        when a: var, b: var, c: var
   def bind_error({@ok, value}, _fun), do: {@ok, value}
   def bind_error({@error, value}, fun), do: fun.(value)
 
-  @spec bind_value(ok_or_error(a, b), (a -> ok_or_error(c, b))) :: ok_or_error(c, b) when a: var, b: var, c: var
+  @spec bind_value(ok_or_error(a, b), (a -> ok_or_error(c, b))) :: ok_or_error(c, b)
+        when a: var, b: var, c: var
   def bind_value({@ok, value}, fun), do: fun.(value)
   def bind_value({@error, value}, _fun), do: {@error, value}
 
-  @spec error_data(map()) :: (ok_or_error(a, b) -> ok_or_error(a, %{error: b})) when a: var, b: var, c: var
+  @spec error_data(map()) :: (ok_or_error(a, b) -> ok_or_error(a, %{error: b}))
+        when a: var, b: var, c: var
   def error_data(%{} = data) do
     fn (ok_or_error) ->
       map_error(ok_or_error, fn (value) -> Map.put(data, :error, value) end)
@@ -23,11 +26,13 @@ defmodule Assessment.Utilities do
   @spec get_date_today() :: binary()
   def get_date_today(), do: Date.to_iso8601(Date.utc_today())
 
-  @spec map_error(ok_or_error(a, b), (b -> c)) :: ok_or_error(a, c) when a: var, b: var, c: var
+  @spec map_error(ok_or_error(a, b), (b -> c)) :: ok_or_error(a, c)
+        when a: var, b: var, c: var
   def map_error({@ok, value}, _fun), do: {@ok, value}
   def map_error({@error, value}, fun), do: {@error, fun.(value)}
 
-  @spec map_value(ok_or_error(a, b), (a -> c)) :: ok_or_error(c, b) when a: var, b: var, c: var
+  @spec map_value(ok_or_error(a, b), (a -> c)) :: ok_or_error(c, b)
+        when a: var, b: var, c: var
   def map_value({@ok, value}, fun), do: {@ok, fun.(value)}
   def map_value({@error, value}, _fun), do: {@error, value}
 

@@ -4,7 +4,6 @@ defmodule AssessmentWeb.Router do
   alias Guardian.Plug.Pipeline, as: GuardianPipeline
   alias Guardian.Plug.VerifySession, as: Guardian_VerifySession
   alias AssessmentWeb.Guardian
-  alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.AuthErrorHandler
   alias AssessmentWeb.GuardianController
 
