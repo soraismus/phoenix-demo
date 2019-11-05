@@ -52,6 +52,9 @@ defmodule AssessmentWeb.Router do
 
     get "/administrators",     AdministratorController, :index
     get "/administrators/:id", AdministratorController, :show
+
+    get "/couriers",     CourierController, :index
+    get "/couriers/:id", CourierController, :show
   end
 
   defp authenticate_agent(conn, _) do
