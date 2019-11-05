@@ -39,33 +39,12 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  defp authorize_admin_or_pharmacy(account) do
-    case account do
-      %Administrator{} -> {:ok, account}
-      %Pharmacy{} -> {:ok, account}
-      _ -> {:error, :not_authorized}
-    end
-  end
-
   def show(conn, %{"id" => id}) do
     data = %{msg: "Invalid order id"}
     with {:ok, account} <- get_account(conn),
          {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
          {:ok, _} <- authorize(account, order, "Not authorized to view order") do
       render(conn, "show.html", order: order)
-    end
-  end
-
-  defp authorize(account, order, msg) do
-    authorized? = case account do
-      %Administrator{} -> true
-      %Courier{} -> account.id == order.courier_id
-      %Pharmacy{} -> account.id == order.pharmacy_id
-    end
-    if authorized? do
-      {:ok, account}
-    else
-      {:error, %{error: :not_authorized, msg: msg}}
     end
   end
 
@@ -99,6 +78,27 @@ defmodule AssessmentWeb.OrderController do
       conn
       |> put_flash(:info, "Order deleted successfully.")
       |> redirect(to: order_path(conn, :index))
+    end
+  end
+
+  defp authorize(account, order, msg) do
+    authorized? = case account do
+      %Administrator{} -> true
+      %Courier{} -> account.id == order.courier_id
+      %Pharmacy{} -> account.id == order.pharmacy_id
+    end
+    if authorized? do
+      {:ok, account}
+    else
+      {:error, %{error: :not_authorized, msg: msg}}
+    end
+  end
+
+  defp authorize_admin_or_pharmacy(account) do
+    case account do
+      %Administrator{} -> {:ok, account}
+      %Pharmacy{} -> {:ok, account}
+      _ -> {:error, :not_authorized}
     end
   end
 

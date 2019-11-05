@@ -4,6 +4,21 @@ defmodule AssessmentWeb.GuardianController do
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.Guardian
 
+  defp get_account(%Agent{} = agent) do
+    case agent.account_type do
+      "administrator" -> {:ok, agent.administrator}
+      "courier"       -> {:ok, agent.courier}
+      "pharmacy"      -> {:ok, agent.pharmacy}
+      _               -> {:error, :invalid_account_type}
+    end
+  end
+  defp get_account(%Plug.Conn{} = conn) do
+    case conn.assigns.agent do
+      nil -> {:error, :not_authenticated}
+      agent -> get_account(agent)
+    end
+  end
+
   def identify_agent(%Plug.Conn{} = conn) do
     with {:ok, token} <- conn |> GuardianPlug.current_token() |> prohibit_nil(),
          {:ok, (%Agent{} = agent), _claims} <- Guardian.resource_from_token(token) do
