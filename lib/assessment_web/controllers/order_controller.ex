@@ -90,21 +90,9 @@ defmodule AssessmentWeb.OrderController do
 
   def update(conn, %{"id" => id, "order" => order_params}) do
     data = %{msg: "Invalid order id", view: "edit.html"}
-    authorize = fn (account, order) ->
-        authorized? = case account do
-          %Administrator{} -> true
-          %Courier{} -> account.id == order.courier_id
-          %Pharmacy{} -> account.id == order.pharmacy_id
-        end
-        if authorized? do
-          {:ok, account}
-        else
-          {:error, %{error: :not_authorized, msg: "Not authorized to view order"}}
-        end
-      end
     with {:ok, account} <- get_account(conn),
          {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
-         {:ok, _} <- authorize.(account, order),
+         {:ok, _} <- authorize(account, order, "Not authorized to view order"),
          {:ok, new_params} <- normalize_edit_params(order_params, account),
          {:ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
       conn
@@ -115,21 +103,9 @@ defmodule AssessmentWeb.OrderController do
 
   def delete(conn, %{"id" => id}) do
     data = %{msg: "Invalid order id"}
-    authorize = fn (account, order) ->
-        authorized? = case account do
-          %Administrator{} -> true
-          %Courier{} -> account.id == order.courier_id
-          %Pharmacy{} -> account.id == order.pharmacy_id
-        end
-        if authorized? do
-          {:ok, account}
-        else
-          {:error, %{error: :not_authorized, msg: "Not authorized to delete order"}}
-        end
-      end
     with {:ok, account} <- get_account(conn),
          {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
-         {:ok, _} <- authorize.(account, order),
+         {:ok, _} <- authorize(account, order, "Not authorized to delete order"),
          {:ok, _order} <- Orders.delete_order(order) do
       conn
       |> put_flash(:info, "Order deleted successfully.")
@@ -404,7 +380,7 @@ defmodule AssessmentWeb.OrderController do
       |> redirect(to: page_path(conn, :index))
     end
 
-    def call(conn, {:error, {:not_authorized, msg}}) do
+    def call(conn, {:error, %{msg: msg}}) do
       conn
       |> put_flash(:error, msg)
       |> redirect(to: page_path(conn, :index))
