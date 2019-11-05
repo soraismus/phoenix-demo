@@ -4,6 +4,10 @@ defmodule AssessmentWeb.Api.AdministratorView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
+  def render("create.json", %{administrator: administrator}) do
+    %{created: %{administrator: ToJson.to_json(administrator)}}
+  end
+
   def render("index.json", %{administrators: administrators}) do
     %{
       count: length(administrators),
