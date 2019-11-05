@@ -1,6 +1,6 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
-  import Assessment.Utilities, only: [get_date_today: 0, nilify_error: 1]
+  import Assessment.Utilities, only: [get_date_today: 0]
 
   def current_order_state(conn) do
     case conn.params["order_state"] do

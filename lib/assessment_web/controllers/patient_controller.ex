@@ -4,8 +4,7 @@ defmodule AssessmentWeb.PatientController do
   alias Assessment.Patients
   alias Assessment.Patients.Patient
 
-  @ok :ok
-  @error :error
+  plug :authenticate_administrator
 
   def index(conn, _params) do
     patients = Patients.list_patients()
@@ -19,11 +18,11 @@ defmodule AssessmentWeb.PatientController do
 
   def create(conn, %{"patient" => patient_params}) do
     case Patients.create_patient(patient_params) do
-      {@ok, patient} ->
+      {:ok, patient} ->
         conn
         |> put_flash(:info, "Patient created successfully.")
         |> redirect(to: patient_path(conn, :show, patient))
-      {@error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
@@ -35,10 +34,22 @@ defmodule AssessmentWeb.PatientController do
 
   def delete(conn, %{"id" => id}) do
     patient = Patients.get_patient!(id)
-    {@ok, _patient} = Patients.delete_patient(patient)
+    {:ok, _patient} = Patients.delete_patient(patient)
 
     conn
     |> put_flash(:info, "Patient deleted successfully.")
     |> redirect(to: patient_path(conn, :index))
+  end
+
+  defp authenticate_administrator(conn, _) do
+    agent = conn.assigns.agent
+    if agent && agent.account_type == "administrator" do
+      conn
+    else
+      conn
+      |> put_flash(:error, "not authorized")
+      |> redirect(to: page_path(conn, :index))
+      |> halt()
+    end
   end
 end

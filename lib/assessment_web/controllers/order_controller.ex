@@ -1,15 +1,15 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
-
   import Assessment.Utilities,
     only: [error_data: 1, get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
   import AssessmentWeb.GuardianController, only: [get_account: 1]
-  alias Assessment.Accounts.{Agent,Administrator,Courier,Pharmacy}
+
+  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
   alias Ecto.Changeset
 
-  plug :authorize_order_management
+  plug :authenticate
 
   action_fallback(AssessmentWeb.OrderController.ErrorController)
 
@@ -103,7 +103,7 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  defp authorize_order_management(conn, _) do
+  defp authenticate(conn, _) do
     if conn.assigns.agent do
       conn
     else
@@ -357,6 +357,5 @@ defmodule AssessmentWeb.OrderController do
       |> put_flash(:error, msg)
       |> redirect(to: page_path(conn, :index))
     end
-
   end
 end

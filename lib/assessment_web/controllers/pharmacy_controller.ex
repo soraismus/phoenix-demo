@@ -1,11 +1,11 @@
 defmodule AssessmentWeb.PharmacyController do
   use AssessmentWeb, :controller
+  import AssessmentWeb.GuardianController, only: [authenticate_administrator: 2]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
-  @ok :ok
-  @error :error
+  plug :authenticate_administrator
 
   def index(conn, _params) do
     pharmacies = Accounts.list_pharmacies()
@@ -19,24 +19,24 @@ defmodule AssessmentWeb.PharmacyController do
 
   def create(conn, %{"agent" => agent_params}) do
     case Accounts.create_pharmacy(agent_params) do
-      {@ok, %Agent{pharmacy: pharmacy}} ->
+      {:ok, %Agent{pharmacy: pharmacy}} ->
         conn
         |> put_flash(:info, "Pharmacy created successfully.")
         |> redirect(to: pharmacy_path(conn, :show, pharmacy))
-      {@error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, pharmacy} = Accounts.get_pharmacy(id) do
+    with {:ok, pharmacy} = Accounts.get_pharmacy(id) do
       render(conn, "show.html", pharmacy: pharmacy)
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    with {@ok, pharmacy} = Accounts.get_pharmacy(id),
-         {@ok, _} = Accounts.delete_pharmacy(pharmacy) do
+    with {:ok, pharmacy} = Accounts.get_pharmacy(id),
+         {:ok, _} = Accounts.delete_pharmacy(pharmacy) do
       conn
       |> put_flash(:info, "Pharmacy deleted successfully.")
       |> redirect(to: pharmacy_path(conn, :index))

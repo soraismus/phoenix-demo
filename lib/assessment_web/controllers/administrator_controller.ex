@@ -4,7 +4,7 @@ defmodule AssessmentWeb.AdministratorController do
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
-  plug :authorize_admin_management
+  plug :authenticate_administrator
 
   def index(conn, _params) do
     administrators = Accounts.list_administrators()
@@ -42,13 +42,13 @@ defmodule AssessmentWeb.AdministratorController do
     end
   end
 
-  defp authorize_admin_management(conn, _) do
+  defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent
     if agent && agent.account_type == "administrator" do
       conn
     else
       conn
-      |> put_flash(:error, "Not authorized")
+      |> put_flash(:error, "not authorized")
       |> redirect(to: page_path(conn, :index))
       |> halt()
     end
