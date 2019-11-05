@@ -94,6 +94,7 @@ defmodule AssessmentWeb.OrderController do
          {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
          {:ok, _} <- authorize(account, order, "Not authorized to view order"),
          {:ok, new_params} <- normalize_edit_params(order_params, account),
+         data <- Map.put(data, :order, order),
          {:ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
       conn
       |> put_flash(:info, "Order updated successfully.")
@@ -106,7 +107,7 @@ defmodule AssessmentWeb.OrderController do
     with {:ok, account} <- get_account(conn),
          {:ok, order} <- Orders.get_order(id) |> error_data(data).(),
          {:ok, _} <- authorize(account, order, "Not authorized to delete order"),
-         {:ok, _order} <- Orders.delete_order(order) do
+         {:ok, _} <- Orders.delete_order(order) do
       conn
       |> put_flash(:info, "Order deleted successfully.")
       |> redirect(to: order_path(conn, :index))
@@ -300,8 +301,8 @@ defmodule AssessmentWeb.OrderController do
   defmodule ErrorController do
     use AssessmentWeb, :controller
 
-    def call(conn, {:error, %{error: (%Changeset{} = changeset), view: view}}) do
-      render(conn, view, changeset: changeset)
+    def call(conn, {:error, %{error: (%Changeset{} = changeset), view: view} = data}) do
+      render(conn, view, changeset: changeset, order: Map.get(data, :order))
     end
 
     def call(conn, {:error, %{error: :not_authorized, msg: msg}}) do
