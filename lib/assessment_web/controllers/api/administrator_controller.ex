@@ -4,6 +4,14 @@ defmodule AssessmentWeb.Api.AdministratorController do
 
   def index(conn, _params) do
     administrators = Accounts.list_administrators()
-    render(conn, "index.json", administrators: administrators)
+    conn
+    |> render("index.json", administrators: administrators)
+  end
+
+  def show(conn, %{"id" => id}) do
+    with {:ok, administrator} <- Accounts.get_administrator(id) do
+      conn
+      |> render("show.json", administrator: administrator)
+    end
   end
 end

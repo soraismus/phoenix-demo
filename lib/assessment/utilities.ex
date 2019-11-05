@@ -1,6 +1,7 @@
 defmodule Assessment.Utilities do
   @type ok_or_error(a, b) :: {:ok, a} | {:error, b}
   @type value_or_nil(a) :: a | nil
+  @type json :: Map.t(binary(), binary()) | list(Map.t(binary(), binary()))
 
   @ok :ok
   @error :error
@@ -58,6 +59,29 @@ defmodule Assessment.Utilities do
       {:ok, String.to_integer(value)}
     rescue
       ArgumentError -> {:error, :invalid_integer_format}
+    end
+  end
+
+  def to_json(%_{} = struct, [_ | _] = keys) do
+    struct
+    |> Map.from_struct()
+    |> Map.take(keys)
+    |> Enum.reduce(
+          %{},
+          fn ({k, v}, memo) ->
+            Map.put(memo, to_string(k), to_string(v))
+          end)
+  end
+
+  defprotocol ToJson do
+    def to_json(value)
+  end
+
+  defimpl ToJson, for: List do
+    def to_json([]), do: []
+    def to_json([%_{} | _] = structs) do
+      structs
+      |> Enum.map(&ToJson.to_json/1)
     end
   end
 end

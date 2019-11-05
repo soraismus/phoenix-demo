@@ -51,6 +51,7 @@ defmodule AssessmentWeb.Router do
     pipe_through :api
 
     get "/administrators",     AdministratorController, :index
+    get "/administrators/:id", AdministratorController, :show
   end
 
   defp authenticate_agent(conn, _) do
