@@ -50,6 +50,8 @@ defmodule AssessmentWeb.Router do
   scope "/api", AssessmentWeb.Api do
     pipe_through :api
 
+    post   "/login",              SessionController,       :create
+
     get    "/administrators",     AdministratorController, :index
     get    "/administrators/:id", AdministratorController, :show
     post   "/administrators",     AdministratorController, :create

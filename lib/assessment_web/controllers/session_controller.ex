@@ -1,6 +1,5 @@
 defmodule AssessmentWeb.SessionController do
   use AssessmentWeb, :controller
-
   alias Assessment.Accounts
   alias Assessment.Sessions
 
@@ -17,7 +16,7 @@ defmodule AssessmentWeb.SessionController do
       case Accounts.get_agent_by_username_and_password(username, password) do
         {:ok, agent} ->
           conn
-          |> login(agent.id)
+          |> log_in(agent.id)
           |> redirect_after_login()
         {:error, :unauthenticated} ->
           conn
@@ -51,7 +50,7 @@ defmodule AssessmentWeb.SessionController do
     end
   end
 
-  defp login(conn, agent_id) do
+  defp log_in(conn, agent_id) do
     conn
     |> put_flash(:info, "Welcome back!")
     |> AssessmentWeb.Guardian.Plug.sign_in(%{agent_id: agent_id})
