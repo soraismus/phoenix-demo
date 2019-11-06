@@ -13,6 +13,22 @@ defmodule AssessmentWeb.Api.ErrorController do
     |> json(%{errors: %{resource => ["does not exist"]}})
   end
 
+  def call(conn, {:error, %{error: :already_canceled} = errors}) do
+    resource = errors.resource
+    description = errors.description
+    conn
+    |> put_status(400)
+    |> json(%{errors: %{resource => ["cannot be #{description} because it has already been canceled"]}})
+  end
+
+  def call(conn, {:error, %{error: :already_delivered} = errors}) do
+    resource = errors.resource
+    description = errors.description
+    conn
+    |> put_status(400)
+    |> json(%{errors: %{resource => ["cannot be #{description} because it has already been delivered"]}})
+  end
+
   def call(conn, {:error, %{error: :already_has_order_state} = errors}) do
     resource = errors.resource
     description = errors.description
