@@ -7,9 +7,12 @@ defmodule AssessmentWeb.Api.ErrorController do
     |> json(%{errors: translate_errors(changeset)})
   end
 
-  def call(conn, {:error, %{error: :no_resource, resource: resource}}) do
+  def call(conn, {:error, :unauthenticated}) do
     conn
-    |> resource_error(resource, "does not exist", :not_found)
+    |> resource_error(
+          "login attempt",
+          "invalid username/password combination",
+          :unauthorized)
   end
 
   def call(conn, {:error, %{error: :already_canceled} = errors}) do
@@ -30,6 +33,11 @@ defmodule AssessmentWeb.Api.ErrorController do
   def call(conn, {:error, %{error: :already_has_order_state} = errors}) do
     conn
     |> resource_error(errors.resource, "is already #{errors.description}")
+  end
+
+  def call(conn, {:error, %{error: :no_resource, resource: resource}}) do
+    conn
+    |> resource_error(resource, "does not exist", :not_found)
   end
 
   defp resource_error(conn, resource, msg, status \\ 400) do
