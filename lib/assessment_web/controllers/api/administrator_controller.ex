@@ -1,9 +1,8 @@
 defmodule AssessmentWeb.Api.AdministratorController do
   use AssessmentWeb, :controller
-  import Assessment.Utilities, only: [error_data: 1]
+  import AssessmentWeb.Api.ControllerUtilities,
+    only: [changeset_error: 3, internal_error: 1, resource_error: 3]
   alias Assessment.Accounts
-
-  action_fallback(AssessmentWeb.Api.ErrorController)
 
   def create(conn, %{"administrator" => params}) do
     params =
@@ -11,10 +10,17 @@ defmodule AssessmentWeb.Api.AdministratorController do
       |> Map.put("username", Map.get(params, "username"))
       |> Map.put("credential", Map.take(params, ["password"]))
       |> Map.put("administrator", Map.take(params, ["email"]))
-    with {:ok, agent} <- Accounts.create_administrator(params) do
-      conn
-      |> put_status(:created)
-      |> render("create.json", administrator: agent.administrator)
+    case Accounts.create_administrator(params) do
+      {:ok, agent} ->
+        conn
+        |> put_status(:created)
+        |> render("create.json", administrator: agent.administrator)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(changeset)
+      _ ->
+        conn
+        |> internal_error("ADCR")
     end
   end
 
@@ -24,10 +30,16 @@ defmodule AssessmentWeb.Api.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    data = %{resource: "administrator ##{id}"}
-    with {:ok, administrator} <- Accounts.get_administrator(id) |> error_data(data).() do
-      conn
-      |> render("show.json", administrator: administrator)
+    case Accounts.get_administrator(id) do
+      {:ok, administrator} ->
+        conn
+        |> render("show.json", administrator: administrator)
+      {:error, :no_resource} ->
+        conn
+        |> resource_error("administrator ##{id}", "does not exist", :not_found)
+      _ ->
+        conn
+        |> internal_error("ADSH")
     end
   end
 end

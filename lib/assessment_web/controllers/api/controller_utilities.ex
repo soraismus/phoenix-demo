@@ -1,26 +1,19 @@
-defmodule AssessmentWeb.Api.ErrorController do
+defmodule AssessmentWeb.Api.ControllerUtilities do
   use AssessmentWeb, :controller
+  alias Ecto.Changeset
 
-  def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
+  def changeset_error(conn, %Changeset{} = changeset, status \\ 400) do
     conn
     |> put_status(400)
     |> json(%{errors: translate_errors(changeset)})
   end
 
-  def call(conn, {:error, :unauthenticated}) do
+  def internal_error(conn, code) do
     conn
-    |> resource_error(
-          "login attempt",
-          "invalid username/password combination",
-          :unauthorized)
+    |> resource_error("Internal Error", "Code: #{code}", 500)
   end
 
-  def call(conn, {:error, %{error: :no_resource, resource: resource}}) do
-    conn
-    |> resource_error(resource, "does not exist", :not_found)
-  end
-
-  defp resource_error(conn, resource, msg, status \\ 400) do
+  def resource_error(conn, resource, msg, status \\ 400) do
     conn
     |> put_status(status)
     |> json(%{errors: %{resource => [msg]}})
@@ -52,6 +45,6 @@ defmodule AssessmentWeb.Api.ErrorController do
   end
 
   defp translate_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
+    Changeset.traverse_errors(changeset, &translate_error/1)
   end
 end

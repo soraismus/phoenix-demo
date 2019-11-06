@@ -1,8 +1,8 @@
 defmodule AssessmentWeb.Api.PharmacyController do
   use AssessmentWeb, :controller
+  import AssessmentWeb.Api.ControllerUtilities,
+    only: [changeset_error: 3, internal_error: 1, resource_error: 3]
   alias Assessment.Accounts
-
-  action_fallback(AssessmentWeb.Api.ErrorController)
 
   def create(conn, %{"pharmacy" => params}) do
     params =
@@ -10,23 +10,36 @@ defmodule AssessmentWeb.Api.PharmacyController do
       |> Map.put("username", Map.get(params, "username"))
       |> Map.put("credential", Map.take(params, ["password"]))
       |> Map.put("pharmacy", Map.take(params, ["name", "email", "address"]))
-    with {:ok, agent} <- Accounts.create_pharmacy(params) do
-      conn
-      |> put_status(:created)
-      |> render("create.json", pharmacy: agent.pharmacy)
+    case Accounts.create_pharmacy(params) do
+      {:ok, agent} ->
+        conn
+        |> put_status(:created)
+        |> render("create.json", pharmacy: agent.pharmacy)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(changeset)
+      _ ->
+        conn
+        |> internal_error("PHCR")
     end
   end
 
   def index(conn, _params) do
-    pharmacies = Accounts.list_pharmacies()
     conn
-    |> render("index.json", pharmacies: pharmacies)
+    |> render("index.json", pharmacies: Accounts.list_pharmacies())
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, pharmacy} <- Accounts.get_pharmacy(id) do
-      conn
-      |> render("show.json", pharmacy: pharmacy)
+    case Accounts.get_pharmacy(id) do
+      {:ok, pharmacy} ->
+        conn
+        |> render("show.json", pharmacy: pharmacy)
+      {:error, :no_resource} ->
+        conn
+        |> resource_error("pharmacy ##{id}", "does not exist", :not_found)
+      _ ->
+        conn
+        |> internal_error("PHSH")
     end
   end
 end
