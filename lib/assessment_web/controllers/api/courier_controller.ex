@@ -1,7 +1,7 @@
 defmodule AssessmentWeb.Api.CourierController do
   use AssessmentWeb, :controller
   import AssessmentWeb.Api.ControllerUtilities,
-    only: [changeset_error: 3, internal_error: 1, resource_error: 3]
+    only: [changeset_error: 2, internal_error: 2, resource_error: 4]
   alias Assessment.Accounts
 
   def create(conn, %{"courier" => params}) do

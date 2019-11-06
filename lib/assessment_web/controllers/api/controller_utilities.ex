@@ -4,7 +4,7 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
 
   def changeset_error(conn, %Changeset{} = changeset, status \\ 400) do
     conn
-    |> put_status(400)
+    |> put_status(status)
     |> json(%{errors: translate_errors(changeset)})
   end
 
