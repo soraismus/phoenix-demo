@@ -10,7 +10,8 @@ defmodule AssessmentWeb.Api.OrderController do
   @undeliverable "undeliverable"
 
   def cancel(conn, params) do
-    update_order_state(conn, params, @canceled, "cancel.json")
+    conn
+    |> update_order_state(params, @canceled, "cancel.json")
   end
 
   def create(conn, %{"order" => params}) do
@@ -22,16 +23,19 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def deliver(conn, params) do
-    update_order_state(conn, params, @delivered, "deliver.json")
+    conn
+    |> update_order_state(params, @delivered, "deliver.json")
   end
 
   def index(conn, _params) do
     orders = Orders.list_orders(%{})
-    conn |> render("index.json", orders: orders)
+    conn
+    |> render("index.json", orders: orders)
   end
 
   def mark_undeliverable(conn, params) do
-    update_order_state(conn, params, @undeliverable, "mark_undeliverable.json")
+    conn
+    |> update_order_state(params, @undeliverable, "mark_undeliverable.json")
   end
 
   def show(conn, %{"id" => id}) do
