@@ -18,11 +18,18 @@ defmodule AssessmentWeb.Api.AdministratorController do
       |> Map.put("username", Map.get(params, "username"))
       |> Map.put("credential", Map.take(params, ["password"]))
       |> Map.put("administrator", Map.take(params, ["email"]))
-    case Accounts.create_administrator(params) do
-      {:ok, agent} ->
+    with {:ok, _} <- authenticate_administrator(conn),
+         {:ok, agent} <- Accounts.create_administrator(params) do
+      conn
+      |> put_status(:created)
+      |> render("create.json", administrator: agent.administrator)
+    else
+      {:error, :not_authenticated} ->
         conn
-        |> put_status(:created)
-        |> render("create.json", administrator: agent.administrator)
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
@@ -50,10 +57,17 @@ defmodule AssessmentWeb.Api.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Accounts.get_administrator(id) do
-      {:ok, administrator} ->
+    with {:ok, _} <- authenticate_administrator(conn),
+         {:ok, administrator} <- Accounts.get_administrator(id) do
+      conn
+      |> render("show.json", administrator: administrator)
+    else
+      {:error, :not_authenticated} ->
         conn
-        |> render("show.json", administrator: administrator)
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
       {:error, :no_resource} ->
         conn
         |> resource_error("administrator ##{id}", "does not exist", :not_found)
