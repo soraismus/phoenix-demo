@@ -16,7 +16,6 @@ defmodule AssessmentWeb.Api.SessionController do
     |> json(%{errors: %{request: [msg]}})
   end
 
-
   def create(conn, %{"username" => u, "password" => p}) do
     with {:ok, agent} <- Sessions.get_agent_by_username_and_password(u, p),
          {:ok, jwt, _} <- get_token(agent) do
