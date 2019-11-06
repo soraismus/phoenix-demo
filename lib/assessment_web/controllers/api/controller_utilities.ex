@@ -5,7 +5,7 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
   def authentication_error(conn) do
     conn
     |> put_status(:unauthorized)
-    |> json(%{errors: %{request: ["Not Authenticated"]}})
+    |> json(%{errors: %{request: ["Authentication is required"]}})
   end
 
   def authorization_error(conn) do

@@ -1,7 +1,13 @@
 defmodule AssessmentWeb.Api.CourierController do
   use AssessmentWeb, :controller
   import AssessmentWeb.Api.ControllerUtilities,
-    only: [changeset_error: 2, internal_error: 2, resource_error: 4]
+    only: [ authentication_error: 1,
+            authorization_error: 1,
+            changeset_error: 2,
+            internal_error: 2,
+            resource_error: 4
+          ]
+  import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
   alias Assessment.Accounts
 
   def create(conn, %{"courier" => params}) do
@@ -10,11 +16,18 @@ defmodule AssessmentWeb.Api.CourierController do
       |> Map.put("username", Map.get(params, "username"))
       |> Map.put("credential", Map.take(params, ["password"]))
       |> Map.put("courier", Map.take(params, ["name", "email", "address"]))
-    case Accounts.create_courier(params) do
-      {:ok, agent} ->
+    with {:ok, _} <- authenticate_administrator(conn),
+         {:ok, agent} <- Accounts.create_courier(params) do
+      conn
+      |> put_status(:created)
+      |> render("create.json", courier: agent.courier)
+    else
+      {:error, :not_authenticated} ->
         conn
-        |> put_status(:created)
-        |> render("create.json", courier: agent.courier)
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
@@ -25,15 +38,34 @@ defmodule AssessmentWeb.Api.CourierController do
   end
 
   def index(conn, _params) do
-    conn
-    |> render("index.json", couriers: Accounts.list_couriers())
+    case authenticate_administrator(conn) do
+      {:ok, _} ->
+        conn
+        |> render("index.json", couriers: Accounts.list_couriers())
+      {:error, :not_authenticated} ->
+        conn
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
+      _ ->
+        conn
+        |> internal_error("COIN")
+      end
   end
 
   def show(conn, %{"id" => id}) do
-    case Accounts.get_courier(id) do
-      {:ok, courier} ->
+    with {:ok, _} <- authenticate_administrator(conn),
+         {:ok, courier} <- Accounts.get_courier(id) do
+      conn
+      |> render("show.json", courier: courier)
+    else
+      {:error, :not_authenticated} ->
         conn
-        |> render("show.json", courier: courier)
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
       {:error, :no_resource} ->
         conn
         |> resource_error("courier ##{id}", "does not exist", :not_found)

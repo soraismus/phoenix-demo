@@ -9,8 +9,6 @@ defmodule AssessmentWeb.Api.AdministratorController do
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
   alias Assessment.Accounts
-  alias Assessment.Accounts.Agent
-  alias AssessmentWeb.Guardian.Plug, as: Guardian
 
   def create(conn, %{"administrator" => params}) do
     params =

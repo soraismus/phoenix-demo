@@ -32,7 +32,7 @@ config :assessment, AssessmentWeb.Guardian,
   secret_key: "MDLMflIpKod5YCnkdiY7C4E3ki2rgcAAMwfBl0+vyC5uqJNgoibfQmAh7J3uZWVK",
   # optional
   allowed_algos: ["HS256"],
-  ttl: {1, :days},
+  ttl: {1, :minutes},
   allowed_drift: 2000,
   verify_issuer: true
 
