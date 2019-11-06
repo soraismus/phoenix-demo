@@ -71,7 +71,7 @@ defmodule AssessmentWeb.Api.OrderController do
 
   def show(conn, %{"id" => id}) do
     with {:ok, agent} <- authenticate_agent(conn),
-         {:ok, order} <- case Orders.get_order(id) do
+         {:ok, order} <- Orders.get_order(id) do
       conn
       |> render("show.json", order: order)
     else
