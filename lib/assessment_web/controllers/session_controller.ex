@@ -3,6 +3,17 @@ defmodule AssessmentWeb.SessionController do
   alias Assessment.Accounts
   alias Assessment.Sessions
 
+  @doc """
+    Callback required by Guardian
+  """
+  def auth_error(conn, {_type, _reason}, _opts) do
+    note = "(Consider resetting Guardian's 'ttl' value in 'config.ex'.)"
+    msg = "Expired credentials #{note}"
+    conn
+    |> put_status(:forbidden)
+    |> json(%{errors: %{request: [msg]}})
+  end
+
   def new(conn, _params) do
     conn
     |> assign(:changeset, Accounts.change_agent())

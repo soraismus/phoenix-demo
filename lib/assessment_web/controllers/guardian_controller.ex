@@ -14,6 +14,10 @@ defmodule AssessmentWeb.GuardianController do
     end
   end
 
+  def authenticate_agent(%Conn{} = conn) do
+    identify_agent(conn)
+  end
+
   def get_account(%Agent{} = agent) do
     case agent.account_type do
       "administrator" -> {:ok, agent.administrator}

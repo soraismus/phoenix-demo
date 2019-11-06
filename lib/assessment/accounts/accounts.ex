@@ -49,6 +49,35 @@ defmodule Assessment.Accounts do
   def change_agent(), do: Agent.changeset(%Agent{}, %{})
 
   @doc """
+  Returns an agent's associated account type.
+
+  ## Examples
+
+      iex> specify_agent(%Agent{administrator: %Administrator{}})
+      %Administrator{}
+
+      iex> specify_agent(%Agent{courier: %Courier{}})
+      %Courier{}
+
+      iex> specify_agent(%Agent{pharmacy: %Pharmacy{}})
+      %Pharmacy{}
+
+  """
+  def specify_agent(%Agent{} = agent) do
+    %{administrator: administrator, courier: courier, pharmacy: pharmacy} = agent
+    cond do
+      !is_nil(administrator) ->
+        agent.administrator
+      !is_nil(courier) ->
+        agent.courier
+      !is_nil(pharmacy) ->
+        agent.pharmacy
+      true ->
+        raise "Invalid agent"
+    end
+  end
+
+  @doc """
   Returns the list of administrators.
 
   ## Examples
