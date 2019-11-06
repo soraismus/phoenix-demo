@@ -41,7 +41,7 @@ defmodule AssessmentWeb.Router do
     plug :accepts, ["json", "csv"]
     plug ProperCase.Plug.SnakeCaseParams
     plug Guardian_Pipeline,
-      error_handler: AssessmentWeb.SessionController,
+      error_handler: AssessmentWeb.Api.SessionController,
       module: AssessmentWeb.Guardian
     plug Guardian_VerifyHeader, realm: "Token"
     plug Guardian_LoadResource, allow_blank: true
