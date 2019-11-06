@@ -7,6 +7,16 @@ defmodule AssessmentWeb.Api.ErrorController do
     |> json(%{errors: translate_errors(changeset)})
   end
 
+  def call(conn, {:error, :invalid_claims}) do
+    conn
+    |> resource_error("Internal error", "Error code #1100")
+  end
+
+  def call(conn, {:error, :invalid_resource}) do
+    conn
+    |> resource_error("Internal error", "Error code #1200")
+  end
+
   def call(conn, {:error, :unauthenticated}) do
     conn
     |> resource_error(
