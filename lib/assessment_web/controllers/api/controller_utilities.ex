@@ -2,6 +2,18 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
   use AssessmentWeb, :controller
   alias Ecto.Changeset
 
+  def authentication_error(conn) do
+    conn
+    |> put_status(:unauthorized)
+    |> json(%{errors: %{request: ["Not Authenticated"]}})
+  end
+
+  def authorization_error(conn) do
+    conn
+    |> put_status(:unauthorized)
+    |> json(%{errors: %{request: ["Not Authorized"]}})
+  end
+
   def changeset_error(conn, %Changeset{} = changeset, status \\ 400) do
     conn
     |> put_status(status)

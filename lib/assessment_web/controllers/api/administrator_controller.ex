@@ -1,8 +1,16 @@
 defmodule AssessmentWeb.Api.AdministratorController do
   use AssessmentWeb, :controller
   import AssessmentWeb.Api.ControllerUtilities,
-    only: [changeset_error: 2, internal_error: 2, resource_error: 4]
+    only: [ authentication_error: 1,
+            authorization_error: 1,
+            changeset_error: 2,
+            internal_error: 2,
+            resource_error: 4
+          ]
+  import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
   alias Assessment.Accounts
+  alias Assessment.Accounts.Agent
+  alias AssessmentWeb.Guardian.Plug, as: Guardian
 
   def create(conn, %{"administrator" => params}) do
     params =
@@ -25,8 +33,20 @@ defmodule AssessmentWeb.Api.AdministratorController do
   end
 
   def index(conn, _params) do
-    conn
-    |> render("index.json", administrators: Accounts.list_administrators())
+    case authenticate_administrator(conn) do
+      {:ok, _} ->
+        conn
+        |> render("index.json", administrators: Accounts.list_administrators())
+      {:error, :not_authenticated} ->
+        conn
+        |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
+      _ ->
+        conn
+        |> internal_error("ADIN")
+    end
   end
 
   def show(conn, %{"id" => id}) do
