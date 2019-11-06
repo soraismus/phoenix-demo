@@ -10,7 +10,6 @@ defmodule Assessment.Accounts do
   alias Ecto.Changeset
 
   @no_resource :no_resource
-  @unauthenticated :unauthenticated
 
   @doc """
   Gets a single agent.
@@ -36,34 +35,6 @@ defmodule Assessment.Accounts do
     |> Repo.one()
     |> Utilities.prohibit_nil(@no_resource)
     |> Utilities.map_value(&set_account_type/1)
-  end
-
-  @doc """
-  Gets a single agent corresponding to a username and password.
-
-  ## Examples
-
-      iex> get_agent_by_username_and_password("abc", "uvw")
-      {:ok, %Agent{}}
-
-      iex> get_agent_by_username_and_password("dec", "xyz")
-      {:error, :no_resource}
-
-  """
-  def get_agent_by_username_and_password(username, password)
-    when is_binary(username) and is_binary(password) do
-      agent =
-        Agent
-        |> Repo.get_by(username: username)
-        |> Repo.preload(:credential)
-      cond do
-        is_nil(agent) ->
-          {:error, @unauthenticated}
-        Comeonin.Bcrypt.checkpw(password, agent.credential.password_digest) ->
-          {:ok, agent}
-        true ->
-          {:error, @unauthenticated}
-      end
   end
 
   @doc """

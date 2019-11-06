@@ -1,20 +1,18 @@
 defmodule AssessmentWeb.Api.SessionController do
   use AssessmentWeb, :controller
-  import Assessment.Utilities, only: [error_data: 1]
-  alias Assessment.Accounts
-  alias Assessment.Orders
+  alias Assessment.Sessions
   alias AssessmentWeb.Guardian
 
   action_fallback(AssessmentWeb.Api.ErrorController)
 
   def create(conn, %{"username" => u, "password" => p}) do
-    with {:ok, agent} <- Accounts.get_agent_by_username_and_password(u, p),
+    with {:ok, agent} <- Sessions.get_agent_by_username_and_password(u, p),
          {:ok, jwt, _} <- Guardian.encode_and_sign(%{agent_id: agent.id}, token_type: :token) do
       conn
       |> put_status(:accepted)
       |> render("create.json", agent: agent, jwt: jwt)
     else
-      {:error, msg} -> conn |> json(msg)
+      {:error, msg} -> conn |> json(%{error: msg})
 
     # else
     #   {:error, :unauthenticated} ->

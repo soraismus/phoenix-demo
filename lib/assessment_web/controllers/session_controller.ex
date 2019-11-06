@@ -13,7 +13,7 @@ defmodule AssessmentWeb.SessionController do
     changeset = Sessions.session_changeset(params)
     if changeset.valid? do
       %{"username" => username, "credential" => %{"password" => password}} = params
-      case Accounts.get_agent_by_username_and_password(username, password) do
+      case Sessions.get_agent_by_username_and_password(username, password) do
         {:ok, agent} ->
           conn
           |> log_in(agent.id)

@@ -10,9 +10,7 @@ stop_postgres() {
 }
 request() {
   if [ "$#" = 1 ]; then
-    curl -s                                      \
-      "localhost:4000/api/$1"                    \
-      | jq
+    curl -s "localhost:4000/api/$1"
   else
     if [ ! -d "tokens" ]; then
       mkdir -p "tokens"
@@ -24,22 +22,19 @@ request() {
   if [ "$#" = 2 ]; then
     curl -s                                      \
       "localhost:4000/api/$1"                    \
-      -H "Authorization: Token $(cat tokens/$2)" \
-      | jq
+      -H "Authorization: Token $(cat tokens/$2)"
   elif [ "$#" = 3 ]; then
     curl -s                                      \
       "localhost:4000/api/$1"                    \
       -X "$3"                                    \
-      -H "Authorization: Token $(cat tokens/$2)" \
-      | jq
+      -H "Authorization: Token $(cat tokens/$2)"
   elif [ "$#" = 4 ]; then
     curl -s                                      \
       "localhost:4000/api/$1"                    \
       -X $3                                      \
       -H "Authorization: Token $(cat tokens/$2)" \
       -H "Content-Type: application/json"        \
-      -d "$4"                                    \
-      | jq
+      -d "$4"
   elif [ "$#" = 5 ]; then
     curl -s                                      \
       "localhost:4000/api/$1"                    \
@@ -51,7 +46,5 @@ request() {
   fi
 }
 login_token() {
-  request login _ POST "{\"username\":\"$1\",\"password\":\"$2\"}"   \
-    | jq '.session.token'                                            \
-    | tr -d '"'
+  request login _ POST "{\"username\":\"$1\",\"password\":\"$2\"}"
 }

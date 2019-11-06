@@ -1,7 +1,6 @@
 defmodule AssessmentWeb.Api.OrderView do
   use AssessmentWeb, :view
   alias Assessment.Orders.Order
-  alias Assessment.OrderStates.OrderState
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
