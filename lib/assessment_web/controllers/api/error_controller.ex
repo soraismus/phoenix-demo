@@ -9,51 +9,33 @@ defmodule AssessmentWeb.Api.ErrorController do
 
   def call(conn, {:error, %{error: :no_resource, resource: resource}}) do
     conn
-    |> put_status(:not_found)
-    |> json(%{errors: %{resource => ["does not exist"]}})
+    |> resource_error(resource, "does not exist", :not_found)
   end
 
   def call(conn, {:error, %{error: :already_canceled} = errors}) do
     resource = errors.resource
     description = errors.description
+    msg = "cannot be #{description} because it has already been canceled"
     conn
-    |> put_status(400)
-    |> json(%{errors: %{resource => ["cannot be #{description} because it has already been canceled"]}})
+    |> resource_error(resource, msg)
   end
 
   def call(conn, {:error, %{error: :already_delivered} = errors}) do
-    resource = errors.resource
     description = errors.description
+    msg = "cannot be #{description} because it has already been delivered"
     conn
-    |> put_status(400)
-    |> json(%{errors: %{resource => ["cannot be #{description} because it has already been delivered"]}})
+    |> resource_error(errors.resource, msg)
   end
 
   def call(conn, {:error, %{error: :already_has_order_state} = errors}) do
-    resource = errors.resource
-    description = errors.description
     conn
-    |> put_status(400)
-    |> json(%{errors: %{resource => ["is already #{description}"]}})
+    |> resource_error(errors.resource, "is already #{errors.description}")
   end
 
-  defp check_elibility(order, order_state_description) do
-    cond do
-      order.order_state_description == order_state_description ->
-        {:error, %{ error: :already_has_order_state,
-                    order_state_description: order_state_description
-                  }}
-      order.order_state_description == @canceled ->
-        {:error, %{ error: :already_canceled,
-                    order_state_description: order_state_description
-                  }}
-      order.order_state_description == @delivered ->
-        {:error, %{ error: :already_delivered,
-                    order_state_description: order_state_description
-                  }}
-      true ->
-        {:ok, {order, order_state_description}}
-    end
+  defp resource_error(conn, resource, msg, status \\ 400) do
+    conn
+    |> put_status(status)
+    |> json(%{errors: %{resource => [msg]}})
   end
 
   defp translate_error({msg, opts}) do
