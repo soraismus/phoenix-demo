@@ -51,8 +51,17 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def index(conn, _params) do
-    conn
-    |> render("index.json", orders: Orders.list_orders(%{}))
+    case authenticate_agent(conn) do
+      {:ok, _} ->
+        conn
+        |> render("index.json", orders: Orders.list_orders(%{}))
+      {:error, :not_authenticated} ->
+        conn
+        |> authentication_error()
+      _ ->
+        conn
+        |> internal_error("ORIN")
+    end
   end
 
   def mark_undeliverable(conn, params) do
@@ -61,10 +70,14 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Orders.get_order(id) do
-      {:ok, order} ->
+    with {:ok, agent} <- authenticate_agent(conn),
+         {:ok, order} <- case Orders.get_order(id) do
+      conn
+      |> render("show.json", order: order)
+    else
+      {:error, :not_authenticated} ->
         conn
-        |> render("show.json", order: order)
+        |> authentication_error()
       {:error, :no_resource} ->
         conn
         |> resource_error("order ##{id}", "does not exist", :not_found)
