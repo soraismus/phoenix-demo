@@ -33,18 +33,27 @@ defmodule AssessmentWeb.Api.OrderView do
     %{order: ToJson.to_json(order)}
   end
 
-  defp display_query_params(%{order_state_id: order_state_id} = query_params) do
-    %{query_params | order_state_id: OrderStates.to_description(order_state_id)}
+  defp display_query_params(%{order_state_id: :all} = query_params) do
+    query_params
+    |> Map.delete(:order_state_id)
+    |> Map.put(:order_state, "all")
+  end
+  defp display_query_params(%{order_state_id: id} = query_params) do
+    query_params
+    |> Map.delete(:order_state_id)
+    |> Map.put(:order_state, OrderStates.to_description(id))
   end
   defp display_query_params(query_params), do: query_params
 
   defimpl ToJson, for: Order do
-    def to_json(%Order{} = order) do
+    def to_json(%Order{order_state_id: id} = order) do
       fields = ~w(id patient pharmacy courier pickup_date pickup_time)a
       order
       |> Utilities.to_json(fields)
-      |> Map.put("order_state", OrderStates.to_description(order.order_state_id))
+      |> Map.put("order_state", to_description(id))
     end
+    def to_description(:all), do: "all"
+    def to_description(id), do: OrderStates.to_description(id)
   end
 
   defimpl ToJson, for: Time do

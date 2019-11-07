@@ -40,7 +40,7 @@ defmodule Assessment.Orders.Order do
     |> foreign_key_constraint(:order_state_id)
   end
 
-  defp validate_order_state_description(changeset) do
+  def validate_order_state_description(changeset) do
     validate_change(changeset, :order_state_description, fn (:order_state_description, description) ->
         if description in @order_state_descriptions do
           []

@@ -21,6 +21,7 @@ defmodule AssessmentWeb.Api.OrderController do
   @canceled "canceled"
   @delivered "delivered"
   @undeliverable "undeliverable"
+  @order_state_error_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
 
   def cancel(conn, params) do
     conn
@@ -42,13 +43,23 @@ defmodule AssessmentWeb.Api.OrderController do
         conn
         |> authorization_error()
       {:error, :invalid_order} ->
+        IO.inspect("OrderController create: invalid_order: params:")
+        IO.inspect(params)
         conn
+        |> internal_error("ORCR-IO")
       {:error, :invalid_order_state} ->
+        IO.inspect("OrderController create: invalid_order_state: params:")
+        IO.inspect(params)
         conn
+        |> internal_error("ORCR-IOS")
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
-      _ ->
+      x ->
+        IO.inspect("OrderController create: default: params:")
+        IO.inspect(params)
+        IO.inspect("OrderController create: default: x:")
+        IO.inspect(x)
         conn
         |> internal_error("ORCR")
     end
@@ -78,10 +89,20 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, :invalid_courier_id} ->
         conn
         |> authorization_error()
+      {:error, :invalid_date_format} ->
+        msg = "Must either be of the form 'YYYY-MM-DD' or be one of 'today' or 'all'"
+        conn
+        |> resource_error("pickup_date", msg)
       {:error, :invalid_pharmacy_id} ->
         conn
         |> authorization_error()
-      _ ->
+      {:error, :invalid_order_state} ->
+        msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+        conn
+        |> resource_error("order_state", msg)
+      x ->
+        IO.inspect("default")
+        IO.inspect(x)
         conn
         |> internal_error("ORIN")
     end

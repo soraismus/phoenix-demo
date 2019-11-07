@@ -62,7 +62,11 @@ defmodule AssessmentWeb.OrderUtilities do
   defp normalize_date(%{"day" => day, "month" => month, "year" => year}) do
     normalize_date("#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}")
   end
-  defp normalize_date(iso8601_date), do: Date.from_iso8601(iso8601_date)
+  defp normalize_date(iso8601_date) do
+    iso8601_date
+    |> Date.from_iso8601()
+    |> map_error(fn (_) -> :invalid_date_format end)
+  end
 
   defp normalize_date_component(component) when is_binary(component) do
     if String.length(component) == 1 do
