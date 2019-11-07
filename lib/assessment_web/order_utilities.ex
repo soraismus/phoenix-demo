@@ -163,4 +163,164 @@ defmodule AssessmentWeb.OrderUtilities do
     |> Map.delete("pharmacy_id")
     |> Map.put(:pharmacy_id, id)
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import Ecto.Changeset
+alias Ecto.Changeset
+def _normalize_and_validate(params) do
+  courier_id = Map.get(params, "courier_id", "all")
+  order_state = Map.get(params, "order_state", "active")
+  patient_id = Map.get(params, "patient_id", "all")
+  pharmacy_id = Map.get(params, "pharmacy_id", "all")
+  pickup_date = Map.get(params, "pickup_date", "today")
+  normalized_attrs =
+    %{ courier_id: _normalize_id(courier_id),
+       order_state: _normalize_order_state(order_state),
+       patient_id: _normalize_id(patient_id),
+       pharmacy_id: _normalize_id(pharmacy_id),
+       pickup_date: _normalize_date(pickup_date),
+     }
+  prohibitions = %{courier_ids: ["all"], pharmacy_ids: ["all"]}
+  changeset = _validate(normalized_attrs, prohibitions)
+  if changeset.valid? do
+    normalized_attrs
+    |> Enum.reduce(
+        %{},
+        fn ({key, {:ok, value}}, map) -> Map.put(map, key, value) end)
+  else
+    {:error, changeset}
+  end
+end
+def _validate(normalized_attrs, prohibitions) do
+  changeset =
+    { %{},
+      %{ courier_id: :any,
+         order_state: :any,
+         patient_id: :any,
+         pharmacy_id: :any,
+         pickup_date: :any,
+       }
+    }
+    |> Changeset.cast(
+          normalized_attrs,
+          ~w(courier_id order_state patient_id pharmacy_id pickup_date)a)
+    |> _validate_courier_id(prohibitions.courier_ids)
+    |> _validate_order_state()
+    |> _validate_patient_id()
+    |> _validate_pharmacy_id(prohibitions.pharmacy_ids)
+    |> _validate_pickup_date()
+end
+def _normalize_id("all"), do: {:ok, :all}
+def _normalize_id(id) do
+  with {:ok, int} <- to_integer(id) do
+    if int > 0 do
+      {:ok, int}
+    else
+      {:error, :invalid_natural_number}
+    end
+  end
+end
+def _validate_courier_id(changeset, prohibited_ids) do
+  validate_change(changeset, :courier_id, fn (:courier_id, result) ->
+      case result do
+        {:ok, id} ->
+          if id in prohibited_ids do
+            [courier_id: "Is prohibited for this user"]
+          else
+            []
+          end
+        {:error, _} ->
+          [courier_id: "Must be a positive integer"]
+      end
+    end)
+end
+def _validate_pharmacy_id(changeset, prohibited_ids) do
+  validate_change(changeset, :pharmacy_id, fn (:pharmacy_id, result) ->
+      case result do
+        {:ok, id} ->
+          if id in prohibited_ids do
+            [pharmacy_id: "Is prohibited to this user"]
+          else
+            []
+          end
+        {:error, _} ->
+          [pharmacy_id: "Must be a positive integer"]
+      end
+    end)
+end
+def _validate_patient_id(changeset) do
+  validate_change(changeset, :patient_id, fn (:patient_id, result) ->
+      case result do
+        {:ok, id} ->
+            []
+        {:error, _} ->
+          [patient_id: "Must be 'all' or a positive integer"]
+      end
+    end)
+end
+def _normalize_order_state(order_state) do
+  order_states = ~w(all active canceled delivered undeliverable)s
+  if order_state in order_states do
+    {:ok, order_state}
+  else
+    {:error, :invalid_order_state}
+  end
+end
+def _normalize_date(nil), do: {:ok, get_date_today()}
+def _normalize_date("all"), do: {:ok, "all"}
+def _normalize_date("today"), do: {:ok, get_date_today() }
+def _normalize_date(%{"day" => day, "month" => month, "year" => year}) do
+  "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
+  |> Date.from_iso8601()
+end
+def _normalize_date(_), do: {:error, :invalid_date}
+def _normalize_date_component(component) do
+  if String.length(component) == 1 do
+    "0#{component}"
+  else
+    component
+  end
+end
+def _validate_order_state(changeset) do
+  msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  validate_change(changeset, :order_state, fn (:order_state, result) ->
+      case result do
+        {:ok, _} -> []
+        {:error, _} -> [order_state: msg]
+      end
+    end)
+end
+def _validate_pickup_date(changeset) do
+  msg = "Must either be of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
+  validate_change(changeset, :pickup_date, fn (:pickup_date, result) ->
+      case result do
+        {:ok, _} -> []
+        {:error, _} -> [pickup_date: msg]
+      end
+    end)
+end
+
+
+
+
+
+
 end

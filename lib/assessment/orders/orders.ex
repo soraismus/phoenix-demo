@@ -55,7 +55,7 @@ defmodule Assessment.Orders do
       inner_join: p in assoc(o, :patient),
       inner_join: ph in assoc(o, :pharmacy),
       preload: [courier: c, order_state: os, patient: p, pharmacy: ph]
-    query = if Map.has_key?(params, :courier_id) do
+    query = if Map.has_key?(params, :courier_id) && params.courier_id != :all do
               query |> where([o], o.courier_id == ^params.courier_id)
             else
               query
@@ -70,7 +70,7 @@ defmodule Assessment.Orders do
             else
               query
             end
-    query = if Map.has_key?(params, :pharmacy_id) do
+    query = if Map.has_key?(params, :pharmacy_id) && params.pharmacy_id != :all do
               query |> where([o], o.pharmacy_id == ^params.pharmacy_id)
             else
               query

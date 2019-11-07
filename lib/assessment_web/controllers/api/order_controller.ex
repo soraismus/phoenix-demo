@@ -6,13 +6,14 @@ defmodule AssessmentWeb.Api.OrderController do
             changeset_error: 2,
             internal_error: 2,
             resource_error: 3,
-            resource_error: 4
+            resource_error: 4,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
+            _normalize_and_validate: 1,
           ]
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
@@ -73,7 +74,8 @@ defmodule AssessmentWeb.Api.OrderController do
   def index(conn, params) do
     with {:ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
-         {:ok, normalized_params} <- normalize_index_params(params, account) do
+         # {:ok, normalized_params} <- normalize_index_params(params, account) do
+         {:ok, normalized_params} <- _normalize_and_validate(params) do
       conn
       |> render(
             "index.json",
@@ -100,6 +102,9 @@ defmodule AssessmentWeb.Api.OrderController do
         msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
         conn
         |> resource_error("order_state", msg)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(changeset)
       x ->
         IO.inspect("default")
         IO.inspect(x)
