@@ -35,7 +35,6 @@ defmodule AssessmentWeb.Api.OrderController do
 
   def create(conn, %{"order" => params}) do
     with {:ok, agent} <- authenticate_agent(conn),
-         #{:ok, new_params} <- authorize_creation(agent, params),
          account <- Accounts.specify_agent(agent),
          validated_params <- _normalize_create(params, account),
          {:ok, normalized_params} <- accumulate_errors(validated_params),
@@ -50,30 +49,14 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, :not_authorized} ->
         conn
         |> authorization_error()
-      {:error, :invalid_order} ->
-        IO.inspect("OrderController create: invalid_order: params:")
-        IO.inspect(params)
-        conn
-        |> internal_error("ORCR-IO")
-      {:error, :invalid_order_state} ->
-        IO.inspect("OrderController create: invalid_order_state: params:")
-        IO.inspect(params)
-        conn
-        |> internal_error("ORCR-IOS")
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
       {:error, (%{} = errors)} ->
-        IO.inspect("index errors:")
-        IO.inspect(errors)
         conn
         |> put_status(400)
         |> render("creation-errors.json", errors: errors)
-      x ->
-        IO.inspect("OrderController create: default: params:")
-        IO.inspect(params)
-        IO.inspect("OrderController create: default: x:")
-        IO.inspect(x)
+      _ ->
         conn
         |> internal_error("ORCR")
     end
@@ -101,34 +84,11 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, :not_authorized} ->
         conn
         |> authorization_error()
-      {:error, :invalid_courier_id} ->
-        conn
-        |> authorization_error()
-      {:error, :invalid_date_format} ->
-        msg = "Must either be of the form 'YYYY-MM-DD' or be one of 'today' or 'all'"
-        conn
-        |> resource_error("pickup_date", msg)
-      {:error, :invalid_pharmacy_id} ->
-        conn
-        |> authorization_error()
-      {:error, :invalid_order_state} ->
-        msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-        conn
-        |> resource_error("order_state", msg)
-      {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect("index changeset:")
-        IO.inspect(changeset)
-        conn
-        |> changeset_error(changeset)
       {:error, (%{} = errors)} ->
-        IO.inspect("index errors:")
-        IO.inspect(errors)
         conn
         |> put_status(400)
         |> render("index-errors.json", errors: errors)
-      x ->
-        IO.inspect("index default:")
-        IO.inspect(x)
+      _ ->
         conn
         |> internal_error("ORIN")
     end
@@ -154,27 +114,6 @@ defmodule AssessmentWeb.Api.OrderController do
       _ ->
         conn
         |> internal_error("ORSH")
-    end
-  end
-
-  defp authorize_creation(agent, params) do
-    case Accounts.specify_agent(agent) do
-      %Administrator{} ->
-        {:ok, params}
-      (%Courier{} = courier) ->
-        key = "courier_id"
-        if !Map.has_key?(params, key) || params[key] == courier.id do
-          {:ok, Map.put(params, key, courier.id)}
-        else
-          {:error, :not_authorized}
-        end
-      (%Pharmacy{} = pharmacy) ->
-        key = "pharmacy_id"
-        if !Map.has_key?(params, key) || params[key] == pharmacy.id do
-          {:ok, Map.put(params, key, pharmacy.id)}
-        else
-          {:error, :not_authorized}
-        end
     end
   end
 
