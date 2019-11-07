@@ -2,6 +2,7 @@ defmodule AssessmentWeb.OrderUtilities do
   import Assessment.Utilities,
     only: [get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
   alias Assessment.Accounts.{Courier,Pharmacy}
+  require IEx
 
   defp normalize_courier_id(params, id) do
     params
@@ -188,18 +189,19 @@ alias Ecto.Changeset
 def _get_required_ids(account) do
   case account do
     (%Courier{id: id}) ->
-      %{courier_id: id, pharmacy_id: nil}
+      %{courier_id: to_string(id), pharmacy_id: nil}
     (%Pharmacy{id: id}) ->
-      %{courier_id: nil, pharmacy_id: id}
+      %{courier_id: nil, pharmacy_id: to_string(id)}
     _ ->
       %{courier_id: nil, pharmacy_id: nil}
   end
 end
 def _normalize_and_validate(params, account) do
-  courier_id = Map.get(params, "courier_id", "all")
+  requirements = _get_required_ids(account)
+  courier_id = Map.get(params, "courier_id", requirements.courier_id || "all")
   order_state = Map.get(params, "order_state", "active")
   patient_id = Map.get(params, "patient_id", "all")
-  pharmacy_id = Map.get(params, "pharmacy_id", "all")
+  pharmacy_id = Map.get(params, "pharmacy_id", requirements.pharmacy_id || "all")
   pickup_date = Map.get(params, "pickup_date", "today")
   normalized_attrs =
     %{ courier_id: _normalize_id(courier_id),
@@ -208,7 +210,6 @@ def _normalize_and_validate(params, account) do
        pharmacy_id: _normalize_id(pharmacy_id),
        pickup_date: _normalize_date(pickup_date),
      }
-  requirements = _get_required_ids(account)
   changeset = _validate(normalized_attrs, requirements)
   if changeset.valid? do
     _normalized_attrs =
@@ -257,7 +258,7 @@ def _validate_courier_id(changeset, required_id) do
           cond do
             is_nil(required_id)
               -> []
-            id == required_id
+            to_string(id) == required_id
               -> []
             true ->
               [courier_id: "Is prohibited for this user"]
@@ -274,7 +275,7 @@ def _validate_pharmacy_id(changeset, required_id) do
           cond do
             is_nil(required_id)
               -> []
-            id == required_id
+            to_string(id) == required_id
               -> []
             true ->
               [pharmacy_id: "Is prohibited for this user"]
@@ -310,7 +311,9 @@ def _normalize_date(%{"day" => day, "month" => month, "year" => year}) do
   "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
   |> Date.from_iso8601()
 end
-def _normalize_date(_), do: {:error, :invalid_date}
+def _normalize_date(iso8601_date_or_error) do
+  Date.from_iso8601(iso8601_date_or_error)
+end
 def _normalize_date_component(component) do
   if String.length(component) == 1 do
     "0#{component}"
@@ -328,7 +331,7 @@ def _validate_order_state(changeset) do
     end)
 end
 def _validate_pickup_date(changeset) do
-  msg = "Must either be of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
+  msg = "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
   validate_change(changeset, :pickup_date, fn (:pickup_date, result) ->
       case result do
         {:ok, _} -> []
