@@ -108,16 +108,7 @@ defmodule Assessment.Utilities do
     struct
     |> Map.from_struct()
     |> Map.take(keys)
-    |> Enum.reduce(
-          %{},
-          fn ({k, v}, memo) ->
-            try do
-              Map.put(memo, to_string(k), ToJson.to_json(v))
-            rescue
-              Protocol.UndefinedError ->
-                Map.put(memo, to_string(k), to_string(v))
-            end
-          end)
+    |> ToJson.to_json()
   end
 
   defprotocol ToJson do
@@ -130,24 +121,30 @@ defmodule Assessment.Utilities do
     def to_json(atom), do: to_string(atom)
   end
 
+  defimpl ToJson, for: BitString do
+    def to_json(bit_string), do: to_string(bit_string)
+  end
+
   defimpl ToJson, for: Date do
     def to_json(%Date{} = date), do: to_string(date)
   end
 
+  defimpl ToJson, for: Integer do
+    def to_json(integer), do: to_string(integer)
+  end
+
   defimpl ToJson, for: List do
     def to_json([]), do: []
-    def to_json([%_{} | _] = structs) do
-      structs
-      |> Enum.map(&ToJson.to_json/1)
+    def to_json([_ | _] = values) do
+      Enum.map(values, &ToJson.to_json/1)
     end
   end
 
   defimpl ToJson, for: Map do
     def to_json(%{} = map) do
-      map
-      |> Enum.reduce(%{}, fn ({key, value}, acc) ->
-            Map.put(acc, to_string(key), ToJson.to_json(value))
-          end)
+      Enum.reduce(map, %{}, fn ({key, value}, memo) ->
+        Map.put(memo, to_string(key), ToJson.to_json(value))
+      end)
     end
   end
 
@@ -161,9 +158,6 @@ defmodule Assessment.Utilities do
 
   defimpl ToJson, for: Time do
     def to_json(%Time{} = time) do
-      format_time(time)
-    end
-    defp format_time(%Time{} = time) do
       time |> Time.to_iso8601() |> String.slice(0..4)
     end
   end

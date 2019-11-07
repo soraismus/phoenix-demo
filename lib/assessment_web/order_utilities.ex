@@ -1,6 +1,11 @@
 defmodule AssessmentWeb.OrderUtilities do
   import Assessment.Utilities,
-    only: [get_date_today: 0, map_error: 2, nilify_error: 1, to_integer: 1]
+    only: [ bind_value: 2,
+            get_date_today: 0,
+            map_error: 2,
+            nilify_error: 1,
+            to_integer: 1,
+          ]
   alias Assessment.Accounts.{Courier,Pharmacy}
   require IEx
 
@@ -184,19 +189,59 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 def _normalize(params, account) do
+  IO.inspect("_normalize params:")
+  IO.inspect(params)
+  IO.inspect("_normalize account:")
+  IO.inspect(account)
   requirements = _get_required_ids(account)
-  courier_id = Map.get(params, "courier_id", requirements.courier_id || "all")
+  courier_id =
+    params
+    |> Map.get("courier_id")
+    |> __validate_account_id(requirements.courier_id)
   order_state = Map.get(params, "order_state", "active")
+  IO.inspect("_normalize order_state:")
+  IO.inspect(order_state)
+  IO.inspect("_normalize `_normalize_order_state(order_state)`:")
+  IO.inspect(_normalize_order_state(order_state))
   patient_id = Map.get(params, "patient_id", "all")
   pharmacy_id = Map.get(params, "pharmacy_id", requirements.pharmacy_id || "all")
+  pharmacy_id =
+    params
+    |> Map.get("pharmacy_id")
+    |> __validate_account_id(requirements.pharmacy_id)
   pickup_date = Map.get(params, "pickup_date", "today")
-  %{ courier_id: _normalize_id(courier_id),
-      order_state: _normalize_order_state(order_state),
-      patient_id: _normalize_id(patient_id),
-      pharmacy_id: _normalize_id(pharmacy_id),
-      pickup_date: _normalize_date(pickup_date),
-    }
+  r = %{ courier_id: courier_id,
+     order_state_id: _normalize_order_state(order_state),
+     patient_id: _normalize_id(patient_id),
+     pharmacy_id: pharmacy_id,
+     pickup_date: _normalize_date(pickup_date),
+   }
+  IO.inspect("_normalize result:")
+  IO.inspect(r)
+  r
 end
+def __validate_account_id(account_id, required_id) when is_nil(required_id) do
+  if account_id == nil or account_id == "all" do
+    {:ok, :all}
+  else
+    msg = :invalid_account_id
+    account_id
+    |> to_integer()
+    |> bind_value(fn (id) -> if (id > 0), do: {:ok, id}, else: {:error, msg} end)
+    |> map_error(fn (_) -> msg end)
+  end
+end
+def __validate_account_id(account_id, required_id) when is_integer(required_id) do
+  cond do
+    account_id == nil ->
+      {:ok, required_id}
+    account_id == to_string(required_id) ->
+      {:ok, required_id}
+    true ->
+      {:error, :not_authorized}
+  end
+end
+
 
     #CHANGESET NOT NEEDED
 
@@ -205,9 +250,9 @@ alias Ecto.Changeset
 def _get_required_ids(account) do
   case account do
     (%Courier{id: id}) ->
-      %{courier_id: to_string(id), pharmacy_id: nil}
+      %{courier_id: id, pharmacy_id: nil}
     (%Pharmacy{id: id}) ->
-      %{courier_id: nil, pharmacy_id: to_string(id)}
+      %{courier_id: nil, pharmacy_id: id}
     _ ->
       %{courier_id: nil, pharmacy_id: nil}
   end
@@ -251,10 +296,10 @@ def _validate(normalized_attrs, requirements) do
     |> Changeset.cast(
           normalized_attrs,
           ~w(courier_id order_state patient_id pharmacy_id pickup_date)a)
-    |> _validate_courier_id(requirements.courier_id)
+    |> _validate_courier_id(to_string(requirements.courier_id))
     |> _validate_order_state()
     |> _validate_patient_id()
-    |> _validate_pharmacy_id(requirements.pharmacy_id)
+    |> _validate_pharmacy_id(to_string(requirements.pharmacy_id))
     |> _validate_pickup_date()
 end
 def _normalize_id("all"), do: {:ok, :all}
@@ -312,14 +357,11 @@ def _validate_patient_id(changeset) do
     end)
 end
 def _normalize_order_state("all"), do: {:ok, :all}
-def _normalize_order_state(order_state) do
-  order_states = ~w(all active canceled delivered undeliverable)s
-  if order_state in order_states do
-    {:ok, order_state}
-  else
-    {:error, :invalid_order_state}
-  end
-end
+def _normalize_order_state("active"), do: {:ok, 1}
+def _normalize_order_state("canceled"), do: {:ok, 2}
+def _normalize_order_state("delivered"), do: {:ok, 3}
+def _normalize_order_state("undeliverable"), do: {:ok, 4}
+def _normalize_order_state(_), do: {:error, :invalid_order_state}
 def _normalize_date(nil), do: {:ok, get_date_today()}
 def _normalize_date("all"), do: {:ok, :all}
 def _normalize_date("today"), do: {:ok, get_date_today() }

@@ -79,8 +79,6 @@ defmodule AssessmentWeb.Api.OrderController do
          account <- Accounts.specify_agent(agent),
          validated_params <- _normalize(params, account),
          {:ok, normalized_params} <- accumulate_errors(validated_params) do
-         # {:ok, normalized_params} <- normalize_index_params(params, account) do
-         #{:ok, normalized_params} <- _normalize_and_validate(params, account) do
       conn
       |> render(
             "index.json",
