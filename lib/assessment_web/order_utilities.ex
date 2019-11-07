@@ -241,12 +241,15 @@ def __validate_order_state("undeliverable"), do: {:ok, 4}
 def __validate_order_state(_), do: {:error, :invalid_order_state}
 def __validate_id("all"), do: {:ok, :all}
 def __validate_id(id) do
-  with {:ok, int} <- to_integer(id) do
-    if int > 0 do
-      {:ok, int}
-    else
+  case to_integer(id) do
+    {:ok, int} ->
+      if int > 0 do
+        {:ok, int}
+      else
+        {:error, :invalid_account_id}
+      end
+    _ ->
       {:error, :invalid_account_id}
-    end
   end
 end
 def __validate_date(nil), do: {:ok, get_date_today()}

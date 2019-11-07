@@ -95,6 +95,14 @@ defmodule Assessment.Utilities do
   def prohibit_nil(nil, msg), do: {@error, msg}
   def prohibit_nil(value, _msg), do: {@ok, value}
 
+  def replace_old(map, key, value) do
+    try do
+      Map.replace!(map, key, value)
+    rescue
+      KeyError -> map
+    end
+  end
+
   @spec to_integer(binary()) :: ok_or_error(integer(), :invalid_integer_format)
   def to_integer(value) when is_binary(value) do
     try do

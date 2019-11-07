@@ -5,62 +5,10 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
-
-
-  def render("index-errors.json", %{errors: errors}) do
-    %{errors: errors |> normalize_index_errors() |> ToJson.to_json()}
-  end
-
-  defp normalize_index_errors(errors) do
-    IO.inspect("normalize_index_errors errors:")
-    IO.inspect(errors)
-    order_state_msg =
-      "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-    pickup_date_msg =
-      "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
-    id_message =
-      "Must be either 'all' or a positive integer"
-    authorization_msg =
-      "Is prohibited to unauthorized users"
-    errors =
-      case Map.get_and_update(errors, :order_state_id, fn (_) -> :pop end) do
-        {nil, errors} -> errors
-        {_, errors} -> Map.put(errors, :order_state, [order_state_msg])
-      end
-    errors = replace_old(errors, :pickup_date, [pickup_date_msg])
-    errors =
-      if Map.has_key?(errors, :courier_id) do
-        case errors.courier_id do
-          :not_authorized ->
-            Map.put(errors, :courier_id, [authorization_msg])
-          :invalid_account_id ->
-            Map.put(errors, :courier_id, [id_message])
-        end
-      else
-        errors
-      end
-    errors =
-      if Map.has_key?(errors, :patient_id) do
-        case errors.patient_id do
-          :invalid_integer_format ->
-            Map.put(errors, :patient_id, [id_message])
-          _ ->
-            errors
-        end
-      else
-        errors
-      end
-  end
-
-  defp replace_old(map, key, value) do
-    try do
-      Map.replace(map, key, value)
-    rescue
-      KeyError -> map
-    end
-  end
-
-
+  @order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @pickup_date_msg "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
+  @id_message "Must be either 'all' or a positive integer"
+  @authorization_msg "Is prohibited to unauthorized users"
 
   def render("cancel.json", %{order: order}) do
     %{canceled: %{order: ToJson.to_json(order)}}
@@ -82,12 +30,29 @@ defmodule AssessmentWeb.Api.OrderView do
     }
   end
 
+  def render("index-errors.json", %{errors: errors}) do
+    %{errors: errors |> index_error_messages() |> ToJson.to_json()}
+  end
+
   def render("mark_undeliverable.json", %{order: order}) do
     %{undeliverable: %{order: ToJson.to_json(order)}}
   end
 
   def render("show.json", %{order: order}) do
     %{order: ToJson.to_json(order)}
+  end
+
+  defp account_id_error_message(errors, account_id) do
+    if Map.has_key?(errors, account_id) do
+      case errors[account_id] do
+        :not_authorized ->
+          Map.put(errors, account_id, [@authorization_msg])
+        :invalid_account_id ->
+          Map.put(errors, account_id, [@id_message])
+      end
+    else
+      errors
+    end
   end
 
   defp display_query_params(%{order_state_id: :all} = query_params) do
@@ -101,6 +66,22 @@ defmodule AssessmentWeb.Api.OrderView do
     |> Map.put(:order_state, OrderStates.to_description(id))
   end
   defp display_query_params(query_params), do: query_params
+
+  defp index_error_messages(errors) do
+    errors
+    |> order_state_error_message()
+    |> Utilities.replace_old(:pickup_date, [@pickup_date_msg])
+    |> Utilities.replace_old(:patient_id, [@id_message])
+    |> account_id_error_message(:courier_id)
+    |> account_id_error_message(:pharmacy_id)
+  end
+
+  defp order_state_error_message(errors) do
+    case Map.get_and_update(errors, :order_state_id, fn (_) -> :pop end) do
+      {nil, errors} -> errors
+      {_, errors} -> Map.put(errors, :order_state, [@order_state_msg])
+    end
+  end
 
   defimpl ToJson, for: Order do
     def to_json(%Order{order_state_id: id} = order) do
