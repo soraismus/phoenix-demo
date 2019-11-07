@@ -9,6 +9,11 @@ defmodule AssessmentWeb.Api.OrderController do
             resource_error: 4
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
+  import AssessmentWeb.OrderUtilities,
+    only: [ normalize_create_params: 2,
+            normalize_edit_params: 2,
+            normalize_index_params: 2,
+          ]
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
@@ -51,10 +56,11 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def index(conn, _params) do
-    case authenticate_agent(conn) do
-      {:ok, _} ->
-        conn
-        |> render("index.json", orders: Orders.list_orders(%{}))
+    with {:ok, _} <- authenticate_agent(conn),
+         {:ok, normalized_params} <- normalize_index_params(params, account)
+      conn
+      |> render("index.json", orders: Orders.list_orders(normalized_params))
+    else
       {:error, :not_authenticated} ->
         conn
         |> authentication_error()
@@ -70,7 +76,7 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, agent} <- authenticate_agent(conn),
+    with {:ok, _} <- authenticate_agent(conn),
          {:ok, order} <- Orders.get_order(id) do
       conn
       |> render("show.json", order: order)
