@@ -41,6 +41,10 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, :not_authorized} ->
         conn
         |> authorization_error()
+      {:error, :invalid_order} ->
+        conn
+      {:error, :invalid_order_state} ->
+        conn
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
@@ -55,15 +59,25 @@ defmodule AssessmentWeb.Api.OrderController do
     |> update_order_state(params, @delivered, "deliver.json")
   end
 
-  def index(conn, _params) do
-    with {:ok, _} <- authenticate_agent(conn),
-         {:ok, normalized_params} <- normalize_index_params(params, account)
+  def index(conn, params) do
+    with {:ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         {:ok, normalized_params} <- normalize_index_params(params, account) do
       conn
       |> render("index.json", orders: Orders.list_orders(normalized_params))
     else
       {:error, :not_authenticated} ->
         conn
         |> authentication_error()
+      {:error, :not_authorized} ->
+        conn
+        |> authorization_error()
+      {:error, :invalid_courier_id} ->
+        conn
+        |> authorization_error()
+      {:error, :invalid_pharmacy_id} ->
+        conn
+        |> authorization_error()
       _ ->
         conn
         |> internal_error("ORIN")
