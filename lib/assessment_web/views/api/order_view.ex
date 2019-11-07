@@ -55,13 +55,4 @@ defmodule AssessmentWeb.Api.OrderView do
     def to_description(:all), do: "all"
     def to_description(id), do: OrderStates.to_description(id)
   end
-
-  defimpl ToJson, for: Time do
-    def to_json(%Time{} = time) do
-      format_time(time)
-    end
-    defp format_time(%Time{} = time) do
-      time |> Time.to_iso8601() |> String.slice(0..4)
-    end
-  end
 end

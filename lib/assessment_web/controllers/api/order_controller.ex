@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.Api.OrderController do
   use AssessmentWeb, :controller
+  import Assessment.Utilities, only: [accumulate_errors: 1]
   import AssessmentWeb.Api.ControllerUtilities,
     only: [ authentication_error: 1,
             authorization_error: 1,
@@ -13,11 +14,13 @@ defmodule AssessmentWeb.Api.OrderController do
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
+            _normalize: 2,
             _normalize_and_validate: 2,
           ]
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
+  alias Assessment.Utilities.ToJson
 
   @canceled "canceled"
   @delivered "delivered"
@@ -74,8 +77,10 @@ defmodule AssessmentWeb.Api.OrderController do
   def index(conn, params) do
     with {:ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
+         validated_params <- _normalize(params, account),
+         {:ok, normalized_params} <- accumulate_errors(validated_params) do
          # {:ok, normalized_params} <- normalize_index_params(params, account) do
-         {:ok, normalized_params} <- _normalize_and_validate(params, account) do
+         #{:ok, normalized_params} <- _normalize_and_validate(params, account) do
       conn
       |> render(
             "index.json",
@@ -102,6 +107,10 @@ defmodule AssessmentWeb.Api.OrderController do
         msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
         conn
         |> resource_error("order_state", msg)
+      {:error, (%{} = errors)} ->
+        conn
+        |> put_status(400)
+        |> json(%{errors: ToJson.to_json(errors)})
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)

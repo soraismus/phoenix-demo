@@ -183,6 +183,22 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 
+def _normalize(params, account) do
+  requirements = _get_required_ids(account)
+  courier_id = Map.get(params, "courier_id", requirements.courier_id || "all")
+  order_state = Map.get(params, "order_state", "active")
+  patient_id = Map.get(params, "patient_id", "all")
+  pharmacy_id = Map.get(params, "pharmacy_id", requirements.pharmacy_id || "all")
+  pickup_date = Map.get(params, "pickup_date", "today")
+  %{ courier_id: _normalize_id(courier_id),
+      order_state: _normalize_order_state(order_state),
+      patient_id: _normalize_id(patient_id),
+      pharmacy_id: _normalize_id(pharmacy_id),
+      pickup_date: _normalize_date(pickup_date),
+    }
+end
+
+    #CHANGESET NOT NEEDED
 
 import Ecto.Changeset
 alias Ecto.Changeset
