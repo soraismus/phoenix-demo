@@ -185,7 +185,17 @@ defmodule AssessmentWeb.OrderUtilities do
 
 import Ecto.Changeset
 alias Ecto.Changeset
-def _normalize_and_validate(params) do
+def _get_required_ids(account) do
+  case account do
+    (%Courier{id: id}) ->
+      %{courier_id: id, pharmacy_id: nil}
+    (%Pharmacy{id: id}) ->
+      %{courier_id: nil, pharmacy_id: id}
+    _ ->
+      %{courier_id: nil, pharmacy_id: nil}
+  end
+end
+def _normalize_and_validate(params, account) do
   courier_id = Map.get(params, "courier_id", "all")
   order_state = Map.get(params, "order_state", "active")
   patient_id = Map.get(params, "patient_id", "all")
@@ -198,18 +208,20 @@ def _normalize_and_validate(params) do
        pharmacy_id: _normalize_id(pharmacy_id),
        pickup_date: _normalize_date(pickup_date),
      }
-  prohibitions = %{courier_ids: ["all"], pharmacy_ids: ["all"]}
-  changeset = _validate(normalized_attrs, prohibitions)
+  requirements = _get_required_ids(account)
+  changeset = _validate(normalized_attrs, requirements)
   if changeset.valid? do
-    normalized_attrs
-    |> Enum.reduce(
-        %{},
-        fn ({key, {:ok, value}}, map) -> Map.put(map, key, value) end)
+    _normalized_attrs =
+      normalized_attrs
+      |> Enum.reduce(
+          %{},
+          fn ({key, {:ok, value}}, map) -> Map.put(map, key, value) end)
+    {:ok, _normalized_attrs}
   else
     {:error, changeset}
   end
 end
-def _validate(normalized_attrs, prohibitions) do
+def _validate(normalized_attrs, requirements) do
   changeset =
     { %{},
       %{ courier_id: :any,
@@ -222,10 +234,10 @@ def _validate(normalized_attrs, prohibitions) do
     |> Changeset.cast(
           normalized_attrs,
           ~w(courier_id order_state patient_id pharmacy_id pickup_date)a)
-    |> _validate_courier_id(prohibitions.courier_ids)
+    |> _validate_courier_id(requirements.courier_id)
     |> _validate_order_state()
     |> _validate_patient_id()
-    |> _validate_pharmacy_id(prohibitions.pharmacy_ids)
+    |> _validate_pharmacy_id(requirements.pharmacy_id)
     |> _validate_pickup_date()
 end
 def _normalize_id("all"), do: {:ok, :all}
@@ -238,28 +250,34 @@ def _normalize_id(id) do
     end
   end
 end
-def _validate_courier_id(changeset, prohibited_ids) do
+def _validate_courier_id(changeset, required_id) do
   validate_change(changeset, :courier_id, fn (:courier_id, result) ->
       case result do
         {:ok, id} ->
-          if id in prohibited_ids do
-            [courier_id: "Is prohibited for this user"]
-          else
-            []
+          cond do
+            is_nil(required_id)
+              -> []
+            id == required_id
+              -> []
+            true ->
+              [courier_id: "Is prohibited for this user"]
           end
         {:error, _} ->
           [courier_id: "Must be a positive integer"]
       end
     end)
 end
-def _validate_pharmacy_id(changeset, prohibited_ids) do
+def _validate_pharmacy_id(changeset, required_id) do
   validate_change(changeset, :pharmacy_id, fn (:pharmacy_id, result) ->
       case result do
         {:ok, id} ->
-          if id in prohibited_ids do
-            [pharmacy_id: "Is prohibited to this user"]
-          else
-            []
+          cond do
+            is_nil(required_id)
+              -> []
+            id == required_id
+              -> []
+            true ->
+              [pharmacy_id: "Is prohibited for this user"]
           end
         {:error, _} ->
           [pharmacy_id: "Must be a positive integer"]
@@ -276,6 +294,7 @@ def _validate_patient_id(changeset) do
       end
     end)
 end
+def _normalize_order_state("all"), do: {:ok, :all}
 def _normalize_order_state(order_state) do
   order_states = ~w(all active canceled delivered undeliverable)s
   if order_state in order_states do
@@ -285,7 +304,7 @@ def _normalize_order_state(order_state) do
   end
 end
 def _normalize_date(nil), do: {:ok, get_date_today()}
-def _normalize_date("all"), do: {:ok, "all"}
+def _normalize_date("all"), do: {:ok, :all}
 def _normalize_date("today"), do: {:ok, get_date_today() }
 def _normalize_date(%{"day" => day, "month" => month, "year" => year}) do
   "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
