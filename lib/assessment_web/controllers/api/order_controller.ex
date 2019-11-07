@@ -106,14 +106,19 @@ defmodule AssessmentWeb.Api.OrderController do
         conn
         |> resource_error("order_state", msg)
       {:error, (%{} = errors)} ->
+        IO.inspect("index errors:")
+        IO.inspect(errors)
         conn
         |> put_status(400)
-        |> json(%{errors: ToJson.to_json(errors)})
+        |> render("index-errors.json", errors: errors)
+        #|> json(%{errors: ToJson.to_json(errors)})
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect("index changeset:")
+        IO.inspect(changeset)
         conn
         |> changeset_error(changeset)
       x ->
-        IO.inspect("default")
+        IO.inspect("index default:")
         IO.inspect(x)
         conn
         |> internal_error("ORIN")

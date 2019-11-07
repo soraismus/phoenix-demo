@@ -7,7 +7,6 @@ defmodule AssessmentWeb.OrderUtilities do
             to_integer: 1,
           ]
   alias Assessment.Accounts.{Courier,Pharmacy}
-  require IEx
 
   defp normalize_courier_id(params, id) do
     params
@@ -189,36 +188,24 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 def _normalize(params, account) do
-  IO.inspect("_normalize params:")
-  IO.inspect(params)
-  IO.inspect("_normalize account:")
-  IO.inspect(account)
   requirements = _get_required_ids(account)
   courier_id =
     params
     |> Map.get("courier_id")
     |> __validate_account_id(requirements.courier_id)
   order_state = Map.get(params, "order_state", "active")
-  IO.inspect("_normalize order_state:")
-  IO.inspect(order_state)
-  IO.inspect("_normalize `_normalize_order_state(order_state)`:")
-  IO.inspect(_normalize_order_state(order_state))
   patient_id = Map.get(params, "patient_id", "all")
-  pharmacy_id = Map.get(params, "pharmacy_id", requirements.pharmacy_id || "all")
   pharmacy_id =
     params
     |> Map.get("pharmacy_id")
     |> __validate_account_id(requirements.pharmacy_id)
   pickup_date = Map.get(params, "pickup_date", "today")
-  r = %{ courier_id: courier_id,
-     order_state_id: _normalize_order_state(order_state),
-     patient_id: _normalize_id(patient_id),
+  %{ courier_id: courier_id,
+     order_state_id: __validate_order_state(order_state),
+     patient_id: __validate_id(patient_id),
      pharmacy_id: pharmacy_id,
-     pickup_date: _normalize_date(pickup_date),
+     pickup_date: __validate_date(pickup_date),
    }
-  IO.inspect("_normalize result:")
-  IO.inspect(r)
-  r
 end
 def __validate_account_id(account_id, required_id) when is_nil(required_id) do
   if account_id == nil or account_id == "all" do
@@ -238,7 +225,45 @@ def __validate_account_id(account_id, required_id) when is_integer(required_id) 
     account_id == to_string(required_id) ->
       {:ok, required_id}
     true ->
-      {:error, :not_authorized}
+      case to_integer(account_id) do
+        {:ok, _} ->
+          {:error, :not_authorized}
+        {:error, _} ->
+          {:error, :invalid_account_id}
+      end
+  end
+end
+def __validate_order_state("all"), do: {:ok, :all}
+def __validate_order_state("active"), do: {:ok, 1}
+def __validate_order_state("canceled"), do: {:ok, 2}
+def __validate_order_state("delivered"), do: {:ok, 3}
+def __validate_order_state("undeliverable"), do: {:ok, 4}
+def __validate_order_state(_), do: {:error, :invalid_order_state}
+def __validate_id("all"), do: {:ok, :all}
+def __validate_id(id) do
+  with {:ok, int} <- to_integer(id) do
+    if int > 0 do
+      {:ok, int}
+    else
+      {:error, :invalid_account_id}
+    end
+  end
+end
+def __validate_date(nil), do: {:ok, get_date_today()}
+def __validate_date("all"), do: {:ok, :all}
+def __validate_date("today"), do: {:ok, get_date_today() }
+def __validate_date(%{"day" => day, "month" => month, "year" => year}) do
+  "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
+  |> Date.from_iso8601()
+end
+def __validate_date(iso8601_date_or_error) do
+  Date.from_iso8601(iso8601_date_or_error)
+end
+def __validate_date_component(component) do
+  if String.length(component) == 1 do
+    "0#{component}"
+  else
+    component
   end
 end
 
@@ -349,7 +374,7 @@ end
 def _validate_patient_id(changeset) do
   validate_change(changeset, :patient_id, fn (:patient_id, result) ->
       case result do
-        {:ok, id} ->
+        {:ok, _id} ->
             []
         {:error, _} ->
           [patient_id: "Must be 'all' or a positive integer"]
@@ -362,6 +387,7 @@ def _normalize_order_state("canceled"), do: {:ok, 2}
 def _normalize_order_state("delivered"), do: {:ok, 3}
 def _normalize_order_state("undeliverable"), do: {:ok, 4}
 def _normalize_order_state(_), do: {:error, :invalid_order_state}
+
 def _normalize_date(nil), do: {:ok, get_date_today()}
 def _normalize_date("all"), do: {:ok, :all}
 def _normalize_date("today"), do: {:ok, get_date_today() }
