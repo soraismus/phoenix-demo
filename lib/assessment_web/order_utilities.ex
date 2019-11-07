@@ -187,24 +187,36 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 
-def _normalize(params, account) do
+def _normalize_index(params, account) do
   requirements = _get_required_ids(account)
   courier_id =
     params
     |> Map.get("courier_id")
+    |> to_string()
     |> __validate_account_id(requirements.courier_id)
-  order_state = Map.get(params, "order_state", "active")
-  patient_id = Map.get(params, "patient_id", "all")
+  order_state =
+    params
+    |> Map.get("order_state", "active")
+    |> __validate_order_state()
+  patient_id =
+    params
+    |> Map.get("patient_id", "all")
+    |> to_string()
+    |> __validate_id()
   pharmacy_id =
     params
     |> Map.get("pharmacy_id")
+    |> to_string()
     |> __validate_account_id(requirements.pharmacy_id)
-  pickup_date = Map.get(params, "pickup_date", "today")
+  pickup_date =
+    params
+    |> Map.get("pickup_date", "today")
+    |> __validate_date()
   %{ courier_id: courier_id,
-     order_state_id: __validate_order_state(order_state),
-     patient_id: __validate_id(patient_id),
+     order_state_id: order_state,
+     patient_id: patient_id,
      pharmacy_id: pharmacy_id,
-     pickup_date: __validate_date(pickup_date),
+     pickup_date: pickup_date,
    }
 end
 def __validate_account_id(account_id, required_id) when is_nil(required_id) do

@@ -14,7 +14,7 @@ defmodule AssessmentWeb.Api.OrderController do
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
-            _normalize: 2,
+            _normalize_index: 2,
             _normalize_and_validate: 2,
           ]
   alias Assessment.Accounts
@@ -77,7 +77,7 @@ defmodule AssessmentWeb.Api.OrderController do
   def index(conn, params) do
     with {:ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
-         validated_params <- _normalize(params, account),
+         validated_params <- _normalize_index(params, account),
          {:ok, normalized_params} <- accumulate_errors(validated_params) do
       conn
       |> render(
