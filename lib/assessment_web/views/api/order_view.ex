@@ -5,10 +5,15 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
-  @order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @pickup_date_msg "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
-  @id_message "Must be either 'all' or a positive integer"
   @authorization_msg "Is prohibited to unauthorized users"
+  @index_id_message "Must be either 'all' or a positive integer"
+  @index_order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @index_pickup_date_msg "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
+  @index_pickup_date_msg "Must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @creation_id_message "Must be specified and must be a positive integer"
+  @order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @creation_pickup_date_msg "Must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @pickup_time_msg "Must be a valid time of the form 'HH:MM'"
 
   def render("cancel.json", %{order: order}) do
     %{canceled: %{order: ToJson.to_json(order)}}
@@ -16,6 +21,10 @@ defmodule AssessmentWeb.Api.OrderView do
 
   def render("create.json", %{order: order}) do
     %{created: %{order: ToJson.to_json(order)}}
+  end
+
+  def render("creation-errors.json", %{errors: errors}) do
+    %{errors: errors |> creation_error_messages() |> ToJson.to_json()}
   end
 
   def render("deliver.json", %{order: order}) do
@@ -42,17 +51,31 @@ defmodule AssessmentWeb.Api.OrderView do
     %{order: ToJson.to_json(order)}
   end
 
-  defp account_id_error_message(errors, account_id) do
+  defp account_id_error_message(errors, account_id, messages) do
     if Map.has_key?(errors, account_id) do
       case errors[account_id] do
         :not_authorized ->
-          Map.put(errors, account_id, [@authorization_msg])
+          Map.put(errors, account_id, [messages.authorization_msg])
         :invalid_account_id ->
-          Map.put(errors, account_id, [@id_message])
+          Map.put(errors, account_id, [messages.id_message])
       end
     else
       errors
     end
+  end
+
+  defp creation_error_messages(errors) do
+    messages =
+      %{ authorization_msg: @authorization_msg,
+         id_message: @creation_id_message
+       }
+    errors
+    |> order_state_error_message()
+    |> Utilities.replace_old(:pickup_date, [@creation_pickup_date_msg])
+    |> Utilities.replace_old(:pickup_time, [@pickup_time_msg])
+    |> Utilities.replace_old(:patient_id, [@creation_id_message])
+    |> account_id_error_message(:courier_id, messages)
+    |> account_id_error_message(:pharmacy_id, messages)
   end
 
   defp display_query_params(%{order_state_id: :all} = query_params) do
@@ -68,12 +91,16 @@ defmodule AssessmentWeb.Api.OrderView do
   defp display_query_params(query_params), do: query_params
 
   defp index_error_messages(errors) do
+    messages =
+      %{ authorization_msg: @authorization_msg,
+         id_message: @index_id_message
+       }
     errors
     |> order_state_error_message()
-    |> Utilities.replace_old(:pickup_date, [@pickup_date_msg])
-    |> Utilities.replace_old(:patient_id, [@id_message])
-    |> account_id_error_message(:courier_id)
-    |> account_id_error_message(:pharmacy_id)
+    |> Utilities.replace_old(:pickup_date, [@index_pickup_date_msg])
+    |> Utilities.replace_old(:patient_id, [@index_id_message])
+    |> account_id_error_message(:courier_id, messages)
+    |> account_id_error_message(:pharmacy_id, messages)
   end
 
   defp order_state_error_message(errors) do

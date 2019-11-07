@@ -186,32 +186,68 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 
-
-def _normalize_index(params, account) do
+def _normalize_create(params, account) do
   requirements = _get_required_ids(account)
   courier_id =
     params
     |> Map.get("courier_id")
     |> to_string()
-    |> __validate_account_id(requirements.courier_id)
+    |> __validate_account_id_create(requirements.courier_id)
   order_state =
     params
     |> Map.get("order_state", "active")
     |> __validate_order_state()
   patient_id =
     params
-    |> Map.get("patient_id", "all")
+    |> Map.get("patient_id")
     |> to_string()
     |> __validate_id()
   pharmacy_id =
     params
     |> Map.get("pharmacy_id")
     |> to_string()
-    |> __validate_account_id(requirements.pharmacy_id)
+    |> __validate_account_id_create(requirements.pharmacy_id)
   pickup_date =
     params
     |> Map.get("pickup_date", "today")
     |> __validate_date()
+  pickup_time =
+    params
+    |> Map.get("pickup_time", "14:00")
+    |> __validate_time()
+  %{ courier_id: courier_id,
+     order_state_id: order_state,
+     patient_id: patient_id,
+     pharmacy_id: pharmacy_id,
+     pickup_date: pickup_date,
+     pickup_time: pickup_time,
+   }
+end
+def _normalize_index(params, account) do
+  requirements = _get_required_ids(account)
+  courier_id =
+    params
+    |> Map.get("courier_id")
+    |> to_string()
+    |> __validate_account_id_index(requirements.courier_id)
+  order_state =
+    params
+    |> Map.get("order_state", "active")
+    |> check_all_or_validate(&__validate_order_state/1)
+  patient_id =
+    params
+    |> Map.get("patient_id", "all")
+    |> to_string()
+    |> check_all_or_validate(&__validate_id/1)
+  pharmacy_id =
+    params
+    |> Map.get("pharmacy_id")
+    |> to_string()
+    |> __validate_account_id_index(requirements.pharmacy_id)
+  pickup_date =
+    params
+    |> Map.get("pickup_date", "today")
+    |> check_all_or_validate(&__validate_date/1)
   %{ courier_id: courier_id,
      order_state_id: order_state,
      patient_id: patient_id,
@@ -219,53 +255,72 @@ def _normalize_index(params, account) do
      pickup_date: pickup_date,
    }
 end
-def __validate_account_id(account_id, required_id) when is_nil(required_id) do
-  if account_id == nil or account_id == "all" do
+defp check_all_or_validate(id, fun) do
+  if id == "all" do
     {:ok, :all}
   else
-    msg = :invalid_account_id
-    account_id
-    |> to_integer()
-    |> bind_value(fn (id) -> if (id > 0), do: {:ok, id}, else: {:error, msg} end)
-    |> map_error(fn (_) -> msg end)
+    fun.(id)
   end
 end
-def __validate_account_id(account_id, required_id) when is_integer(required_id) do
-  cond do
-    account_id == nil ->
-      {:ok, required_id}
-    account_id == to_string(required_id) ->
-      {:ok, required_id}
-    true ->
-      case to_integer(account_id) do
-        {:ok, _} ->
-          {:error, :not_authorized}
-        {:error, _} ->
-          {:error, :invalid_account_id}
-      end
-  end
+def __validate_account_id_create(account_id, required_id)
+  when is_binary(account_id) and is_nil(required_id) do
+    __validate_id(account_id)
 end
-def __validate_order_state("all"), do: {:ok, :all}
+def __validate_account_id_create(account_id, required_id)
+  when is_binary(account_id) and is_integer(required_id) do
+    cond do
+      account_id == "" ->
+        {:ok, required_id}
+      account_id == to_string(required_id) ->
+        {:ok, required_id}
+      true ->
+        case to_integer(account_id) do
+          {:ok, _} ->
+            {:error, :not_authorized}
+          {:error, _} ->
+            {:error, :invalid_account_id}
+        end
+    end
+end
+def __validate_account_id_index(account_id, required_id)
+  when is_binary(account_id) and is_nil(required_id) do
+    cond do
+      account_id == "" ->
+        {:ok, :all}
+      account_id == "all" ->
+        {:ok, :all}
+      true ->
+        __validate_id(account_id)
+    end
+end
+def __validate_account_id_index(account_id, required_id)
+  when is_binary(account_id) and is_integer(required_id) do
+    cond do
+      account_id == "" ->
+        {:ok, :all}
+      account_id == to_string(required_id) ->
+        {:ok, required_id}
+      true ->
+        case to_integer(account_id) do
+          {:ok, _} ->
+            {:error, :not_authorized}
+          {:error, _} ->
+            {:error, :invalid_account_id}
+        end
+    end
+end
 def __validate_order_state("active"), do: {:ok, 1}
 def __validate_order_state("canceled"), do: {:ok, 2}
 def __validate_order_state("delivered"), do: {:ok, 3}
 def __validate_order_state("undeliverable"), do: {:ok, 4}
 def __validate_order_state(_), do: {:error, :invalid_order_state}
-def __validate_id("all"), do: {:ok, :all}
 def __validate_id(id) do
-  case to_integer(id) do
-    {:ok, int} ->
-      if int > 0 do
-        {:ok, int}
-      else
-        {:error, :invalid_account_id}
-      end
-    _ ->
-      {:error, :invalid_account_id}
-  end
+  msg = :invalid_account_id
+  id
+  |> to_integer()
+  |> bind_value(fn (id) -> if (id > 0), do: {:ok, id}, else: {:error, msg} end)
+  |> map_error(fn (_) -> msg end)
 end
-def __validate_date(nil), do: {:ok, get_date_today()}
-def __validate_date("all"), do: {:ok, :all}
 def __validate_date("today"), do: {:ok, get_date_today() }
 def __validate_date(%{"day" => day, "month" => month, "year" => year}) do
   "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
@@ -280,6 +335,9 @@ def __validate_date_component(component) do
   else
     component
   end
+end
+def __validate_time(iso8601_time_or_error) do
+  Time.from_iso8601("#{iso8601_time_or_error}:00")
 end
 
 

@@ -14,6 +14,7 @@ defmodule AssessmentWeb.Api.OrderController do
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
+            _normalize_create: 2,
             _normalize_index: 2,
             _normalize_and_validate: 2,
           ]
@@ -34,8 +35,11 @@ defmodule AssessmentWeb.Api.OrderController do
 
   def create(conn, %{"order" => params}) do
     with {:ok, agent} <- authenticate_agent(conn),
-         {:ok, new_params} <- authorize_creation(agent, params),
-         {:ok, order} <- Orders.create_order(new_params) do
+         #{:ok, new_params} <- authorize_creation(agent, params),
+         account <- Accounts.specify_agent(agent),
+         validated_params <- _normalize_create(params, account),
+         {:ok, normalized_params} <- accumulate_errors(validated_params),
+         {:ok, order} <- Orders.create_order(normalized_params) do
       conn
       |> put_status(:created)
       |> render("create.json", order: order)
@@ -59,6 +63,12 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
+      {:error, (%{} = errors)} ->
+        IO.inspect("index errors:")
+        IO.inspect(errors)
+        conn
+        |> put_status(400)
+        |> render("creation-errors.json", errors: errors)
       x ->
         IO.inspect("OrderController create: default: params:")
         IO.inspect(params)
@@ -105,18 +115,17 @@ defmodule AssessmentWeb.Api.OrderController do
         msg = "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
         conn
         |> resource_error("order_state", msg)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect("index changeset:")
+        IO.inspect(changeset)
+        conn
+        |> changeset_error(changeset)
       {:error, (%{} = errors)} ->
         IO.inspect("index errors:")
         IO.inspect(errors)
         conn
         |> put_status(400)
         |> render("index-errors.json", errors: errors)
-        #|> json(%{errors: ToJson.to_json(errors)})
-      {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect("index changeset:")
-        IO.inspect(changeset)
-        conn
-        |> changeset_error(changeset)
       x ->
         IO.inspect("index default:")
         IO.inspect(x)
