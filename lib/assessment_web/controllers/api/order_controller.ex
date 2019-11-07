@@ -64,7 +64,10 @@ defmodule AssessmentWeb.Api.OrderController do
          account <- Accounts.specify_agent(agent),
          {:ok, normalized_params} <- normalize_index_params(params, account) do
       conn
-      |> render("index.json", orders: Orders.list_orders(normalized_params))
+      |> render(
+            "index.json",
+            orders: Orders.list_orders(normalized_params),
+            query_params: normalized_params)
     else
       {:error, :not_authenticated} ->
         conn

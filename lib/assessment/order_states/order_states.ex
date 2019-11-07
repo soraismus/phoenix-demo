@@ -101,4 +101,9 @@ defmodule Assessment.OrderStates do
   def change_order_state(%OrderState{} = order_state) do
     OrderState.changeset(order_state, %{})
   end
+
+  def to_description(1), do: OrderState.active()
+  def to_description(2), do: OrderState.canceled()
+  def to_description(3), do: OrderState.delivered()
+  def to_description(4), do: OrderState.undeliverable()
 end

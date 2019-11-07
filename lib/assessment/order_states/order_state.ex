@@ -3,8 +3,11 @@ defmodule Assessment.OrderStates.OrderState do
   import Ecto.Changeset
   alias Assessment.Orders.Order
 
-
-  @order_states ~w(active canceled delivered undeliverable)s
+  @active "active"
+  @canceled "canceled"
+  @delivered "delivered"
+  @undeliverable "undeliverable"
+  @order_states [@active, @canceled, @delivered, @undeliverable]
 
   schema "order_states" do
     field :description, :string
@@ -32,7 +35,9 @@ defmodule Assessment.OrderStates.OrderState do
       end)
   end
 
-  def order_states() do
-    @order_states
-  end
+  def active, do: @active
+  def canceled, do: @canceled
+  def delivered, do: @delivered
+  def undeliverable, do: @undeliverable
+  def order_states, do: @order_states
 end
