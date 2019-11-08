@@ -1,21 +1,84 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
-  import Assessment.Utilities, only: [error_data: 1]
-  import AssessmentWeb.GuardianController, only: [get_account: 1]
+
+  import Assessment.Utilities, only: [accumulate_errors: 1, error_data: 1]
+  import AssessmentWeb.ControllerUtilities,
+    only: [ authentication_error: 1,
+            authentication_error: 2,
+            authorization_error: 2,
+            changeset_error: 2,
+            internal_error: 2,
+            #resource_error: 3,
+            #resource_error: 4,
+          ]
+  import AssessmentWeb.GuardianController,
+    only: [ authenticate_agent: 1,
+            get_account: 1,
+          ]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
+            normalize_validate_creation: 2,
+            normalize_validate_index: 2,
           ]
 
+  alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
+  alias Assessment.OrderStates.OrderState
+  alias AssessmentWeb.OrderView
   alias Ecto.Changeset
 
   plug :authenticate
 
   action_fallback(AssessmentWeb.OrderController.ErrorController)
+
+  @already_canceled :already_canceled
+  @already_delivered :already_delivered
+  @already_has_order_state :already_has_order_state
+  @created :created
+  @error :error
+  @ok :ok
+  @no_resource :no_resource
+  @not_authenticated :not_authenticated
+  @not_authorized :not_authorized
+  @not_found :not_found
+
+  @canceled OrderState.canceled()
+  @delivered OrderState.delivered()
+  @undeliverable OrderState.undeliverable()
+
+  def create(conn, %{"order" => params}) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         validated_params <- normalize_validate_creation(params, account),
+         {@ok, normalized_params} <- accumulate_errors(validated_params),
+         {@ok, order} <- Orders.create_order(normalized_params) do
+      conn
+      |> put_flash(:info, "Order created successfully.")
+      |> redirect(to: order_path(conn, :show, order))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Not authorized to create an order")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to create an order")
+      {@error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(view: "new.html", changeset: changeset)
+      {@error, %{} = errors} ->
+        conn
+        |> changeset_error(
+              view: "new.html",
+              changeset: OrderView.format_creation_errors(errors))
+      _ ->
+        conn
+        |> internal_error("ORCR")
+    end
+  end
 
   def index(conn, params) do
     with {:ok, account} <- get_account(conn),
@@ -30,18 +93,6 @@ defmodule AssessmentWeb.OrderController do
   def new(conn, _params) do
     changeset = Orders.change_order(%Order{})
     render(conn, "new.html", changeset: changeset)
-  end
-
-  def create(conn, %{"order" => order_params}) do
-    data = %{msg: "Not authorized to create an order", view: "new.html"}
-    with {:ok, account} <- get_account(conn),
-         {:ok, new_params} <- normalize_create_params(order_params, account),
-         {:ok, _} <- authorize_admin_or_pharmacy(account) |> error_data(data).(),
-         {:ok, order} <- Orders.create_order(new_params) |> error_data(data).() do
-      conn
-      |> put_flash(:info, "Order created successfully.")
-      |> redirect(to: order_path(conn, :show, order))
-    end
   end
 
   def show(conn, %{"id" => id}) do

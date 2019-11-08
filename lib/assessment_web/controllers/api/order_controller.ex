@@ -4,7 +4,7 @@ defmodule AssessmentWeb.Api.OrderController do
   import Assessment.Utilities, only: [accumulate_errors: 1]
   import AssessmentWeb.Api.ControllerUtilities,
     only: [ authentication_error: 1,
-            authorization_error: 1,
+            authorization_error: 2,
             changeset_error: 2,
             internal_error: 2,
             resource_error: 3,
@@ -58,7 +58,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> authentication_error()
       {@error, @not_authorized} ->
         conn
-        |> authorization_error()
+        |> authorization_error("Not authorized to create an order")
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
@@ -92,7 +92,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> authentication_error()
       {@error, @not_authorized} ->
         conn
-        |> authorization_error()
+        |> authorization_error("Not authorized to view orders")
       {@error, %{} = errors} ->
         conn
         |> validation_error(OrderView.format_index_errors(errors))
@@ -174,8 +174,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> authentication_error()
       {@error, @not_authorized} ->
         conn
-        |> authorization_error()
-      {@error, @already_canceled} ->
+        |> authorization_error("Not authorized to update orders.")
         msg = "cannot be #{order_state} because it has already been canceled"
         conn
         |> resource_error(resource, msg)

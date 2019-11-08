@@ -2,6 +2,72 @@ defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
   import Assessment.Utilities, only: [get_date_today: 0]
 
+  alias Assessment.Orders.Order
+  alias Assessment.OrderStates
+  alias Assessment.Utilities
+  alias Assessment.Utilities.ToJson
+  alias Ecto.Changeset
+
+  @authorization_msg "is prohibited to unauthorized users"
+  @creation_id_message "must be specified and must be a positive integer"
+  @creation_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @index_id_message "must be either 'all' or a positive integer"
+  @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @pickup_time_msg "must be a valid time of the form 'HH:MM'"
+
+  def format_creation_errors(errors) do
+    messages =
+      %{ authorization_msg: @authorization_msg,
+         id_message: @creation_id_message,
+       }
+    errors
+    |> order_state_error_message()
+    |> Utilities.replace_old(:pickup_date, [@creation_pickup_date_msg])
+    |> Utilities.replace_old(:pickup_time, [@pickup_time_msg])
+    |> Utilities.replace_old(:patient_id, [@creation_id_message])
+    |> account_id_error_message(:courier_id, messages)
+    |> account_id_error_message(:pharmacy_id, messages)
+    |> to_changeset()
+  end
+  defp to_changeset_types(%{} = map) do
+    Enum.reduce(
+      map,
+      map,
+      fn ({key, _}, acc) -> Map.replace!(acc, key, :any) end)
+  end
+  defp to_changeset(%{} = map) do
+    changeset = {%{}, to_changeset_types(map)} |> Changeset.cast(%{}, [])
+    Map.reduce(
+      map,
+      changeset,
+      fn ({key, value}, acc) ->
+        Changeset.add_error(acc, key, value, [])
+      end)
+  end
+  defp order_state_error_message(errors) do
+    case Map.get_and_update(errors, :order_state_id, fn (_) -> :pop end) do
+      {nil, errors} -> errors
+      {_, errors} -> Map.put(errors, :order_state, [@order_state_msg])
+    end
+  end
+  defp account_id_error_message(errors, account_id, messages) do
+    if Map.has_key?(errors, account_id) do
+      case errors[account_id] do
+        :not_authorized ->
+          Map.put(errors, account_id, [messages.authorization_msg])
+        :invalid_account_id ->
+          Map.put(errors, account_id, [messages.id_message])
+      end
+    else
+      errors
+    end
+  end
+
+
+
+
   def current_order_state(conn) do
     case conn.params["order_state"] do
       "all" -> "all"
