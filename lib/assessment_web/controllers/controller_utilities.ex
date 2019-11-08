@@ -16,16 +16,10 @@ defmodule AssessmentWeb.ControllerUtilities do
     |> redirect(to: page_path(conn, :index))
   end
 
-  def changeset_error(
-    conn,
-    view: view,
-    order: order,
-    changeset: %Changeset{} = changeset,
-    status: status) do
-        status = if is_nil(status), do: 400, else: status
-        conn
-        |> put_status(status)
-        |> render(view, changeset: changeset, order: order)
+  def changeset_error(conn, %{view: view, changeset: %Changeset{} = changeset} = params) do
+    conn
+    |> put_status(Map.get(params, :status, 400))
+    |> render(view, changeset: changeset, order: Map.get(params, :order))
   end
 
   def internal_error(conn, code) do

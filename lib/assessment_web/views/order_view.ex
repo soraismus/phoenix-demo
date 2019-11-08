@@ -39,11 +39,14 @@ defmodule AssessmentWeb.OrderView do
   end
   defp to_changeset(%{} = map) do
     changeset = {%{}, to_changeset_types(map)} |> Changeset.cast(%{}, [])
-    Map.reduce(
+    Enum.reduce(
       map,
       changeset,
-      fn ({key, value}, acc) ->
-        Changeset.add_error(acc, key, value, [])
+      fn
+        ({key, []}, acc) ->
+          Changeset.add_error(acc, key, "is invalid", [])
+        ({key, [value | _] = values}, acc) when is_binary(value) ->
+          Changeset.add_error(acc, key, Enum.join(values, "; "), [])
       end)
   end
   defp order_state_error_message(errors) do

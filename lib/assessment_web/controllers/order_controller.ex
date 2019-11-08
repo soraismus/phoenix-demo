@@ -68,12 +68,13 @@ defmodule AssessmentWeb.OrderController do
         |> authorization_error("Not authorized to create an order")
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> changeset_error(view: "new.html", changeset: changeset)
+        |> changeset_error(%{view: "new.html", changeset: changeset})
       {@error, %{} = errors} ->
         conn
-        |> changeset_error(
-              view: "new.html",
-              changeset: OrderView.format_creation_errors(errors))
+        |> changeset_error(%{
+                view: "new.html",
+                changeset: OrderView.format_creation_errors(errors)
+              })
       _ ->
         conn
         |> internal_error("ORCR")

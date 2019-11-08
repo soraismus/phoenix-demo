@@ -336,6 +336,9 @@ def __validate_date_component(component) do
     component
   end
 end
+def __validate_time(%{"hour" => hour, "minute" => minute}) do
+  Time.from_iso8601("#{hour}:#{minute}:00")
+end
 def __validate_time(iso8601_time_or_error) do
   Time.from_iso8601("#{iso8601_time_or_error}:00")
 end
