@@ -4,7 +4,13 @@ defmodule Assessment.Orders do
   """
 
   import Ecto.Query, warn: false
-  alias Assessment.{Repo,Utilities}
+  import Assessment.Utilities,
+    only: [ map_error: 2,
+            map_value: 2,
+            modify_if: 3,
+            prohibit_nil: 2,
+          ]
+  alias Assessment.Repo
   alias Assessment.Orders.Order
   alias Assessment.OrderStates.OrderState
   alias Ecto.Changeset
@@ -47,41 +53,6 @@ defmodule Assessment.Orders do
 
   """
   def list_orders(params), do: Repo.all(create_query(params))
-  defp create_query(params) do
-    query =
-      from o in Order,
-      inner_join: c in assoc(o, :courier),
-      inner_join: os in assoc(o, :order_state),
-      inner_join: p in assoc(o, :patient),
-      inner_join: ph in assoc(o, :pharmacy),
-      preload: [courier: c, order_state: os, patient: p, pharmacy: ph]
-    query = if Map.has_key?(params, :courier_id) && params.courier_id != :all do
-              query |> where([o], o.courier_id == ^params.courier_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :order_state_id) && params.order_state_id != :all do
-              query |> where([o], o.order_state_id == ^params.order_state_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :patient_id) && params.patient_id != :all do
-              query |> where([o], o.patient_id == ^params.patient_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :pharmacy_id) && params.pharmacy_id != :all do
-              query |> where([o], o.pharmacy_id == ^params.pharmacy_id)
-            else
-              query
-            end
-    query = if Map.has_key?(params, :pickup_date) && params.pickup_date != :all do
-              query |> where([o], o.pickup_date == ^params.pickup_date)
-            else
-              query
-            end
-    query
-  end
 
   @doc """
   Gets a single order.
@@ -99,8 +70,8 @@ defmodule Assessment.Orders do
     Order
     |> Repo.get(id)
     |> Repo.preload([:patient, :pharmacy, :courier, :order_state])
-    |> Utilities.prohibit_nil(@no_resource)
-    |> Utilities.map_value(&set_order_state_description/1)
+    |> prohibit_nil(@no_resource)
+    |> map_value(&set_order_state_description/1)
   end
 
   @doc """
@@ -120,7 +91,7 @@ defmodule Assessment.Orders do
     |> Order.changeset(attrs)
     |> Changeset.put_change(:order_state_id, @active_order_state_id)
     |> Repo.insert()
-    |> Utilities.map_value(fn (order) ->
+    |> map_value(fn (order) ->
           Repo.preload(order, [:patient, :pharmacy, :courier, :order_state])
         end)
   end
@@ -159,7 +130,7 @@ defmodule Assessment.Orders do
     order
     |> Order.changeset(%{order_state_description: order_state_description})
     |> Repo.update()
-    |> Utilities.map_error(fn (_) -> :invalid_order_state end)
+    |> map_error(fn (_) -> :invalid_order_state end)
   end
 
   @doc """
@@ -189,6 +160,45 @@ defmodule Assessment.Orders do
   """
   def change_order(%Order{} = order) do
     Order.changeset(order, %{})
+  end
+
+  def is_active(%Order{} = order) do
+  end
+
+  defp create_query(params) do
+    query =
+      from o in Order,
+      inner_join: c in assoc(o, :courier),
+      inner_join: os in assoc(o, :order_state),
+      inner_join: p in assoc(o, :patient),
+      inner_join: ph in assoc(o, :pharmacy),
+      preload: [courier: c, order_state: os, patient: p, pharmacy: ph]
+    query
+    |> modify_if(
+          Map.has_key?(params, :courier_id) && params.courier_id != :all,
+          fn (query) ->
+            where(query, [o], o.courier_id == ^params.courier_id)
+          end)
+    |> modify_if(
+          Map.has_key?(params, :order_state_id) && params.order_state_id != :all,
+          fn (query) ->
+            where(query, [o], o.order_state_id == ^params.order_state_id)
+          end)
+    |> modify_if(
+          Map.has_key?(params, :patient_id) && params.patient_id != :all,
+          fn (query) ->
+            where(query, [o], o.patient_id == ^params.patient_id)
+          end)
+    |> modify_if(
+          Map.has_key?(params, :pharmacy_id) && params.pharmacy_id != :all,
+          fn (query) ->
+            where(query, [o], o.pharmacy_id == ^params.pharmacy_id)
+          end)
+    |> modify_if(
+          Map.has_key?(params, :pickup_date) && params.pickup_date != :all,
+          fn (query) ->
+            where(query, [o], o.pickup_date == ^params.pickup_date)
+          end)
   end
 
   defp set_order_state_description(%{order_state: %OrderState{} = order_state} = order) do

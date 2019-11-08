@@ -70,6 +70,16 @@ defmodule Assessment.Utilities do
   def map_value({@ok, value}, fun), do: {@ok, fun.(value)}
   def map_value({@error, value}, _fun), do: {@error, value}
 
+  def modify_if(value, true, transform), do: transform.(value)
+  def modify_if(value, false, _), do: value
+  def modify_if(value, predicate, transform) do
+    if predicate.(value) do
+      transform.(value)
+    else
+      value
+    end
+  end
+
   def nilify_error({@ok, value}), do: value
   def nilify_error({@error, _}), do: nil
 
