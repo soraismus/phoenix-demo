@@ -341,8 +341,6 @@ def __validate_time(iso8601_time_or_error) do
 end
 
 
-    #CHANGESET NOT NEEDED
-
 import Ecto.Changeset
 alias Ecto.Changeset
 def _get_required_ids(account) do

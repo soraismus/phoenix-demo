@@ -57,9 +57,7 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, %{} = errors} ->
         conn
         |> validation_error(OrderView.format_creation_errors(errors))
-      x ->
-        IO.inspect("ORCR")
-        IO.inspect(x)
+      _ ->
         conn
         |> internal_error("ORCR")
     end
@@ -119,19 +117,19 @@ defmodule AssessmentWeb.Api.OrderController do
     end
   end
 
-  defp authorize_update(agent, order) do
-    case agent.account_type do
-      "administrator" ->
-        {:ok, agent.administrator}
-      "courier" ->
-        if order.courier_id == agent.courier.id do
-          {:ok, agent.courier}
+  defp authorize_update(account, order) do
+    case account do
+      (%Administrator{} = administrator) ->
+        {:ok, administrator}
+      (%Courier{} = courier) ->
+        if order.courier_id == courier.id do
+          {:ok, courier}
         else
           {:error, :not_authorized}
         end
-      "pharmacy" ->
-        if order.pharmacy_id == agent.pharmacy.id do
-          {:ok, agent.pharmacy}
+      (%Pharmacy{} = pharmacy) ->
+        if order.pharmacy_id == pharmacy.id do
+          {:ok, pharmacy}
         else
           {:error, :not_authorized}
         end
@@ -157,7 +155,7 @@ defmodule AssessmentWeb.Api.OrderController do
     resource = "order ##{id}"
     with {:ok, agent} <- authenticate_agent(conn),
          {:ok, order} <- Orders.get_order(id),
-         {:ok, _} <- authorize_update(agent, order),
+         {:ok, _} <- authorize_update(Accounts.specify_agent(agent), order),
          {:ok, _} <- check_elibility(order, description),
          {:ok, new_order} <- Orders.update_order_state(order, description) do
       conn
