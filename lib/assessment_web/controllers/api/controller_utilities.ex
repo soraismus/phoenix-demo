@@ -31,6 +31,12 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
     |> json(%{errors: %{resource => [msg]}})
   end
 
+  def validation_error(conn, %{} = errors, adapter, status \\ 400) do
+    conn
+    |> put_status(status)
+    |> json(%{errors: adapter.(errors)})
+  end
+
   defp translate_error({msg, opts}) do
     if count = opts[:count] do
       Gettext.dngettext(AssessmentWeb.Gettext, "errors", msg, msg, count, opts)

@@ -8,14 +8,15 @@ defmodule AssessmentWeb.Api.OrderController do
             internal_error: 2,
             resource_error: 3,
             resource_error: 4,
+            validation_error: 3,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_create_params: 2,
             normalize_edit_params: 2,
             normalize_index_params: 2,
-            _normalize_create: 2,
-            _normalize_index: 2,
+            normalize_validate_creation: 2,
+            normalize_validate_index: 2,
             _normalize_and_validate: 2,
           ]
   alias Assessment.Accounts
@@ -36,7 +37,7 @@ defmodule AssessmentWeb.Api.OrderController do
   def create(conn, %{"order" => params}) do
     with {:ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
-         validated_params <- _normalize_create(params, account),
+         validated_params <- normalize_validate_creation(params, account),
          {:ok, normalized_params} <- accumulate_errors(validated_params),
          {:ok, order} <- Orders.create_order(normalized_params) do
       conn
@@ -52,11 +53,14 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
-      {:error, (%{} = errors)} ->
+      {:error, errors} ->
         conn
-        |> put_status(400)
-        |> render("creation-errors.json", errors: errors)
-      _ ->
+        |> validation_error(errors, &AssessmentWeb.Api.OrderView.creation_error_messages/1)
+        #|> put_status(400)
+        #|> render("creation-errors.json", errors: errors)
+      x ->
+        IO.inspect("ORCR")
+        IO.inspect(x)
         conn
         |> internal_error("ORCR")
     end
@@ -70,7 +74,7 @@ defmodule AssessmentWeb.Api.OrderController do
   def index(conn, params) do
     with {:ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
-         validated_params <- _normalize_index(params, account),
+         validated_params <- normalize_validate_index(params, account),
          {:ok, normalized_params} <- accumulate_errors(validated_params) do
       conn
       |> render(

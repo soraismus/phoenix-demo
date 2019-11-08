@@ -186,7 +186,7 @@ defmodule AssessmentWeb.OrderUtilities do
 
 
 
-def _normalize_create(params, account) do
+def normalize_validate_creation(params, account) do
   requirements = _get_required_ids(account)
   courier_id =
     params
@@ -223,7 +223,7 @@ def _normalize_create(params, account) do
      pickup_time: pickup_time,
    }
 end
-def _normalize_index(params, account) do
+def normalize_validate_index(params, account) do
   requirements = _get_required_ids(account)
   courier_id =
     params

@@ -5,15 +5,15 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities
   alias Assessment.Utilities.ToJson
 
-  @authorization_msg "Is prohibited to unauthorized users"
-  @index_id_message "Must be either 'all' or a positive integer"
-  @index_order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @index_pickup_date_msg "Must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
-  @index_pickup_date_msg "Must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
-  @creation_id_message "Must be specified and must be a positive integer"
-  @order_state_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @creation_pickup_date_msg "Must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
-  @pickup_time_msg "Must be a valid time of the form 'HH:MM'"
+  @authorization_msg "is prohibited to unauthorized users"
+  @index_id_message "must be either 'all' or a positive integer"
+  @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @index_pickup_date_msg "must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
+  @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @creation_id_message "must be specified and must be a positive integer"
+  @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
+  @creation_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @pickup_time_msg "must be a valid time of the form 'HH:MM'"
 
   def render("cancel.json", %{order: order}) do
     %{canceled: %{order: ToJson.to_json(order)}}
@@ -64,7 +64,7 @@ defmodule AssessmentWeb.Api.OrderView do
     end
   end
 
-  defp creation_error_messages(errors) do
+  def creation_error_messages(errors) do
     messages =
       %{ authorization_msg: @authorization_msg,
          id_message: @creation_id_message
