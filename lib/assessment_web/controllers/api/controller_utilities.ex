@@ -31,10 +31,10 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
     |> json(%{errors: %{resource => [msg]}})
   end
 
-  def validation_error(conn, %{} = errors, adapter, status \\ 400) do
+  def validation_error(conn, error_json, status \\ 400) do
     conn
     |> put_status(status)
-    |> json(%{errors: adapter.(errors)})
+    |> json(%{errors: error_json})
   end
 
   defp translate_error({msg, opts}) do

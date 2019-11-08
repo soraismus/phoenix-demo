@@ -8,7 +8,7 @@ defmodule AssessmentWeb.Api.OrderController do
             internal_error: 2,
             resource_error: 3,
             resource_error: 4,
-            validation_error: 3,
+            validation_error: 2,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
@@ -23,6 +23,7 @@ defmodule AssessmentWeb.Api.OrderController do
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Utilities.ToJson
+  alias AssessmentWeb.Api.OrderView
 
   @canceled "canceled"
   @delivered "delivered"
@@ -53,11 +54,9 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
-      {:error, errors} ->
+      {:error, %{} = errors} ->
         conn
-        |> validation_error(errors, &AssessmentWeb.Api.OrderView.creation_error_messages/1)
-        #|> put_status(400)
-        #|> render("creation-errors.json", errors: errors)
+        |> validation_error(OrderView.format_creation_errors(errors))
       x ->
         IO.inspect("ORCR")
         IO.inspect(x)
@@ -88,10 +87,9 @@ defmodule AssessmentWeb.Api.OrderController do
       {:error, :not_authorized} ->
         conn
         |> authorization_error()
-      {:error, (%{} = errors)} ->
+      {:error, %{} = errors} ->
         conn
-        |> put_status(400)
-        |> render("index-errors.json", errors: errors)
+        |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
         |> internal_error("ORIN")
