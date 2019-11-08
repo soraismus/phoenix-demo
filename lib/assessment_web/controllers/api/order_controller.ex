@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.Api.OrderController do
   use AssessmentWeb, :controller
+
   import Assessment.Utilities, only: [accumulate_errors: 1]
   import AssessmentWeb.Api.ControllerUtilities,
     only: [ authentication_error: 1,
@@ -12,18 +13,14 @@ defmodule AssessmentWeb.Api.OrderController do
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
-    only: [ normalize_create_params: 2,
-            normalize_edit_params: 2,
-            normalize_index_params: 2,
-            normalize_validate_creation: 2,
+    only: [ normalize_validate_creation: 2,
             normalize_validate_index: 2,
-            _normalize_and_validate: 2,
           ]
+
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.OrderStates.OrderState
-  alias Assessment.Utilities.ToJson
   alias AssessmentWeb.Api.OrderView
 
   @already_canceled :already_canceled
@@ -151,7 +148,7 @@ defmodule AssessmentWeb.Api.OrderController do
 
   defp check_elibility(order, order_state) do
     cond do
-      Orders.has_order_state?(order_state) ->
+      Orders.has_order_state?(order, order_state) ->
         {@error, @already_has_order_state}
       Orders.is_canceled?(order) ->
         {@error, @already_canceled}

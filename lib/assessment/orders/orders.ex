@@ -10,8 +10,10 @@ defmodule Assessment.Orders do
             modify_if: 3,
             prohibit_nil: 2,
           ]
+
   alias Assessment.Repo
   alias Assessment.Orders.Order
+  alias Assessment.OrderStates
   alias Assessment.OrderStates.OrderState
   alias Ecto.Changeset
 
