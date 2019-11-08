@@ -119,10 +119,10 @@ defmodule Assessment.Orders do
 
   ## Examples
 
-      iex> update_order_state(order, order_state)
-      {:ok, %Order{}}
+      iex> update_order_state(%Order{order_state_description: "active"}, "canceled")
+      {:ok, %Order{order_state_description: "canceled"}}
 
-      iex> update_order_state(order, %{field: bad_value})
+      iex> update_order_state(order, "random_invalid_order_state_description")
       {:error, :invalid_order_state}
 
   """
@@ -162,7 +162,29 @@ defmodule Assessment.Orders do
     Order.changeset(order, %{})
   end
 
-  def is_active(%Order{} = order) do
+  @doc "Determines whether an order has a corresponding order state."
+  def has_order_state?(%Order{} = order, order_state_description) do
+    order.order_state_description == order_state_description
+  end
+
+  @doc "Determines whether an order is active."
+  def is_active?(%Order{} = order) do
+    order.order_state_id == OrderStates.active_id()
+  end
+
+  @doc "Determines whether an order is canceled."
+  def is_canceled?(%Order{} = order) do
+    order.order_state_id == OrderStates.canceled_id()
+  end
+
+  @doc "Determines whether an order is delivered."
+  def is_delivered?(%Order{} = order) do
+    order.order_state_id == OrderStates.delivered_id()
+  end
+
+  @doc "Determines whether an order is undeliverable."
+  def is_undeliverable?(%Order{} = order) do
+    order.order_state_id == OrderStates.undeliverable_id()
   end
 
   defp create_query(params) do

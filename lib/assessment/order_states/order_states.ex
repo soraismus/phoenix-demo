@@ -5,8 +5,12 @@ defmodule Assessment.OrderStates do
 
   import Ecto.Query, warn: false
   alias Assessment.Repo
-
   alias Assessment.OrderStates.OrderState
+
+  @active_id 1
+  @canceled_id 2
+  @delivered_id 3
+  @undeliverable_id 4
 
   @doc """
   Returns the list of order_states.
@@ -102,8 +106,21 @@ defmodule Assessment.OrderStates do
     OrderState.changeset(order_state, %{})
   end
 
-  def to_description(1), do: OrderState.active()
-  def to_description(2), do: OrderState.canceled()
-  def to_description(3), do: OrderState.delivered()
-  def to_description(4), do: OrderState.undeliverable()
+  @doc false
+  def active_id(), do: @active_id
+
+  @doc false
+  def canceled_id(), do: @canceled_id
+
+  @doc false
+  def delivered_id(), do: @delivered_id
+
+  @doc false
+  def to_description(@active_id), do: OrderState.active()
+  def to_description(@canceled_id), do: OrderState.canceled()
+  def to_description(@delivered_id), do: OrderState.delivered()
+  def to_description(@undeliverable_id), do: OrderState.undeliverable()
+
+  @doc false
+  def undeliverable_id(), do: @undeliverable_id
 end

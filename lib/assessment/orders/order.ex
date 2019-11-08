@@ -2,8 +2,14 @@ defmodule Assessment.Orders.Order do
   use Ecto.Schema
   import Ecto.Changeset
   alias Assessment.Accounts.{Courier,Pharmacy}
+  alias Assessment.OrderStates
   alias Assessment.OrderStates.OrderState
   alias Assessment.Patients.Patient
+
+  @active OrderState.active()
+  @canceled OrderState.canceled()
+  @delivered OrderState.delivered()
+  @undeliverable OrderState.undeliverable()
 
   @required_params ~w(pickup_date pickup_time patient_id pharmacy_id courier_id)a
   @order_state_descriptions ~w(active canceled delivered undeliverable)s
@@ -40,7 +46,17 @@ defmodule Assessment.Orders.Order do
     |> foreign_key_constraint(:order_state_id)
   end
 
-  def validate_order_state_description(changeset) do
+  @doc false
+  def delivered(), do: @delivered
+
+  @doc false
+  def delivered_id(), do: @delivered_id
+
+  @doc false
+  def undeliverable(), do: @undeliverable
+  def undeliverable_id(), do: @undeliverable_id
+
+  defp validate_order_state_description(changeset) do
     validate_change(changeset, :order_state_description, fn (:order_state_description, description) ->
         if description in @order_state_descriptions do
           []
@@ -52,10 +68,14 @@ defmodule Assessment.Orders.Order do
 
   defp set_order_state_id(changeset) do
     case get_change(changeset, :order_state_description) do
-      "active" -> put_change(changeset, :order_state_id, 1)
-      "canceled" -> put_change(changeset, :order_state_id, 2)
-      "delivered" -> put_change(changeset, :order_state_id, 3)
-      "undeliverable" -> put_change(changeset, :order_state_id, 4)
+      @active ->
+        put_change(changeset, :order_state_id, OrderStates.active_id())
+      @canceled ->
+        put_change(changeset, :order_state_id, OrderStates.canceled_id())
+      @delivered ->
+        put_change(changeset, :order_state_id, OrderStates.delivered_id())
+      @undeliverable ->
+        put_change(changeset, :order_state_id, OrderStates.undeliverable_id())
       _ -> changeset
     end
   end

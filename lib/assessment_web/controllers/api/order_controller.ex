@@ -22,6 +22,7 @@ defmodule AssessmentWeb.Api.OrderController do
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
+  alias Assessment.OrderStates.OrderState
   alias Assessment.Utilities.ToJson
   alias AssessmentWeb.Api.OrderView
 
@@ -36,9 +37,9 @@ defmodule AssessmentWeb.Api.OrderController do
   @not_authorized :not_authorized
   @not_found :not_found
 
-  @canceled "canceled"
-  @delivered "delivered"
-  @undeliverable "undeliverable"
+  @canceled OrderState.canceled()
+  @delivered OrderState.delivered()
+  @undeliverable OrderState.undeliverable()
 
   def cancel(conn, params) do
     conn
@@ -148,26 +149,26 @@ defmodule AssessmentWeb.Api.OrderController do
     end
   end
 
-  defp check_elibility(order, order_state_description) do
+  defp check_elibility(order, order_state) do
     cond do
-      order.order_state_description == order_state_description ->
+      Orders.has_order_state?(order_state) ->
         {@error, @already_has_order_state}
-      order.order_state_description == @canceled ->
+      Orders.is_canceled?(order) ->
         {@error, @already_canceled}
-      order.order_state_description == @delivered ->
+      Orders.is_delivered?(order) ->
         {@error, @already_delivered}
       true ->
-        {@ok, {order, order_state_description}}
+        {@ok, {order, order_state}}
     end
   end
 
-  defp update_order_state(conn, %{"id" => id}, description, view) do
+  defp update_order_state(conn, %{"id" => id}, order_state, view) do
     resource = "order ##{id}"
     with {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          {@ok, _} <- authorize_update(Accounts.specify_agent(agent), order),
-         {@ok, _} <- check_elibility(order, description),
-         {@ok, new_order} <- Orders.update_order_state(order, description) do
+         {@ok, _} <- check_elibility(order, order_state),
+         {@ok, new_order} <- Orders.update_order_state(order, order_state) do
       conn
       |> render(view, order: new_order)
     else
@@ -178,16 +179,16 @@ defmodule AssessmentWeb.Api.OrderController do
         conn
         |> authorization_error()
       {@error, @already_canceled} ->
-        msg = "cannot be #{description} because it has already been canceled"
+        msg = "cannot be #{order_state} because it has already been canceled"
         conn
         |> resource_error(resource, msg)
       {@error, @already_delivered} ->
-        msg = "cannot be #{description} because it has already been delivered"
+        msg = "cannot be #{order_state} because it has already been delivered"
         conn
         |> resource_error(resource, msg)
       {@error, @already_has_order_state} ->
         conn
-        |> resource_error(resource, "is already #{description}")
+        |> resource_error(resource, "is already #{order_state}")
       {@error, @no_resource} ->
         conn
         |> resource_error(resource, "does not exist", @not_found)

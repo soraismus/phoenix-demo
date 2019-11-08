@@ -17,6 +17,12 @@ defmodule Assessment.OrderStates.OrderState do
   end
 
   @doc false
+  def active(), do: @active
+
+  @doc false
+  def canceled(), do: @canceled
+
+  @doc false
   def changeset(order_state, attrs) do
     order_state
     |> cast(attrs, [:description])
@@ -24,6 +30,12 @@ defmodule Assessment.OrderStates.OrderState do
     |> validate_order_state()
     |> unique_constraint(:description)
   end
+
+  @doc false
+  def delivered(), do: @delivered
+
+  @doc false
+  def undeliverable(), do: @undeliverable
 
   defp validate_order_state(changeset) do
     validate_change(changeset, :description, fn (:description, description) ->
@@ -34,10 +46,4 @@ defmodule Assessment.OrderStates.OrderState do
         end
       end)
   end
-
-  def active, do: @active
-  def canceled, do: @canceled
-  def delivered, do: @delivered
-  def undeliverable, do: @undeliverable
-  def order_states, do: @order_states
 end
