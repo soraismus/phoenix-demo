@@ -6,13 +6,12 @@ defmodule AssessmentWeb.Api.OrderView do
   alias Assessment.Utilities.ToJson
 
   @authorization_msg "is prohibited to unauthorized users"
+  @creation_id_message "must be specified and must be a positive integer"
+  @creation_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
   @index_id_message "must be either 'all' or a positive integer"
   @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @index_pickup_date_msg "must either be a valid date of the form 'YYYY-MM-DD' or be one of 'all' or 'today'"
   @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
-  @creation_id_message "must be specified and must be a positive integer"
   @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @creation_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
 
   def format_creation_errors(errors) do

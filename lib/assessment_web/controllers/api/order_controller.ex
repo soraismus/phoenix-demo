@@ -25,10 +25,20 @@ defmodule AssessmentWeb.Api.OrderController do
   alias Assessment.Utilities.ToJson
   alias AssessmentWeb.Api.OrderView
 
+  @already_canceled :already_canceled
+  @already_delivered :already_delivered
+  @already_has_order_state :already_has_order_state
+  @created :created
+  @error :error
+  @ok :ok
+  @no_resource :no_resource
+  @not_authenticated :not_authenticated
+  @not_authorized :not_authorized
+  @not_found :not_found
+
   @canceled "canceled"
   @delivered "delivered"
   @undeliverable "undeliverable"
-  @order_state_error_msg "Must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
 
   def cancel(conn, params) do
     conn
@@ -36,25 +46,25 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def create(conn, %{"order" => params}) do
-    with {:ok, agent} <- authenticate_agent(conn),
+    with {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_creation(params, account),
-         {:ok, normalized_params} <- accumulate_errors(validated_params),
-         {:ok, order} <- Orders.create_order(normalized_params) do
+         {@ok, normalized_params} <- accumulate_errors(validated_params),
+         {@ok, order} <- Orders.create_order(normalized_params) do
       conn
-      |> put_status(:created)
+      |> put_status(@created)
       |> render("create.json", order: order)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
-      {:error, %{} = errors} ->
+      {@error, %{} = errors} ->
         conn
         |> validation_error(OrderView.format_creation_errors(errors))
       _ ->
@@ -69,23 +79,23 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def index(conn, params) do
-    with {:ok, agent} <- authenticate_agent(conn),
+    with {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_index(params, account),
-         {:ok, normalized_params} <- accumulate_errors(validated_params) do
+         {@ok, normalized_params} <- accumulate_errors(validated_params) do
       conn
       |> render(
             "index.json",
             orders: Orders.list_orders(normalized_params),
             query_params: normalized_params)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
-      {:error, %{} = errors} ->
+      {@error, %{} = errors} ->
         conn
         |> validation_error(OrderView.format_index_errors(errors))
       _ ->
@@ -100,17 +110,17 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, _} <- authenticate_agent(conn),
-         {:ok, order} <- Orders.get_order(id) do
+    with {@ok, _} <- authenticate_agent(conn),
+         {@ok, order} <- Orders.get_order(id) do
       conn
       |> render("show.json", order: order)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :no_resource} ->
+      {@error, @no_resource} ->
         conn
-        |> resource_error("order ##{id}", "does not exist", :not_found)
+        |> resource_error("order ##{id}", "does not exist", @not_found)
       _ ->
         conn
         |> internal_error("ORSH")
@@ -120,68 +130,68 @@ defmodule AssessmentWeb.Api.OrderController do
   defp authorize_update(account, order) do
     case account do
       (%Administrator{} = administrator) ->
-        {:ok, administrator}
+        {@ok, administrator}
       (%Courier{} = courier) ->
         if order.courier_id == courier.id do
-          {:ok, courier}
+          {@ok, courier}
         else
-          {:error, :not_authorized}
+          {@error, @not_authorized}
         end
       (%Pharmacy{} = pharmacy) ->
         if order.pharmacy_id == pharmacy.id do
-          {:ok, pharmacy}
+          {@ok, pharmacy}
         else
-          {:error, :not_authorized}
+          {@error, @not_authorized}
         end
       _ ->
-        {:error, :not_authorized}
+        {@error, @not_authorized}
     end
   end
 
   defp check_elibility(order, order_state_description) do
     cond do
       order.order_state_description == order_state_description ->
-        {:error, :already_has_order_state}
+        {@error, @already_has_order_state}
       order.order_state_description == @canceled ->
-        {:error, :already_canceled}
+        {@error, @already_canceled}
       order.order_state_description == @delivered ->
-        {:error, :already_delivered}
+        {@error, @already_delivered}
       true ->
-        {:ok, {order, order_state_description}}
+        {@ok, {order, order_state_description}}
     end
   end
 
   defp update_order_state(conn, %{"id" => id}, description, view) do
     resource = "order ##{id}"
-    with {:ok, agent} <- authenticate_agent(conn),
-         {:ok, order} <- Orders.get_order(id),
-         {:ok, _} <- authorize_update(Accounts.specify_agent(agent), order),
-         {:ok, _} <- check_elibility(order, description),
-         {:ok, new_order} <- Orders.update_order_state(order, description) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         {@ok, order} <- Orders.get_order(id),
+         {@ok, _} <- authorize_update(Accounts.specify_agent(agent), order),
+         {@ok, _} <- check_elibility(order, description),
+         {@ok, new_order} <- Orders.update_order_state(order, description) do
       conn
       |> render(view, order: new_order)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
-      {:error, :already_canceled} ->
+      {@error, @already_canceled} ->
         msg = "cannot be #{description} because it has already been canceled"
         conn
         |> resource_error(resource, msg)
-      {:error, :already_delivered} ->
+      {@error, @already_delivered} ->
         msg = "cannot be #{description} because it has already been delivered"
         conn
         |> resource_error(resource, msg)
-      {:error, :already_has_order_state} ->
+      {@error, @already_has_order_state} ->
         conn
         |> resource_error(resource, "is already #{description}")
-      {:error, :no_resource} ->
+      {@error, @no_resource} ->
         conn
-        |> resource_error(resource, "does not exist", :not_found)
-      {:error, %Ecto.Changeset{} = changeset} ->
+        |> resource_error(resource, "does not exist", @not_found)
+      {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
       _ ->
