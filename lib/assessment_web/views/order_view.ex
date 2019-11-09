@@ -17,19 +17,23 @@ defmodule AssessmentWeb.OrderView do
   @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
 
-  def format_creation_errors(errors) do
+  def format_creation_errors(%{errors: errors, valid_results: valid_results} = partition) do
     messages =
       %{ authorization_msg: @authorization_msg,
          id_message: @creation_id_message,
        }
-    errors
+    r = errors
     |> order_state_error_message()
     |> Utilities.replace_old(:pickup_date, [@creation_pickup_date_msg])
     |> Utilities.replace_old(:pickup_time, [@pickup_time_msg])
     |> Utilities.replace_old(:patient_id, [@creation_id_message])
     |> account_id_error_message(:courier_id, messages)
     |> account_id_error_message(:pharmacy_id, messages)
-    |> to_changeset()
+    |> to_changeset(valid_results)
+    |> IO.inspect()
+    IO.inspect(r.data)
+    IO.inspect(valid_results)
+    r
   end
   defp to_changeset_types(%{} = map) do
     Enum.reduce(
@@ -37,17 +41,19 @@ defmodule AssessmentWeb.OrderView do
       map,
       fn ({key, _}, acc) -> Map.replace!(acc, key, :any) end)
   end
-  defp to_changeset(%{} = map) do
-    changeset = {%{}, to_changeset_types(map)} |> Changeset.cast(%{}, [])
-    Enum.reduce(
-      map,
-      changeset,
-      fn
-        ({key, []}, acc) ->
-          Changeset.add_error(acc, key, "is invalid", [])
-        ({key, [value | _] = values}, acc) when is_binary(value) ->
-          Changeset.add_error(acc, key, Enum.join(values, "; "), [])
-      end)
+  defp to_changeset(%{} = errors, %{} = valid_results) do
+    data = Map.merge(%Order{}, valid_results)
+    changeset = {data, to_changeset_types(errors)} |> Changeset.cast(%{}, [])
+    errors
+    |> Enum.reduce(
+        changeset,
+        fn
+          ({key, []}, acc) ->
+            Changeset.add_error(acc, key, "is invalid", [])
+          ({key, [value | _] = values}, acc) when is_binary(value) ->
+            Changeset.add_error(acc, key, Enum.join(values, "; "), [])
+        end)
+    |> Map.put(:action, :show_errors)
   end
   defp order_state_error_message(errors) do
     case Map.get_and_update(errors, :order_state_id, fn (_) -> :pop end) do

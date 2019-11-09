@@ -8,7 +8,7 @@ defmodule Assessment.Utilities do
   Traverses a structure of individually validated components,
   and removes the :ok and :error validation markers,
   the result being either a collection entirely comprising valid results
-  or a collection entirely comprising errors, with primacy given to the latter.
+  or a partitioned collection of both errors and valid results.
 
   ## Examples
 
@@ -19,29 +19,27 @@ defmodule Assessment.Utilities do
       {:ok, %{a: 24, b: :y, c: "z"}}
 
       iex> accumulate_errors(%{a: {:ok, 24}, b: {:error, :y}, c: {:ok, "z"}})
-      {:error, %{b: :b}}
+      {:error, %{errors: %{b: :b}, valid_results: %{a: 24, c: "z"}}}
 
       iex> accumulate_errors(%{a: {:error, 24}, b: {:error, :y}, c: {:ok, "z"}})
-      {:error, %{a: 24, b: :y}}
+      {:error, %{errors: %{a: 24, b: :y}, valid_results: %{c: "z"}}}
 
       iex> accumulate_errors(%{a: {:error, 24}, b: {:error, :y}, c: {:error, "z"}})
-      {:error, %{a: 24, b: :y, c: "z"}}
+      {:error, %{errors: %{a: 24, b: :y, c: "z"}, valid_results: %{}}}
 
   """
   def accumulate_errors(%{} = map) do
-    Enum.reduce(map, {@ok, %{}}, &reduce/2)
-  end
-  defp reduce({key, {@ok, value}}, {@ok, map}) do
-    {@ok, Map.put(map, key, value)}
-  end
-  defp reduce({_, {@ok, _}}, {@error, map}) do
-    {@error, map}
-  end
-  defp reduce({key, {@error, value}}, {@ok, _}) do
-    {@error, %{key => value}}
-  end
-  defp reduce({key, {@error, value}}, {@error, map}) do
-    {@error, Map.put(map, key, value)}
+    reduce = fn
+      ({key, {@ok, value}}, {@ok, valid_map}) ->
+        {@ok, Map.put(valid_map, key, value)}
+      ({key, {@ok, value}}, {@error, %{valid_results: valid_map} = map1}) ->
+        {@error, Map.put(map1, :valid_results, Map.put(valid_map, key, value))}
+      ({key, {@error, value}}, {@ok, valid_map}) ->
+        {@error, %{errors: %{key => value}, valid_results: valid_map}}
+      ({key, {@error, value}}, {@error, %{errors: error_map} = map1}) ->
+        {@error, Map.put(map1, :errors, Map.put(error_map, key, value))}
+    end
+    Enum.reduce(map, {@ok, %{}}, reduce)
   end
 
   def bind_error({@ok, value}, _fun), do: {@ok, value}

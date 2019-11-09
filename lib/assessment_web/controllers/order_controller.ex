@@ -69,11 +69,11 @@ defmodule AssessmentWeb.OrderController do
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(%{view: "new.html", changeset: changeset})
-      {@error, %{} = errors} ->
+      {@error, %{errors: _, valid_results: _} = partition} ->
         conn
         |> changeset_error(%{
                 view: "new.html",
-                changeset: OrderView.format_creation_errors(errors)
+                changeset: OrderView.format_creation_errors(partition)
               })
       _ ->
         conn
