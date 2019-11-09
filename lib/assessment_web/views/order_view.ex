@@ -22,7 +22,7 @@ defmodule AssessmentWeb.OrderView do
       %{ authorization_msg: @authorization_msg,
          id_message: @creation_id_message,
        }
-    r = errors
+    errors
     |> order_state_error_message()
     |> Utilities.replace_old(:pickup_date, [@creation_pickup_date_msg])
     |> Utilities.replace_old(:pickup_time, [@pickup_time_msg])
@@ -30,10 +30,6 @@ defmodule AssessmentWeb.OrderView do
     |> account_id_error_message(:courier_id, messages)
     |> account_id_error_message(:pharmacy_id, messages)
     |> to_changeset(valid_results)
-    |> IO.inspect()
-    IO.inspect(r.data)
-    IO.inspect(valid_results)
-    r
   end
   defp to_changeset_types(%{} = map) do
     Enum.reduce(
