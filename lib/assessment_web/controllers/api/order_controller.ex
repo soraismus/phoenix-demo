@@ -62,9 +62,9 @@ defmodule AssessmentWeb.Api.OrderController do
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
-      {@error, %{} = errors} ->
+      {@error, %{errors: _, valid_results: _} = partition} ->
         conn
-        |> validation_error(OrderView.format_creation_errors(errors))
+        |> validation_error(OrderView.format_creation_errors(partition))
       _ ->
         conn
         |> internal_error("ORCR")

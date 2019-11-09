@@ -1,6 +1,7 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
   import Assessment.Utilities, only: [get_date_today: 0]
+  import AssessmentWeb.Utilities, only: [to_changeset: 2]
 
   alias Assessment.Orders.Order
   alias Assessment.OrderStates
@@ -17,7 +18,7 @@ defmodule AssessmentWeb.OrderView do
   @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
 
-  def format_creation_errors(%{errors: errors, valid_results: valid_results} = partition) do
+  def format_creation_errors(%{errors: errors, valid_results: valid_results}) do
     messages =
       %{ authorization_msg: @authorization_msg,
          id_message: @creation_id_message,
@@ -30,26 +31,6 @@ defmodule AssessmentWeb.OrderView do
     |> account_id_error_message(:courier_id, messages)
     |> account_id_error_message(:pharmacy_id, messages)
     |> to_changeset(valid_results)
-  end
-  defp to_changeset_types(%{} = map) do
-    Enum.reduce(
-      map,
-      map,
-      fn ({key, _}, acc) -> Map.replace!(acc, key, :any) end)
-  end
-  defp to_changeset(%{} = errors, %{} = valid_results) do
-    data = Map.merge(%Order{}, valid_results)
-    changeset = {data, to_changeset_types(errors)} |> Changeset.cast(%{}, [])
-    errors
-    |> Enum.reduce(
-        changeset,
-        fn
-          ({key, []}, acc) ->
-            Changeset.add_error(acc, key, "is invalid", [])
-          ({key, [value | _] = values}, acc) when is_binary(value) ->
-            Changeset.add_error(acc, key, Enum.join(values, "; "), [])
-        end)
-    |> Map.put(:action, :show_errors)
   end
   defp order_state_error_message(errors) do
     case Map.get_and_update(errors, :order_state_id, fn (_) -> :pop end) do

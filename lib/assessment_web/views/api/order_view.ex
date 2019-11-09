@@ -14,7 +14,7 @@ defmodule AssessmentWeb.Api.OrderView do
   @order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
 
-  def format_creation_errors(errors) do
+  def format_creation_errors(%{errors: errors, valid_results: _} = _partition) do
     messages =
       %{ authorization_msg: @authorization_msg,
          id_message: @creation_id_message,

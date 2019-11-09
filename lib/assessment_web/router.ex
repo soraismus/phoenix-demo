@@ -37,45 +37,45 @@ defmodule AssessmentWeb.Router do
     delete "/logout", SessionController, :delete
   end
 
-#  pipeline :api do
-#    plug :accepts, ["json", "csv"]
-#    plug ProperCase.Plug.SnakeCaseParams
-#    plug Guardian_Pipeline,
-#      error_handler: AssessmentWeb.Api.SessionController,
-#      module: AssessmentWeb.Guardian
-#    plug Guardian_VerifyHeader, realm: "Token"
-#    plug Guardian_LoadResource, allow_blank: true
-#  end
+  pipeline :api do
+    plug :accepts, ["json", "csv"]
+    plug ProperCase.Plug.SnakeCaseParams
+    plug Guardian_Pipeline,
+      error_handler: AssessmentWeb.Api.SessionController,
+      module: AssessmentWeb.Guardian
+    plug Guardian_VerifyHeader, realm: "Token"
+    plug Guardian_LoadResource, allow_blank: true
+  end
 
-#  scope "/api", AssessmentWeb.Api do
-#    pipe_through :api
-#
-#    post   "/login",              SessionController,       :create
-#
-#    get    "/administrators",     AdministratorController, :index
-#    get    "/administrators/:id", AdministratorController, :show
-#    post   "/administrators",     AdministratorController, :create
-#
-#    get    "/couriers",           CourierController,       :index
-#    get    "/couriers/:id",       CourierController,       :show
-#    post   "/couriers",           CourierController,       :create
-#
-#    delete "/orders/:id",         OrderController,         :cancel
-#    get    "/orders",             OrderController,         :index
-#    get    "/orders/:id",         OrderController,         :show
-#    post   "/orders",             OrderController,         :create
-#    post   "/orders/:id/cancel",  OrderController,         :cancel
-#    post   "/orders/:id/deliver", OrderController,         :deliver
-#    post   "/orders/:id/mark_undeliverable", OrderController, :mark_undeliverable
-#
-#    get    "/patients",           PatientController,       :index
-#    get    "/patients/:id",       PatientController,       :show
-#    post   "/patients",           PatientController,       :create
-#
-#    get    "/pharmacies",         PharmacyController,      :index
-#    get    "/pharmacies/:id",     PharmacyController,      :show
-#    post   "/pharmacies",         PharmacyController,      :create
-#  end
+  scope "/api", AssessmentWeb.Api do
+    pipe_through :api
+
+    post   "/login",              SessionController,       :create
+
+    get    "/administrators",     AdministratorController, :index
+    get    "/administrators/:id", AdministratorController, :show
+    post   "/administrators",     AdministratorController, :create
+
+    get    "/couriers",           CourierController,       :index
+    get    "/couriers/:id",       CourierController,       :show
+    post   "/couriers",           CourierController,       :create
+
+    delete "/orders/:id",         OrderController,         :cancel
+    get    "/orders",             OrderController,         :index
+    get    "/orders/:id",         OrderController,         :show
+    post   "/orders",             OrderController,         :create
+    post   "/orders/:id/cancel",  OrderController,         :cancel
+    post   "/orders/:id/deliver", OrderController,         :deliver
+    post   "/orders/:id/mark_undeliverable", OrderController, :mark_undeliverable
+
+    get    "/patients",           PatientController,       :index
+    get    "/patients/:id",       PatientController,       :show
+    post   "/patients",           PatientController,       :create
+
+    get    "/pharmacies",         PharmacyController,      :index
+    get    "/pharmacies/:id",     PharmacyController,      :show
+    post   "/pharmacies",         PharmacyController,      :create
+  end
 
   defp authenticate_agent(conn, _) do
     assign(conn, :agent, GuardianController.identify_agent(conn) |> nilify_error())
