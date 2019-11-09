@@ -73,14 +73,6 @@ defmodule AssessmentWeb.OrderUtilities do
     |> map_error(fn (_) -> :invalid_date_format end)
   end
 
-  defp normalize_date_component(component) when is_binary(component) do
-    if String.length(component) == 1 do
-      "0#{component}"
-    else
-      component
-    end
-  end
-
   # The main purpose of the following `normalize_account` function is
   # to prevent pharmacies from acccessing other pharmacies' data
   # and to prevent couriers from acccessing other couriers' data.
@@ -322,21 +314,24 @@ def __validate_id(id) do
   |> map_error(fn (_) -> msg end)
 end
 def __validate_date("today"), do: {:ok, get_date_today() }
-def __validate_date(%{"day" => day, "month" => month, "year" => year}) do
-  "#{year}-#{normalize_date_component(month)}-#{normalize_date_component(day)}"
-  |> Date.from_iso8601()
+def __validate_date(%{"year" => year, "month" => month, "day" => day}) do
+  month = __normalize_datetime_segment(month)
+  day = __normalize_datetime_segment(day)
+  Date.from_iso8601("#{year}-#{month}-#{day}")
 end
 def __validate_date(iso8601_date_or_error) do
   Date.from_iso8601(iso8601_date_or_error)
 end
-def __validate_date_component(component) do
-  if String.length(component) == 1 do
-    "0#{component}"
+def __normalize_datetime_segment(segment) do
+  if String.length(segment) == 1 do
+    "0#{segment}"
   else
-    component
+    segment
   end
 end
-def __validate_time(%{"hour" => hour, "minute" => minute}) do
+def __validate_time(%{"hour" => hour, "minute" => minute} = x) do
+  hour = __normalize_datetime_segment(hour)
+  minute = __normalize_datetime_segment(minute)
   Time.from_iso8601("#{hour}:#{minute}:00")
 end
 def __validate_time(iso8601_time_or_error) do
@@ -472,7 +467,7 @@ end
 def _normalize_date(iso8601_date_or_error) do
   Date.from_iso8601(iso8601_date_or_error)
 end
-def _normalize_date_component(component) do
+def normalize_date_component(component) do
   if String.length(component) == 1 do
     "0#{component}"
   else
