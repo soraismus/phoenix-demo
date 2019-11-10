@@ -8,9 +8,13 @@ defmodule Assessment.OrderStates do
   alias Assessment.Repo
   alias Assessment.OrderStates.OrderState
 
+  @active OrderState.active()
   @active_id 1
+  @canceled OrderState.canceled()
   @canceled_id 2
+  @delivered OrderState.delivered()
   @delivered_id 3
+  @undeliverable OrderState.undeliverable()
   @undeliverable_id 4
 
   @doc """
@@ -117,10 +121,17 @@ defmodule Assessment.OrderStates do
   def delivered_id(), do: @delivered_id
 
   @doc false
-  def to_description(@active_id), do: OrderState.active()
-  def to_description(@canceled_id), do: OrderState.canceled()
-  def to_description(@delivered_id), do: OrderState.delivered()
-  def to_description(@undeliverable_id), do: OrderState.undeliverable()
+  def to_description(@active_id), do: @active
+  def to_description(@canceled_id), do: @canceled
+  def to_description(@delivered_id), do: @delivered
+  def to_description(@undeliverable_id), do: @undeliverable
+
+  @doc false
+  def to_id(@active), do: {:ok, @active_id}
+  def to_id(@canceled), do: {:ok, @canceled_id}
+  def to_id(@delivered), do: {:ok, @delivered_id}
+  def to_id(@undeliverable), do: {:ok, @undeliverable_id}
+  def to_id(_), do: {:error, :invalid_order_state}
 
   @doc false
   def undeliverable_id(), do: @undeliverable_id
