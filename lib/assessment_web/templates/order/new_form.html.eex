@@ -29,13 +29,13 @@
 
   <div class="form-group">
     <%= label f, "pickup_date", "Pickup date", class: "control-label" %>
-    <%= date_select f, :pickup_date, value: get_date_today(), class: "form-control" %>
+    <%= date_select f, :pickup_date, default: get_date_today(), class: "form-control" %>
     <%= error_tag f, :pickup_date %>
   </div>
 
   <div class="form-group">
     <%= label f, "pickup_time", "Pickup time", class: "control-label" %>
-    <%= time_select f, :pickup_time, value: get_default_time(), class: "form-control" %>
+    <%= time_select f, :pickup_time, default: get_default_time(), class: "form-control" %>
     <%= error_tag f, :pickup_time %>
   </div>
 

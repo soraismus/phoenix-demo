@@ -2,9 +2,9 @@ defmodule AssessmentWeb.Utilities do
   alias Ecto.Changeset
 
   @doc """
-  Returns an changelist that facilitates form validation.
+  Returns an changeset that facilitates form validation.
 
-  Note that calling `form_for` on changelists returned from `to_changelist`
+  Note that calling `form_for` on changesets returned from `to_changeset`
   requires the addional option `:as`. See below for an example.
 
   ## Examples
