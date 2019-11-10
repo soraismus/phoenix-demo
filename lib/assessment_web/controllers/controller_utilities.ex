@@ -19,7 +19,7 @@ defmodule AssessmentWeb.ControllerUtilities do
   def changeset_error(conn, %{view: view, changeset: %Changeset{} = changeset} = params) do
     conn
     |> put_status(Map.get(params, :status, 400))
-    |> render(view, changeset: changeset, order: Map.get(params, :order))
+    |> render(view, changeset: changeset, order_id: Map.get(params, :order_id))
   end
 
   def internal_error(conn, code) do

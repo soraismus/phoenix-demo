@@ -6,7 +6,8 @@ defmodule AssessmentWeb.OrderUtilities do
             nilify_error: 1,
             to_integer: 1,
           ]
-  alias Assessment.Accounts.{Courier,Pharmacy}
+  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
+  alias Assessment.Orders.Order
 
   defp normalize_courier_id(params, id) do
     params
@@ -41,6 +42,47 @@ defmodule AssessmentWeb.OrderUtilities do
     end
   end
   def normalize_edit_params(_params, _account), do: {:error, :invalid_order}
+
+  def normalize_validate_update(%Order{} = order, params, account) do
+    requirements = _get_required_ids(account)
+    authorized? = is_integer(requirements.administrator_id)
+    courier_id =
+      params
+      |> Map.get("courier_id")
+      |> to_string()
+      |> __validate_account_id_create(requirements.courier_id)
+      |> bind_value(validate_order_courier(order, authorized?))
+    order_state =
+      params
+      |> Map.get("order_state", Map.get(params, "order_state_description", "active"))
+      |> __validate_order_state()
+    patient_id =
+      params
+      |> Map.get("patient_id")
+      |> to_string()
+      |> __validate_id()
+    pharmacy_id =
+      params
+      |> Map.get("pharmacy_id")
+      |> to_string()
+      |> __validate_account_id_create(requirements.pharmacy_id)
+      |> bind_value(validate_order_pharmacy(order, authorized?))
+    pickup_date =
+      params
+      |> Map.get("pickup_date", "today")
+      |> __validate_date()
+    pickup_time =
+      params
+      |> Map.get("pickup_time", "14:00")
+      |> __validate_time()
+    %{ courier_id: courier_id,
+       order_state_id: order_state,
+       patient_id: patient_id,
+       pharmacy_id: pharmacy_id,
+       pickup_date: pickup_date,
+       pickup_time: pickup_time,
+     }
+  end
 
   defp normalize_date(nil), do: {:ok, get_date_today()}
   defp normalize_date("all"), do: {:ok, :all}
@@ -138,7 +180,7 @@ defmodule AssessmentWeb.OrderUtilities do
       |> __validate_account_id_create(requirements.courier_id)
     order_state =
       params
-      |> Map.get("order_state", "active")
+      |> Map.get("order_state", Map.get(params, "order_state_description", "active"))
       |> __validate_order_state()
     patient_id =
       params
@@ -159,13 +201,14 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Map.get("pickup_time", "14:00")
       |> __validate_time()
     %{ courier_id: courier_id,
-      order_state_id: order_state,
-      patient_id: patient_id,
-      pharmacy_id: pharmacy_id,
-      pickup_date: pickup_date,
-      pickup_time: pickup_time,
-    }
+       order_state_id: order_state,
+       patient_id: patient_id,
+       pharmacy_id: pharmacy_id,
+       pickup_date: pickup_date,
+       pickup_time: pickup_time,
+     }
   end
+
   def normalize_validate_index(params, account) do
     requirements = _get_required_ids(account)
     courier_id =
@@ -175,7 +218,7 @@ defmodule AssessmentWeb.OrderUtilities do
       |> __validate_account_id_index(requirements.courier_id)
     order_state =
       params
-      |> Map.get("order_state", "active")
+      |> Map.get("order_state", Map.get(params, "order_state_description", "active"))
       |> check_all_or_validate(&__validate_order_state/1)
     patient_id =
       params
@@ -192,11 +235,11 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Map.get("pickup_date", "today")
       |> check_all_or_validate(&__validate_date/1)
     %{ courier_id: courier_id,
-      order_state_id: order_state,
-      patient_id: patient_id,
-      pharmacy_id: pharmacy_id,
-      pickup_date: pickup_date,
-    }
+       order_state_id: order_state,
+       patient_id: patient_id,
+       pharmacy_id: pharmacy_id,
+       pickup_date: pickup_date,
+     }
   end
   defp check_all_or_validate(id, fun) do
     if id == "all" do
@@ -205,6 +248,7 @@ defmodule AssessmentWeb.OrderUtilities do
       fun.(id)
     end
   end
+
   defp __validate_account_id_create(account_id, required_id)
     when is_binary(account_id) and is_nil(required_id) do
       __validate_id(account_id)
@@ -225,6 +269,33 @@ defmodule AssessmentWeb.OrderUtilities do
           end
       end
   end
+
+  defp validate_order_courier(%Order{} = order, authorized?) do
+    fn (courier_id) ->
+      cond do
+        authorized? ->
+          {:ok, courier_id}
+        order.courier_id == courier_id ->
+          {:ok, courier_id}
+        true ->
+          {:error, :not_authorized}
+      end
+    end
+  end
+
+  defp validate_order_pharmacy(%Order{} = order, authorized?) do
+    fn (pharmacy_id) ->
+      cond do
+        authorized? ->
+          {:ok, pharmacy_id}
+        order.pharmacy_id == pharmacy_id ->
+          {:ok, pharmacy_id}
+        true ->
+          {:error, :not_authorized}
+      end
+    end
+  end
+
   defp __validate_account_id_index(account_id, required_id)
     when is_binary(account_id) and is_nil(required_id) do
       cond do
@@ -252,11 +323,13 @@ defmodule AssessmentWeb.OrderUtilities do
           end
       end
   end
+
   defp __validate_order_state("active"), do: {:ok, 1}
   defp __validate_order_state("canceled"), do: {:ok, 2}
   defp __validate_order_state("delivered"), do: {:ok, 3}
   defp __validate_order_state("undeliverable"), do: {:ok, 4}
   defp __validate_order_state(_), do: {:error, :invalid_order_state}
+
   defp __validate_id(id) do
     msg = :invalid_account_id
     id
@@ -264,6 +337,7 @@ defmodule AssessmentWeb.OrderUtilities do
     |> bind_value(fn (id) -> if (id > 0), do: {:ok, id}, else: {:error, msg} end)
     |> map_error(fn (_) -> msg end)
   end
+
   defp __validate_date("today"), do: {:ok, get_date_today() }
   defp __validate_date(%{"year" => year, "month" => month, "day" => day}) do
     month = __normalize_datetime_segment(month)
@@ -291,12 +365,13 @@ defmodule AssessmentWeb.OrderUtilities do
 
   defp _get_required_ids(account) do
     case account do
-      (%Courier{id: id}) ->
-        %{courier_id: id, pharmacy_id: nil}
-      (%Pharmacy{id: id}) ->
-        %{courier_id: nil, pharmacy_id: id}
-      _ ->
-        %{courier_id: nil, pharmacy_id: nil}
+      %Courier{id: id} ->
+        %{courier_id: id, pharmacy_id: nil, administrator_id: nil}
+      %Pharmacy{id: id} ->
+        %{courier_id: nil, pharmacy_id: id, administrator_id: nil}
+      %Administrator{id: id} ->
+        %{courier_id: nil, pharmacy_id: nil, administrator_id: id}
     end
   end
+
 end

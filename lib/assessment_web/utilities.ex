@@ -5,7 +5,7 @@ defmodule AssessmentWeb.Utilities do
   Returns an changeset that facilitates form validation.
 
   Note that calling `form_for` on changesets returned from `to_changeset`
-  requires the addional option `:as`. See below for an example.
+  requires the additional options `:as` and `:method`. See below for an example.
 
   ## Examples
   Data submitted from the following form, after parsing and validation,
@@ -13,6 +13,7 @@ defmodule AssessmentWeb.Utilities do
 
       ```
       <form action="/cats" method="post">
+        <input name="_method" type="hidden" value="put">
         <div class="form-group">
           <label for="cat_name">Patient id</label>
           <input id="cat_name" name="cat[name]"/>
@@ -44,10 +45,11 @@ defmodule AssessmentWeb.Utilities do
   messages as well as previously submitted valid data.
 
       iex> changeset = to_changeset(%{owner: ["is a Melmackian"]}, %{name: "Bastet", age: 4909})
-      iex> form_for(changeset, "/cats", [as: "cat"], fn (form) -> ... end)
+      iex> form_for(changeset, "/cats", [as: "cat", method: "put"], fn (form) -> ... end)
 
       ```
       <form action="/cats" method="post">
+        <input name="_method" type="hidden" value="put">
         <div class="alert alert-danger">
           <p>Oops, something went wrong! Please check the errors below.</p>
         </div>

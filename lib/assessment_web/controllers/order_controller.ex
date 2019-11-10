@@ -17,6 +17,7 @@ defmodule AssessmentWeb.OrderController do
     only: [ normalize_edit_params: 2,
             normalize_validate_creation: 2,
             normalize_validate_index: 2,
+            normalize_validate_update: 3,
           ]
 
   alias Assessment.Accounts
@@ -60,7 +61,7 @@ defmodule AssessmentWeb.OrderController do
         conn
         |> changeset_error(%{
                 view: "new.html",
-                changeset: OrderView.format_creation_errors(partition)
+                changeset: OrderView.format_upsert_errors(partition)
               })
       _ ->
         conn
@@ -109,21 +110,59 @@ defmodule AssessmentWeb.OrderController do
   def edit(conn, %{"id" => id}) do
     with {@ok, order} <- Orders.get_order(id) do
       changeset = Orders.change_order(order)
-      render(conn, "edit.html", order: order, changeset: changeset)
+      render(conn, "edit.html", order_id: id, changeset: changeset)
     end
   end
 
-  def update(conn, %{"id" => id, "order" => order_params}) do
-    data = %{msg: "Invalid order id", view: "edit.html"}
-    with {@ok, account} <- get_account(conn),
-         {@ok, order} <- Orders.get_order(id) |> error_data(data).(),
-         {@ok, _} <- authorize(account, order, "Not authorized to view order"),
-         {@ok, new_params} <- normalize_edit_params(order_params, account),
-         data <- Map.put(data, :order, order),
-         {@ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
+#  def update(conn, %{"id" => id, "order" => order_params}) do
+#    data = %{msg: "Invalid order id", view: "edit.html"}
+#    with {@ok, account} <- get_account(conn),
+#         {@ok, order} <- Orders.get_order(id) |> error_data(data).(),
+#         {@ok, _} <- authorize(account, order, "Not authorized to view order"),
+#         {@ok, new_params} <- normalize_edit_params(order_params, account),
+#         data <- Map.put(data, :order, order),
+#         {@ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
+#      conn
+#      |> put_flash(:info, "Order updated successfully.")
+#      |> redirect(to: order_path(conn, :show, order))
+#    end
+#  end
+
+  def update(conn, %{"id" => id, "order" => params}) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         {@ok, order} <- Orders.get_order(id),
+         account <- Accounts.specify_agent(agent),
+         {@ok, _} <- authorize(account, order, "Not authorized to update order"),
+         validated_params <- normalize_validate_update(order, params, account),
+         {@ok, normalized_params} <- accumulate_errors(validated_params),
+         {@ok, new_order} <- Orders.update_order(order, normalized_params) do
       conn
       |> put_flash(:info, "Order updated successfully.")
-      |> redirect(to: order_path(conn, :show, order))
+      |> redirect(to: order_path(conn, :show, new_order))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Not authorized to create an order")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to create an order")
+      {@error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(%{
+              view: "edit.html",
+              changeset: changeset,
+              order_id: id,
+            })
+      {@error, %{errors: _, valid_results: _} = partition} ->
+        conn
+        |> changeset_error(%{
+              view: "edit.html",
+              changeset: OrderView.format_upsert_errors(partition),
+              order_id: id,
+            })
+      _ ->
+        conn
+        |> internal_error("ORCR")
     end
   end
 
