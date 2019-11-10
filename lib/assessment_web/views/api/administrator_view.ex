@@ -1,8 +1,5 @@
 defmodule AssessmentWeb.Api.AdministratorView do
   use AssessmentWeb, :view
-  alias Assessment.Accounts.Administrator
-  alias Assessment.Utilities
-  alias Assessment.Utilities.ToJson
 
   def render("create.json", %{administrator: administrator}) do
     %{created: %{administrator: ToJson.to_json(administrator)}}
@@ -17,12 +14,5 @@ defmodule AssessmentWeb.Api.AdministratorView do
 
   def render("show.json", %{administrator: administrator}) do
     %{administrator: ToJson.to_json(administrator)}
-  end
-
-  defimpl ToJson, for: Administrator do
-    def to_json(%Administrator{} = administrator) do
-      administrator
-      |> Utilities.to_json([:id, :username, :email])
-    end
   end
 end

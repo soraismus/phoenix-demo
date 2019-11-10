@@ -1,9 +1,6 @@
 defmodule AssessmentWeb.Api.OrderView do
   use AssessmentWeb, :view
-  alias Assessment.Orders.Order
   alias Assessment.OrderStates
-  alias Assessment.Utilities
-  alias Assessment.Utilities.ToJson
 
   @authorization_msg "is prohibited to unauthorized users"
   @index_id_msg "must be either 'all' or a positive integer"
@@ -13,6 +10,20 @@ defmodule AssessmentWeb.Api.OrderView do
   @upsert_id_msg "must be specified and must be a positive integer"
   @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
   @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   def format_index_errors(errors) do
     msgs =
@@ -26,6 +37,10 @@ defmodule AssessmentWeb.Api.OrderView do
     |> account_id_error_msg(:courier_id, msgs)
     |> account_id_error_msg(:pharmacy_id, msgs)
   end
+
+
+
+
 
   def format_upsert_errors(%{errors: errors, valid_results: _} = _partition) do
     msgs =
@@ -99,16 +114,5 @@ defmodule AssessmentWeb.Api.OrderView do
       {nil, errors} -> errors
       {_, errors} -> Map.put(errors, :order_state, [msg])
     end
-  end
-
-  defimpl ToJson, for: Order do
-    def to_json(%Order{order_state_id: id} = order) do
-      fields = ~w(id patient pharmacy courier pickup_date pickup_time)a
-      order
-      |> Utilities.to_json(fields)
-      |> Map.put("order_state", to_description(id))
-    end
-    def to_description(:all), do: "all"
-    def to_description(id), do: OrderStates.to_description(id)
   end
 end

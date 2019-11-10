@@ -1,8 +1,5 @@
 defmodule AssessmentWeb.Api.PharmacyView do
   use AssessmentWeb, :view
-  alias Assessment.Accounts.Pharmacy
-  alias Assessment.Utilities
-  alias Assessment.Utilities.ToJson
 
   def render("create.json", %{pharmacy: pharmacy}) do
     %{created: %{pharmacy: ToJson.to_json(pharmacy)}}
@@ -17,12 +14,5 @@ defmodule AssessmentWeb.Api.PharmacyView do
 
   def render("show.json", %{pharmacy: pharmacy}) do
     %{pharmacy: ToJson.to_json(pharmacy)}
-  end
-
-  defimpl ToJson, for: Pharmacy do
-    def to_json(%Pharmacy{} = pharmacy) do
-      pharmacy
-      |> Utilities.to_json([:id, :name, :username, :email])
-    end
   end
 end
