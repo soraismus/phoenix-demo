@@ -4,8 +4,6 @@ defmodule AssessmentWeb.OrderView do
   import AssessmentWeb.Utilities, only: [to_changeset: 2]
   import Utilities, only: [get_date_today: 0]
 
-  alias Assessment.Utilities
-
   @authorization_msg "is prohibited to unauthorized users"
   @index_id_msg "must be either 'all' or a positive integer"
   @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
