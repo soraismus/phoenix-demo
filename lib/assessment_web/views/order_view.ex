@@ -51,6 +51,19 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
+  def format_index_errors(errors) do
+    messages =
+      %{ authorization_msg: @authorization_msg,
+         id_message: @index_id_message,
+       }
+    errors
+    |> order_state_error_message()
+    |> Utilities.replace_old(:pickup_date, [@index_pickup_date_msg])
+    |> Utilities.replace_old(:patient_id, [@index_id_message])
+    |> account_id_error_message(:courier_id, messages)
+    |> account_id_error_message(:pharmacy_id, messages)
+  end
+
 
 
 

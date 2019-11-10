@@ -23,8 +23,18 @@
       </header>
 
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <p class="alert alert-warning" role="alert"><%= get_flash(@conn, :warning) %></p>
+      <% error = get_flash(@conn, :error) %>
+      <%= if is_list(error) do %>
+        <p class="alert alert-danger" role="alert">
+          Errors:<br>
+          <%= for e <- error do %>
+            <%= e %><br>
+          <% end %>
+        </p>
+      <% else %>
+        <p class="alert alert-danger" role="alert"><%= error %></p>
+      <% end %>
 
       <main role="main">
         <%= render @view_module, @view_template, assigns %>

@@ -82,13 +82,42 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def index(conn, params) do
-    with {:ok, account} <- get_account(conn),
-         {:ok, normalized_params} <- normalize_index_params(params, account) do
-      orders = Orders.list_orders(normalized_params)
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         validated_params <- normalize_validate_index(params, account),
+         {@ok, normalized_params} <- accumulate_errors(validated_params) do
       conn
       |> assign(:normalized_params, normalized_params)
-      |> render("index.html", orders: orders)
+      |> render("index.html", orders: Orders.list_orders(normalized_params))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Not authorized to view orders")
+      {@error, @not_authorized} ->
+        conn
+        |> authentication_error("Not authorized to view orders")
+      {@error, %{errors: errors}} ->
+        IO.inspect("index_error")
+        IO.inspect(errors)
+        conn
+        |> put_flash(:error, errors |> OrderView.format_index_errors() |> to_error_list())
+        |> redirect(to: page_path(conn, :index))
+        # |> validation_error(OrderView.format_index_errors(errors))
+      x ->
+        IO.inspect("index_error default")
+        IO.inspect(x)
+        conn
+        |> internal_error("ORIN")
     end
+  end
+  defp to_error_list(%{} = map) do
+    Enum.reduce(
+      map,
+      [],
+      fn ({key, values}, list) ->
+        prefix = String.capitalize(to_string(key)) <> " "
+        list ++ Enum.map(values, fn (value) -> prefix <> value <> "." end)
+      end)
   end
 
   def new(conn, _params) do
