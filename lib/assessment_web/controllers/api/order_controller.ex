@@ -3,7 +3,7 @@ defmodule AssessmentWeb.Api.OrderController do
 
   import Assessment.Utilities, only: [accumulate_errors: 1]
   import AssessmentWeb.Api.ControllerUtilities,
-    only: [ authentication_error: 1,
+    only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,
             internal_error: 2,
@@ -55,7 +55,7 @@ defmodule AssessmentWeb.Api.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error()
+        |> authentication_error("Must provide credentials to create an order")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to create an order")
@@ -89,7 +89,7 @@ defmodule AssessmentWeb.Api.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error()
+        |> authentication_error("Must provide credentials to view orders")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to view orders")
@@ -115,7 +115,7 @@ defmodule AssessmentWeb.Api.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error()
+        |> authentication_error("Must provide credentials to view an order")
       {@error, @no_resource} ->
         conn
         |> resource_error("order ##{id}", "does not exist", @not_found)
@@ -171,7 +171,7 @@ defmodule AssessmentWeb.Api.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error()
+        |> authentication_error("Must provide credentials to update an order")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to update orders.")

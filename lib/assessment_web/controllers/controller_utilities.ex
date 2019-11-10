@@ -28,4 +28,21 @@ defmodule AssessmentWeb.ControllerUtilities do
     |> put_flash(:error, "Internal Error -- Code: #{code}")
     |> render(to: page_path(conn, :index))
   end
+
+  def validation_error(conn, error_json, status \\ 400) do
+    conn
+    |> put_status(status)
+    |> put_flash(:error, to_error_list(error_json))
+    |> redirect(to: page_path(conn, :index))
+  end
+
+  defp to_error_list(%{} = map) do
+    Enum.reduce(
+      map,
+      [],
+      fn ({key, values}, list) ->
+        prefix = String.capitalize(to_string(key)) <> " "
+        list ++ Enum.map(values, fn (value) -> prefix <> value <> "." end)
+      end)
+  end
 end

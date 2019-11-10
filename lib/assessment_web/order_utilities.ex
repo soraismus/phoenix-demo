@@ -289,7 +289,7 @@ def __validate_account_id_index(account_id, required_id)
   when is_binary(account_id) and is_integer(required_id) do
     cond do
       account_id == "" ->
-        {:ok, :all}
+        {:ok, required_id}
       account_id == to_string(required_id) ->
         {:ok, required_id}
       true ->
@@ -329,7 +329,7 @@ def __normalize_datetime_segment(segment) do
     segment
   end
 end
-def __validate_time(%{"hour" => hour, "minute" => minute} = x) do
+def __validate_time(%{"hour" => hour, "minute" => minute}) do
   hour = __normalize_datetime_segment(hour)
   minute = __normalize_datetime_segment(minute)
   Time.from_iso8601("#{hour}:#{minute}:00")
@@ -367,34 +367,33 @@ def _normalize_and_validate(params, account) do
      }
   changeset = _validate(normalized_attrs, requirements)
   if changeset.valid? do
-    _normalized_attrs =
+    normalized_attrs1 =
       normalized_attrs
       |> Enum.reduce(
           %{},
           fn ({key, {:ok, value}}, map) -> Map.put(map, key, value) end)
-    {:ok, _normalized_attrs}
+    {:ok, normalized_attrs1}
   else
     {:error, changeset}
   end
 end
 def _validate(normalized_attrs, requirements) do
-  changeset =
-    { %{},
-      %{ courier_id: :any,
-         order_state: :any,
-         patient_id: :any,
-         pharmacy_id: :any,
-         pickup_date: :any,
-       }
-    }
-    |> Changeset.cast(
-          normalized_attrs,
-          ~w(courier_id order_state patient_id pharmacy_id pickup_date)a)
-    |> _validate_courier_id(to_string(requirements.courier_id))
-    |> _validate_order_state()
-    |> _validate_patient_id()
-    |> _validate_pharmacy_id(to_string(requirements.pharmacy_id))
-    |> _validate_pickup_date()
+  { %{},
+    %{ courier_id: :any,
+        order_state: :any,
+        patient_id: :any,
+        pharmacy_id: :any,
+        pickup_date: :any,
+      }
+  }
+  |> Changeset.cast(
+        normalized_attrs,
+        ~w(courier_id order_state patient_id pharmacy_id pickup_date)a)
+  |> _validate_courier_id(to_string(requirements.courier_id))
+  |> _validate_order_state()
+  |> _validate_patient_id()
+  |> _validate_pharmacy_id(to_string(requirements.pharmacy_id))
+  |> _validate_pickup_date()
 end
 def _normalize_id("all"), do: {:ok, :all}
 def _normalize_id(id) do
