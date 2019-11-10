@@ -93,9 +93,9 @@ defmodule AssessmentWeb.Api.OrderController do
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to view orders")
-      {@error, %{} = errors} ->
+      {@error, %{errors: _, valid_results: _} = partition} ->
         conn
-        |> validation_error(OrderView.format_index_errors(errors))
+        |> validation_error(OrderView.format_index_errors(partition))
       _ ->
         conn
         |> internal_error("ORIN")

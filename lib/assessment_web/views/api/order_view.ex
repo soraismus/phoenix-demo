@@ -12,7 +12,7 @@ defmodule AssessmentWeb.Api.OrderView do
   @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
   @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
 
-  def format_index_errors(errors) do
+  def format_index_errors(%{errors: errors, valid_results: _} = _partition) do
     msgs =
       %{ authorization_msg: @authorization_msg,
          id_msg: @index_id_msg,
