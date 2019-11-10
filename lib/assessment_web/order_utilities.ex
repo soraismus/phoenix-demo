@@ -1,47 +1,14 @@
 defmodule AssessmentWeb.OrderUtilities do
-  import Assessment.Utilities,
+  import Utilities,
     only: [ bind_value: 2,
             get_date_today: 0,
             map_error: 2,
             nilify_error: 1,
             to_integer: 1,
           ]
+
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders.Order
-
-  defp normalize_courier_id(params, id) do
-    params
-    |> Map.delete("courier_id")
-    |> Map.put(:courier_id, id)
-  end
-
-  def normalize_edit_params(%{"patient_id" => patient_id} = params, account) do
-    whitelist =
-      ~w( courier_id
-          order_state_description
-          patient_id
-          pharmacy_id
-          pickup_date
-          pickup_time
-        )
-    sanitized_params = Map.take(params, whitelist)
-    with {:ok, new_params} <- normalize_account(sanitized_params, account),
-         {:ok, pickup_date} <- normalize_date(Map.get(new_params, "pickup_date")) do
-      normalized_params =
-        new_params
-        |> Map.delete("order_state_description")
-        |> Map.put(:order_state_description, Map.get(params, "order_state_description"))
-        |> Map.delete("patient_id")
-        |> Map.put(:patient_id, patient_id)
-        |> Map.delete("pickup_date")
-        |> Map.put(:pickup_date, pickup_date)
-        |> Map.delete("pickup_time")
-        |> Map.put(:pickup_time, Map.get(new_params, "pickup_time"))
-        |> Map.put(:order_state_id, 1)
-      {:ok, normalized_params}
-    end
-  end
-  def normalize_edit_params(_params, _account), do: {:error, :invalid_order}
 
   def normalize_validate_update(%Order{} = order, params, account) do
     requirements = _get_required_ids(account)
@@ -374,4 +341,9 @@ defmodule AssessmentWeb.OrderUtilities do
     end
   end
 
+  defp normalize_courier_id(params, id) do
+    params
+    |> Map.delete("courier_id")
+    |> Map.put(:courier_id, id)
+  end
 end

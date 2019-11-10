@@ -1,7 +1,8 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
-  import Assessment.Utilities, only: [get_date_today: 0]
+
   import AssessmentWeb.Utilities, only: [to_changeset: 2]
+  import Utilities, only: [get_date_today: 0]
 
   alias Assessment.Utilities
 

@@ -1,6 +1,8 @@
 defmodule Assessment.Orders.Order do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Assessment.Accounts.{Courier,Pharmacy}
   alias Assessment.OrderStates
   alias Assessment.OrderStates.OrderState

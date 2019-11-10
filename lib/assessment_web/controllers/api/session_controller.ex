@@ -1,7 +1,11 @@
 defmodule AssessmentWeb.Api.SessionController do
   use AssessmentWeb, :controller
+
   import AssessmentWeb.Api.ControllerUtilities,
-    only: [internal_error: 2, resource_error: 4]
+    only: [ internal_error: 2,
+            resource_error: 4,
+          ]
+
   alias Assessment.Sessions
   alias AssessmentWeb.Guardian
 

@@ -1,6 +1,8 @@
 defmodule Assessment.OrderStates.OrderState do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Assessment.Orders.Order
 
   @active "active"

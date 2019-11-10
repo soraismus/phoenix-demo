@@ -1,7 +1,6 @@
 defmodule AssessmentWeb.OrderController do
   use AssessmentWeb, :controller
 
-  import Assessment.Utilities, only: [accumulate_errors: 1, error_data: 1]
   import AssessmentWeb.ControllerUtilities,
     only: [ authentication_error: 2,
             authorization_error: 2,
@@ -14,11 +13,11 @@ defmodule AssessmentWeb.OrderController do
             get_account: 1,
           ]
   import AssessmentWeb.OrderUtilities,
-    only: [ normalize_edit_params: 2,
-            normalize_validate_creation: 2,
+    only: [ normalize_validate_creation: 2,
             normalize_validate_index: 2,
             normalize_validate_update: 3,
           ]
+  import Utilities, only: [accumulate_errors: 1, error_data: 1]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
@@ -113,20 +112,6 @@ defmodule AssessmentWeb.OrderController do
       render(conn, "edit.html", order_id: id, changeset: changeset)
     end
   end
-
-#  def update(conn, %{"id" => id, "order" => order_params}) do
-#    data = %{msg: "Invalid order id", view: "edit.html"}
-#    with {@ok, account} <- get_account(conn),
-#         {@ok, order} <- Orders.get_order(id) |> error_data(data).(),
-#         {@ok, _} <- authorize(account, order, "Not authorized to view order"),
-#         {@ok, new_params} <- normalize_edit_params(order_params, account),
-#         data <- Map.put(data, :order, order),
-#         {@ok, _} <- Orders.update_order(order, new_params) |> error_data(data).() do
-#      conn
-#      |> put_flash(:info, "Order updated successfully.")
-#      |> redirect(to: order_path(conn, :show, order))
-#    end
-#  end
 
   def update(conn, %{"id" => id, "order" => params}) do
     with {@ok, agent} <- authenticate_agent(conn),

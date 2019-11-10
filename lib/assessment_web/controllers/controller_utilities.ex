@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.ControllerUtilities do
   use AssessmentWeb, :controller
+
   alias Ecto.Changeset
 
   def authentication_error(conn, msg \\ "Not authorized") do

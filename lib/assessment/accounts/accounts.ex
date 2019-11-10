@@ -5,7 +5,7 @@ defmodule Assessment.Accounts do
 
   import Ecto.Query, warn: false
 
-  alias Assessment.{Repo,Utilities}
+  alias Assessment.Repo
   alias Assessment.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
   alias Ecto.Changeset
 

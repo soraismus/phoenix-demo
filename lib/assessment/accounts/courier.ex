@@ -1,9 +1,10 @@
 defmodule Assessment.Accounts.Courier do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Assessment.Accounts.Agent
   alias Assessment.Orders.Order
-
 
   schema "couriers" do
     field :address, :string

@@ -1,10 +1,11 @@
 defmodule Assessment.Accounts.Credential do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Assessment.Accounts.Agent
   alias Comeonin.Bcrypt
   alias Ecto.Changeset
-
 
   schema "credentials" do
     field :password_digest, :string

@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.Api.PharmacyController do
   use AssessmentWeb, :controller
+
   import AssessmentWeb.Api.ControllerUtilities,
     only: [ authentication_error: 1,
             authorization_error: 1,
@@ -8,6 +9,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
             resource_error: 4
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
+
   alias Assessment.Accounts
 
   def create(conn, %{"pharmacy" => params}) do

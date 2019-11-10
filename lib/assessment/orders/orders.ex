@@ -4,7 +4,7 @@ defmodule Assessment.Orders do
   """
 
   import Ecto.Query, warn: false
-  import Assessment.Utilities,
+  import Utilities,
     only: [ map_error: 2,
             map_value: 2,
             modify_if: 3,

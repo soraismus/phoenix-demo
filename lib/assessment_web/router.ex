@@ -1,6 +1,8 @@
 defmodule AssessmentWeb.Router do
   use AssessmentWeb, :router
-  import Assessment.Utilities, only: [nilify_error: 1]
+
+  import Utilities, only: [nilify_error: 1]
+
   alias Guardian.Plug.LoadResource, as: Guardian_LoadResource
   alias Guardian.Plug.Pipeline, as: Guardian_Pipeline
   alias Guardian.Plug.VerifyHeader, as: Guardian_VerifyHeader

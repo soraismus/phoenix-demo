@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.GuardianController do
-  import Assessment.Utilities, only: [prohibit_nil: 1]
+  import Utilities, only: [prohibit_nil: 1]
+
   alias Assessment.Accounts.Agent
   alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
   alias AssessmentWeb.Guardian

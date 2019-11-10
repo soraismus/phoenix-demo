@@ -4,7 +4,8 @@ defmodule Assessment.Patients do
   """
 
   import Ecto.Query, warn: false
-  alias Assessment.{Repo,Utilities}
+
+  alias Assessment.Repo
   alias Assessment.Patients.Patient
 
   @doc """

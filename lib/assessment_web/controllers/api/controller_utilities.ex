@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.Api.ControllerUtilities do
   use AssessmentWeb, :controller
+
   alias Ecto.Changeset
 
   def authentication_error(conn, msg \\ "Authentication is required") do

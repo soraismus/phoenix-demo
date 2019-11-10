@@ -1,5 +1,6 @@
 defmodule AssessmentWeb.SessionController do
   use AssessmentWeb, :controller
+
   alias Assessment.Accounts
   alias Assessment.Sessions
 

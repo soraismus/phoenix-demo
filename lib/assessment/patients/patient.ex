@@ -1,8 +1,9 @@
 defmodule Assessment.Patients.Patient do
   use Ecto.Schema
-  import Ecto.Changeset
-  alias Assessment.Orders.Order
 
+  import Ecto.Changeset
+
+  alias Assessment.Orders.Order
 
   schema "patients" do
     field :address, :string

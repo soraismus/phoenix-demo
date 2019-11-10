@@ -4,6 +4,7 @@ defmodule Assessment.OrderStates do
   """
 
   import Ecto.Query, warn: false
+
   alias Assessment.Repo
   alias Assessment.OrderStates.OrderState
 
