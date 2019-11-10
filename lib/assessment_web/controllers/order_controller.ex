@@ -32,9 +32,14 @@ defmodule AssessmentWeb.OrderController do
 
   @created :created
   @error :error
-  @ok :ok
+  @new :new
+  @index :index
+  @info :info
+  @normalized_params :normalized_params
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
+  @ok :ok
+  @request_path :request_path
 
   def create(conn, %{"order" => params}) do
     with {@ok, agent} <- authenticate_agent(conn),
@@ -44,8 +49,8 @@ defmodule AssessmentWeb.OrderController do
          {@ok, order} <- Orders.create_order(normalized_params) do
       conn
       |> put_status(@created)
-      |> put_flash(:info, "Order created successfully.")
-      |> redirect(to: order_path(conn, :show, order))
+      |> put_flash(@info, "Order created successfully.")
+      |> redirect(to: order_path(conn, "show.html", order))
     else
       {@error, @not_authenticated} ->
         conn
@@ -74,7 +79,7 @@ defmodule AssessmentWeb.OrderController do
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params) do
       conn
-      |> assign(:normalized_params, normalized_params)
+      |> assign(@normalized_params, normalized_params)
       |> render("index.html", orders: Orders.list_orders(normalized_params))
     else
       {@error, @not_authenticated} ->
@@ -122,8 +127,8 @@ defmodule AssessmentWeb.OrderController do
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          {@ok, new_order} <- Orders.update_order(order, normalized_params) do
       conn
-      |> put_flash(:info, "Order updated successfully.")
-      |> redirect(to: order_path(conn, :show, new_order))
+      |> put_flash(@info, "Order updated successfully.")
+      |> redirect(to: order_path(conn, "show.html", new_order))
     else
       {@error, @not_authenticated} ->
         conn
@@ -158,8 +163,8 @@ defmodule AssessmentWeb.OrderController do
          {@ok, _} <- authorize(account, order, "Not authorized to delete order"),
          {@ok, _} <- Orders.delete_order(order) do
       conn
-      |> put_flash(:info, "Order deleted successfully.")
-      |> redirect(to: order_path(conn, :index))
+      |> put_flash(@info, "Order deleted successfully.")
+      |> redirect(to: order_path(conn, @index))
     end
   end
 
@@ -182,8 +187,8 @@ defmodule AssessmentWeb.OrderController do
     else
       conn
       |> put_flash(@error, "You must be logged in to manage orders.")
-      |> put_session(:request_path, conn.request_path)
-      |> redirect(to: session_path(conn, :new))
+      |> put_session(@request_path, conn.request_path)
+      |> redirect(to: session_path(conn, @new))
       |> halt()
     end
   end
@@ -192,90 +197,101 @@ defmodule AssessmentWeb.OrderController do
     use AssessmentWeb, :controller
 
     @error :error
+    @index :index
+    @invalid_account_type :invalid_account_type
+    @invalid_courier_id :invalid_courier_id
+    @invalid_date :invalid_date
+    @invalid_format :invalid_format
+    @invalid_integer_format :invalid_integer_format
+    @invalid_order :invalid_order
+    @invalid_order_state :invalid_order_state
+    @invalid_patient_id :invalid_patient_id
+    @invalid_pharmacy_id :invalid_pharmacy_id
+    @order :order
     @not_authenticated :not_authenticated
     @not_authorized :not_authorized
 
     def call(conn, {@error, %{error: (%Changeset{} = changeset), view: view} = data}) do
       conn
-      |> render(view, changeset: changeset, order: Map.get(data, :order))
+      |> render(view, changeset: changeset, order: Map.get(data, @order))
     end
 
     def call(conn, {@error, %{error: @not_authorized, msg: msg}}) do
       conn
       |> put_flash(@error, msg)
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_account_type}) do
+    def call(conn, {@error, @invalid_account_type}) do
       conn
       |> put_flash(@error, "Not authorized to create an order")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_courier_id}) do
+    def call(conn, {@error, @invalid_courier_id}) do
       conn
       |> put_flash(@error, "Invalid courier id")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_date}) do
+    def call(conn, {@error, @invalid_date}) do
       conn
       |> put_flash(@error, "Internal error: Failure to recognize format of pickup date.")
       |> render("new.html", changeset: Orders.change_order(%Order{}))
     end
 
-    def call(conn, {@error, :invalid_format}) do
+    def call(conn, {@error, @invalid_format}) do
       conn
       |> put_flash(@error, "Internal error: Failure to recognize format of pickup date.")
       |> render("new.html", changeset: Orders.change_order(%Order{}))
     end
 
-    def call(conn, {@error, :invalid_integer_format}) do
+    def call(conn, {@error, @invalid_integer_format}) do
       conn
       |> put_flash(@error, "Internal error: Failure to recognize resource format.")
       |> render("new.html", changeset: Orders.change_order(%Order{}))
     end
 
-    def call(conn, {@error, :invalid_order}) do
+    def call(conn, {@error, @invalid_order}) do
       conn
       |> put_flash(@error, "Invalid order")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_order_state}) do
+    def call(conn, {@error, @invalid_order_state}) do
       conn
       |> put_flash(@error, "Invalid order state")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_patient_id}) do
+    def call(conn, {@error, @invalid_patient_id}) do
       conn
       |> put_flash(@error, "Invalid patient id")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
-    def call(conn, {@error, :invalid_pharmacy_id}) do
+    def call(conn, {@error, @invalid_pharmacy_id}) do
       conn
       |> put_flash(@error, "Invalid pharmacy id")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
     def call(conn, {@error, @not_authenticated}) do
       conn
       |> put_flash(@error, "Not authorized")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
     def call(conn, {@error, @not_authorized}) do
       conn
       |> put_flash(@error, "Not authorized")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
 
     def call(conn, {@error, %{msg: msg}}) do
       conn
       |> put_flash(@error, msg)
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: page_path(conn, @index))
     end
   end
 end
