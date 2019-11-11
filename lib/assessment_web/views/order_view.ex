@@ -7,13 +7,33 @@ defmodule AssessmentWeb.OrderView do
   alias Assessment.Orders.Order
 
   @authorization_msg "is prohibited to unauthorized users"
+  @field_delimiter ","
   @index_id_msg "must be either 'all' or a positive integer"
   @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
   @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
+  @record_delimiter "\n"
   @upsert_id_msg "must be specified and must be a positive integer"
   @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
   @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+
+  @order_fields ~w( id
+                    patient_id
+                    patient_name
+                    patient_address
+                    pharmacy_id
+                    pharmacy_name
+                    pharmacy_email
+                    pharmacy_address
+                    courier_id
+                    courier_name
+                    courier_email
+                    courier_address
+                    order_state_description
+                    pickup_date
+                    pickup_time
+                  )
+                  |> Enum.join(@field_delimiter)
 
   def current_order_state(conn) do
     case conn.params["order_state"] do
@@ -113,6 +133,14 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
+  def to_csv([]) do
+    @order_fields
+  end
+  def to_csv([%Order{} | _] = orders) do
+    records = Enum.map_join(orders, @record_delimiter, &to_csv_record/1)
+    @order_fields <> @record_delimiter <> records
+  end
+
   defp account_id_error_msg(errors, account_id, msgs) do
     if Map.has_key?(errors, account_id) do
       case errors[account_id] do
@@ -133,29 +161,11 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
+  defp set_off(binary) when is_binary(binary) do
+    "\"#{binary}\""
+  end
 
-
-
-  @field_delimiter ","
-  @record_delimiter "\n"
-  @order_fields ~w( id
-                    patient_id
-                    patient_name
-                    patient_address
-                    pharmacy_id
-                    pharmacy_name
-                    pharmacy_email
-                    pharmacy_address
-                    courier_id
-                    courier_name
-                    courier_email
-                    courier_address
-                    order_state_description
-                    pickup_date
-                    pickup_time
-                  )
-                  |> Enum.join(@field_delimiter)
-  def to_csv_record(%Order{} = order) do
+  defp to_csv_record(%Order{} = order) do
     [ order.id,
       order.patient.id,
       set_off(order.patient.name),
@@ -173,15 +183,5 @@ defmodule AssessmentWeb.OrderView do
       set_off(order.pickup_time |> Time.to_iso8601() |> String.slice(0..4)),
     ]
     |> Enum.map_join(@field_delimiter, &to_string/1)
-  end
-  def to_csv([]) do
-    @order_fields
-  end
-  def to_csv([%Order{} | _] = orders) do
-    records = Enum.map_join(orders, @record_delimiter, &to_csv_record/1)
-    @order_fields <> @record_delimiter <> records
-  end
-  defp set_off(binary) when is_binary(binary) do
-    "\"#{binary}\""
   end
 end

@@ -76,8 +76,7 @@ defmodule AssessmentWeb.OrderController do
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          orders <- Orders.list_orders(normalized_params),
-         csv <- Temporary.to_csv(orders) do
-         #csv <- ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders, false) do
+         csv <- OrderView.to_csv(orders) do
       conn
       |> send_attachment("text/csv", "orders.csv", csv)
     else
