@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.SessionController do
+defmodule AssessmentWeb.Browser.SessionController do
   use AssessmentWeb, :controller
 
   alias Assessment.Accounts

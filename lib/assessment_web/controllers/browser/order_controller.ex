@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.OrderController do
+defmodule AssessmentWeb.Browser.OrderController do
   use AssessmentWeb, :controller
 
-  import AssessmentWeb.ControllerUtilities,
+  import AssessmentWeb.Browser.ControllerUtilities,
     only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,

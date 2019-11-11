@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.AdministratorController do
+defmodule AssessmentWeb.Browser.CourierController do
   use AssessmentWeb, :controller
 
-  import AssessmentWeb.ControllerUtilities,
+  import AssessmentWeb.Browser.ControllerUtilities,
     only: [ internal_error: 2,
             resource_error: 3,
           ]
@@ -23,56 +23,56 @@ defmodule AssessmentWeb.AdministratorController do
 
   def index(conn, _params) do
     conn
-    |> render("index.html", administrators: Accounts.list_administrators())
+    |> render("index.html", couriers: Accounts.list_couriers())
   end
 
   def new(conn, _params) do
     conn
-    |> render("new.html", changeset: Accounts.change_administrator())
+    |> render("new.html", changeset: Accounts.change_courier())
   end
 
   def create(conn, %{"agent" => agent_params}) do
-    case Accounts.create_administrator(agent_params) do
-      {@ok, %Agent{administrator: administrator}} ->
+    case Accounts.create_courier(agent_params) do
+      {@ok, %Agent{courier: courier}} ->
         conn
-        |> put_flash(@info, "Administrator created successfully.")
-        |> redirect(to: administrator_path(conn, @show, administrator))
+        |> put_flash(@info, "Courier created successfully.")
+        |> redirect(to: courier_path(conn, @show, courier))
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> render("new.html", changeset: changeset)
       _ ->
         conn
-        |> internal_error("ADCR_B")
+        |> internal_error("COCR_B")
     end
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, administrator} <- Accounts.get_administrator(id) do
+    with {@ok, courier} <- Accounts.get_courier(id) do
       conn
-      |> render("show.html", administrator: administrator)
+      |> render("show.html", courier: courier)
     else
       {@error, @no_resource} ->
         conn
-        |> resource_error("administrator ##{id}", "does not exist")
+        |> resource_error("courier ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("ADSH_B")
+        |> internal_error("COSH_B")
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    with {@ok, administrator} <- Accounts.get_administrator(id),
-         {@ok, _} = Accounts.delete_administrator(administrator) do
+    with {@ok, courier} <- Accounts.get_courier(id),
+         {@ok, _} = Accounts.delete_courier(courier) do
       conn
-      |> put_flash(@info, "Administrator deleted successfully.")
-      |> redirect(to: administrator_path(conn, @index))
+      |> put_flash(@info, "Courier deleted successfully.")
+      |> redirect(to: courier_path(conn, @index))
     else
       {@error, @no_resource} ->
         conn
-        |> resource_error("administrator ##{id}", "does not exist")
+        |> resource_error("courier ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("ADDE_B")
+        |> internal_error("CODE_B")
     end
   end
 
@@ -82,7 +82,7 @@ defmodule AssessmentWeb.AdministratorController do
       conn
     else
       conn
-      |> put_flash(@error, "You must be logged in as an administrator to manage administrators.")
+      |> put_flash(@error, "You must be logged in as an administrator to manage couriers.")
       |> put_session(@request_path, @ignore)
       |> redirect(to: session_path(conn, @new))
       |> halt()

@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.PatientController do
+defmodule AssessmentWeb.Browser.PatientController do
   use AssessmentWeb, :controller
 
-  import AssessmentWeb.ControllerUtilities,
+  import AssessmentWeb.Browser.ControllerUtilities,
     only: [ internal_error: 2,
             resource_error: 3,
           ]

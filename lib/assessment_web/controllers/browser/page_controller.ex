@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.PageController do
+defmodule AssessmentWeb.Browser.PageController do
   use AssessmentWeb, :controller
 
   def index(conn, _params) do

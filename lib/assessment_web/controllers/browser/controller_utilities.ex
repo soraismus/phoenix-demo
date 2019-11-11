@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.ControllerUtilities do
+defmodule AssessmentWeb.Browser.ControllerUtilities do
   use AssessmentWeb, :controller
 
   alias Ecto.Changeset

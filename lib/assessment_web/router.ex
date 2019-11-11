@@ -23,7 +23,7 @@ defmodule AssessmentWeb.Router do
     plug :authenticate_agent
   end
 
-  scope "/", AssessmentWeb do
+  scope "/", AssessmentWeb.Browser do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
