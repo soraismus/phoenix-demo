@@ -1,13 +1,36 @@
 defmodule ToCsv do
-  @callback to_csv_header() :: String.t
-  @delimiter "\n"
+  @callback to_csv_field_prefix() :: String.t
+  @callback to_csv_fields() :: [String.t]
+  @field_delimiter ","
+  @name_delimiter "_"
+  @record_delimiter "\n"
   def to_csv(implementation, []) do
     implementation.to_csv_header()
   end
   def to_csv(implementation, [_ | _] = values) do
-    record = Enum.map_join(values, @delimiter, &ToCsvRecord.to_csv_record/1)
-    implementation.to_csv_header() <> @delimiter <> record
+    record = Enum.map_join(values, @record_delimiter, &ToCsvRecord.to_csv_record/1)
+    to_csv_header(implementation) <> @record_delimiter <> record
   end
+  def to_csv_header(implementation) do
+    implementation.to_csv_fields()
+    |> Enum.map_join(@field_delimiter, fn (field) ->
+          implementation.to_csv_field_prefix() <> @name_delimiter <> to_string(field)
+        end)
+  end
+  def join_csv_fields(values) when is_list(values) do
+    values
+    |> Enum.map_join(",", &ToCsvRecord.to_csv_record/1)
+  end
+  def join_csv_fields(%{} = struct) do
+    HasCsvFields.to_csv_implementation(struct).to_csv_fields()
+    |> Enum.map(&String.to_existing_atom/1)
+    |> Enum.map(fn (field) -> Map.get(struct, field) end)
+    |> join_csv_fields()
+  end
+end
+
+defprotocol HasCsvFields do
+  def to_csv_implementation(value)
 end
 
 defprotocol ToCsvRecord do

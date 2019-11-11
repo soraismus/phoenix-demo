@@ -4,16 +4,65 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
   alias Assessment.OrderStates.OrderState
   alias Assessment.Patients.Patient
 
-  import Utilities, only: [join_csv_fields: 1]
+  import ToCsv, only: [join_csv_fields: 1]
+
+  defmodule CourierToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "courier"
+    @impl ToCsv
+    def to_csv_fields(), do: ~w(id name email address)s
+  end
+
+  defmodule OrderToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "order"
+    @impl ToCsv
+    def to_csv_fields() do
+      [ "id",
+         ToCsv.to_csv_header(Assessment.ToCsv.PatientToCsv),
+         ToCsv.to_csv_header(Assessment.ToCsv.PharmacyToCsv),
+         ToCsv.to_csv_header(Assessment.ToCsv.CourierToCsv),
+         ToCsv.to_csv_header(Assessment.ToCsv.OrderStateToCsv),
+         "pickup_date",
+         "pickup_time",
+      ]
+    end
+  end
+
+  defmodule OrderStateToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "order_state"
+    @impl ToCsv
+    def to_csv_fields(), do: ["description"]
+  end
+
+  defmodule PatientToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "patient"
+    @impl ToCsv
+    def to_csv_fields(), do: ~w(id name address)s
+  end
+
+  defmodule PharmacyToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "pharmacy"
+    @impl ToCsv
+    def to_csv_fields(), do: ~w(id name email address)s
+  end
 
   defimpl ToCsvRecord, for: Courier do
     def to_csv_record(%Courier{} = courier) do
-      [ courier.id,
-        courier.name,
-        courier.email,
-        courier.address,
-      ]
-      |> join_csv_fields()
+      join_csv_fields(courier)
+    end
+  end
+  defimpl HasCsvFields, for: Courier do
+    def to_csv_implementation(%Courier{}) do
+      Assessment.ToCsv.CourierToCsv
     end
   end
 
@@ -30,96 +79,42 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
       |> join_csv_fields()
     end
   end
+  defimpl HasCsvFields, for: Order do
+    def to_csv_implementation(%Order{}) do
+      Assessment.ToCsv.OrderToCsv
+    end
+  end
 
   defimpl ToCsvRecord, for: OrderState do
     def to_csv_record(%OrderState{} = order_state) do
-      order_state.description
-      |> ToCsvRecord.to_csv_record()
+      join_csv_fields(order_state)
+    end
+  end
+  defimpl HasCsvFields, for: OrderState do
+    def to_csv_implementation(%OrderState{}) do
+      Assessment.ToCsv.OrderStateToCsv
     end
   end
 
   defimpl ToCsvRecord, for: Patient do
     def to_csv_record(%Patient{} = patient) do
-      [ patient.id,
-        patient.name,
-        patient.address,
-      ]
-      |> join_csv_fields()
+      join_csv_fields(patient)
+    end
+  end
+  defimpl HasCsvFields, for: Patient do
+    def to_csv_implementation(%Patient{}) do
+      Assessment.ToCsv.PatientToCsv
     end
   end
 
   defimpl ToCsvRecord, for: Pharmacy do
     def to_csv_record(%Pharmacy{} = pharmacy) do
-      [ pharmacy.id,
-        pharmacy.name,
-        pharmacy.email,
-        pharmacy.address,
-      ]
-      |> join_csv_fields()
+      join_csv_fields(pharmacy)
     end
   end
-
-  defmodule CourierToCsv do
-    @behaviour ToCsv
-    @delimiter ","
-    @header ~w(
-        courier_id
-        courier_name
-        courier_email
-        courier_address
-      )
-      |> Enum.join(@delimiter)
-    @impl ToCsv
-    def to_csv_header(), do: @header
-  end
-
-  defmodule OrderToCsv do
-    @behaviour ToCsv
-    @delimiter ","
-    @impl ToCsv
-    def to_csv_header() do
-      [ "order_id",
-        Assessment.ToCsv.PatientToCsv.to_csv_header(),
-        Assessment.ToCsv.PharmacyToCsv.to_csv_header(),
-        Assessment.ToCsv.CourierToCsv.to_csv_header(),
-        Assessment.ToCsv.OrderStateToCsv.to_csv_header(),
-        "pickup_date",
-        "pickup_time",
-      ]
-      |> Enum.join(@delimiter)
+  defimpl HasCsvFields, for: Pharmacy do
+    def to_csv_implementation(%Pharmacy{}) do
+      Assessment.ToCsv.PharmacyToCsv
     end
-  end
-
-  defmodule OrderStateToCsv do
-    @behaviour ToCsv
-    @impl ToCsv
-    def to_csv_header(), do: "order_state"
-  end
-
-  defmodule PatientToCsv do
-    @behaviour ToCsv
-    @delimiter ","
-    @header ~w(
-        patient_id
-        patient_name
-        patient_address
-      )
-      |> Enum.join(@delimiter)
-    @impl ToCsv
-    def to_csv_header(), do: @header
-  end
-
-  defmodule PharmacyToCsv do
-    @behaviour ToCsv
-    @delimiter ","
-    @header ~w(
-        pharmacy_id
-        pharmacy_name
-        pharmacy_email
-        pharmacy_address
-      )
-      |> Enum.join(@delimiter)
-    @impl ToCsv
-    def to_csv_header(), do: @header
   end
 end
