@@ -47,3 +47,9 @@
 <%= unless is_courier?(@agent) do %>
   <span><%= link "New Order", to: order_path(@conn, :new) %></span>
 <% end %>
+
+<br>
+<span>
+  <%= link "Download CSV file",
+        to: "#{@conn.request_path}.csv?#{@conn.query_string}" %>
+</span>

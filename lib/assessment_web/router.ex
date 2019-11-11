@@ -12,7 +12,7 @@ defmodule AssessmentWeb.Router do
   alias AssessmentWeb.GuardianController
 
   pipeline :browser do
-    plug :accepts, ["html"]
+    plug :accepts, ["html", "csv"]
     plug ProperCase.Plug.SnakeCaseParams
     plug :fetch_session
     plug :fetch_flash
@@ -33,6 +33,8 @@ defmodule AssessmentWeb.Router do
     resources "/orders", OrderController
     resources "/patients", PatientController, except: [:edit, :update]
     resources "/pharmacies", PharmacyController, except: [:edit, :update]
+
+    get "/orders.csv", OrderController, :csv_index
 
     get "/login", SessionController, :new
     post "/login", SessionController, :create
