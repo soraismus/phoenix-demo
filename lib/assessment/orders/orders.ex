@@ -35,10 +35,10 @@ defmodule Assessment.Orders do
       iex> list_orders(%{pickup_date: %Date{year: _, month: _, day: _}})
       [%Order{}, ...]
 
-      iex> list_orders(%{order_state_id: :all})
+      iex> list_orders(%{order_state_description: :all})
       [%Order{}, ...]
 
-      iex> list_orders(%{order_state_id: 1})
+      iex> list_orders(%{order_state_description: "active"})
       [%Order{}, ...]
 
       iex> list_orders(%{patient_id: :all})
@@ -198,6 +198,7 @@ defmodule Assessment.Orders do
       inner_join: ph in assoc(o, :pharmacy),
       preload: [courier: c, order_state: os, patient: p, pharmacy: ph]
     query
+    |> order_by([o], asc: o.id)
     |> modify_if(
           Map.has_key?(params, :courier_id) && params.courier_id != :all,
           fn (query) ->
