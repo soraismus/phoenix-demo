@@ -6,7 +6,7 @@ defmodule AssessmentWeb.OrderController do
             authorization_error: 2,
             changeset_error: 2,
             internal_error: 2,
-            resource_error: 4,
+            resource_error: 3,
             validation_error: 2,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
@@ -34,7 +34,6 @@ defmodule AssessmentWeb.OrderController do
   @normalized_params :normalized_params
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
-  @not_found :not_found
   @ok :ok
   @request_path :request_path
   @show :show
@@ -46,9 +45,8 @@ defmodule AssessmentWeb.OrderController do
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          {@ok, order} <- Orders.create_order(normalized_params) do
       conn
-      |> put_status(@created)
       |> put_flash(@info, "Order created successfully.")
-      |> redirect(to: order_path(conn, "show.html", order))
+      |> redirect(to: order_path(conn, @show, order))
     else
       {@error, @not_authenticated} ->
         conn
@@ -107,7 +105,7 @@ defmodule AssessmentWeb.OrderController do
         |> authentication_error("Must log in to view order ##{id}")
       {@error, @no_resource} ->
         conn
-        |> resource_error("order ##{id}", "does not exist", @not_found)
+        |> resource_error("order ##{id}", "does not exist")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to view order ##{id}")
@@ -141,7 +139,7 @@ defmodule AssessmentWeb.OrderController do
         |> authentication_error("Must log in to update order ##{id}")
       {@error, @no_resource} ->
         conn
-        |> resource_error("order ##{id}", "does not exist", @not_found)
+        |> resource_error("order ##{id}", "does not exist")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to update order ##{id}")
@@ -180,7 +178,7 @@ defmodule AssessmentWeb.OrderController do
         |> authentication_error("Must log in to delete order ##{id}")
       {@error, @no_resource} ->
         conn
-        |> resource_error("order ##{id}", "does not exist", @not_found)
+        |> resource_error("order ##{id}", "does not exist")
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to delete order ##{id}")

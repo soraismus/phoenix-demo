@@ -7,18 +7,15 @@ defmodule AssessmentWeb.ControllerUtilities do
   @index :index
   @order_id :order_id
   @status :status
-  @unauthorized :unauthorized
 
   def authentication_error(conn, msg \\ "Not authorized") do
     conn
-    |> put_status(@unauthorized)
     |> put_flash(@error, msg)
     |> redirect(to: page_path(conn, @index))
   end
 
   def authorization_error(conn, msg \\ "Not Authorized") do
     conn
-    |> put_status(@unauthorized)
     |> put_flash(@error, msg)
     |> redirect(to: page_path(conn, @index))
   end
@@ -36,16 +33,14 @@ defmodule AssessmentWeb.ControllerUtilities do
     |> render(to: page_path(conn, @index))
   end
 
-  def resource_error(conn, resource, msg, status \\ 400) do
+  def resource_error(conn, resource, msg) do
     conn
-    |> put_status(status)
     |> put_flash(@error, "#{String.capitalize(resource)} #{msg}")
     |> redirect(to: page_path(conn, @index))
   end
 
-  def validation_error(conn, error_json, status \\ 400) do
+  def validation_error(conn, error_json) do
     conn
-    |> put_status(status)
     |> put_flash(@error, to_error_list(error_json))
     |> redirect(to: page_path(conn, @index))
   end
