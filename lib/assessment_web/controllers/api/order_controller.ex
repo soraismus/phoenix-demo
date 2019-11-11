@@ -8,6 +8,7 @@ defmodule AssessmentWeb.Api.OrderController do
             internal_error: 2,
             resource_error: 3,
             resource_error: 4,
+            send_attachment: 4,
             validation_error: 2,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
@@ -87,11 +88,10 @@ defmodule AssessmentWeb.Api.OrderController do
       case filetype(conn) do
         @csv ->
           conn
-          |> put_resp_content_type("text/csv")
-          |> put_resp_header(
-                "content-disposition",
-                "attachment; filename=orders.csv")
-          |> send_resp(200, ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders, false))
+          |> send_attachment(
+                "text/csv",
+                "orders.csv",
+                OrderView.to_csv(orders))
         _ ->
           conn
           |> render(

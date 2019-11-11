@@ -32,6 +32,15 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
     |> json(%{errors: %{resource => [msg]}})
   end
 
+  def send_attachment(conn, content_type, filename, data) do
+    conn
+    |> put_resp_content_type(content_type)
+    |> put_resp_header(
+          "content-disposition",
+          "attachment; filename=#{filename}")
+    |> send_resp(200, data)
+  end
+
   def validation_error(conn, error_json, status \\ 400) do
     conn
     |> put_status(status)

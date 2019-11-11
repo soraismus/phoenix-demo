@@ -4,6 +4,8 @@ defmodule AssessmentWeb.OrderView do
   import AssessmentWeb.Utilities, only: [to_changeset: 2]
   import Utilities, only: [get_date_today: 0]
 
+  alias Assessment.Orders.Order
+
   @authorization_msg "is prohibited to unauthorized users"
   @index_id_msg "must be either 'all' or a positive integer"
   @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
@@ -129,5 +131,57 @@ defmodule AssessmentWeb.OrderView do
       {nil, errors} -> errors
       {_, errors} -> Map.put(errors, :order_state, [msg])
     end
+  end
+
+
+
+
+  @field_delimiter ","
+  @record_delimiter "\n"
+  @order_fields ~w( id
+                    patient_id
+                    patient_name
+                    patient_address
+                    pharmacy_id
+                    pharmacy_name
+                    pharmacy_email
+                    pharmacy_address
+                    courier_id
+                    courier_name
+                    courier_email
+                    courier_address
+                    order_state_description
+                    pickup_date
+                    pickup_time
+                  )
+                  |> Enum.join(@field_delimiter)
+  def to_csv_record(%Order{} = order) do
+    [ order.id,
+      order.patient.id,
+      set_off(order.patient.name),
+      set_off(order.patient.address),
+      order.pharmacy.id,
+      set_off(order.pharmacy.name),
+      set_off(order.pharmacy.email),
+      set_off(order.pharmacy.address),
+      order.courier.id,
+      set_off(order.courier.name),
+      set_off(order.courier.email),
+      set_off(order.courier.address),
+      set_off(order.order_state.description),
+      set_off(to_string(order.pickup_date)),
+      set_off(order.pickup_time |> Time.to_iso8601() |> String.slice(0..4)),
+    ]
+    |> Enum.map_join(@field_delimiter, &to_string/1)
+  end
+  def to_csv([]) do
+    @order_fields
+  end
+  def to_csv([%Order{} | _] = orders) do
+    records = Enum.map_join(orders, @record_delimiter, &to_csv_record/1)
+    @order_fields <> @record_delimiter <> records
+  end
+  defp set_off(binary) when is_binary(binary) do
+    "\"#{binary}\""
   end
 end
