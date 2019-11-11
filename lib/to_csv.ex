@@ -5,17 +5,11 @@ defmodule ToCsv do
   @name_delimiter "_"
   @record_delimiter "\n"
   def to_csv(implementation, []) do
-    implementation.to_csv_header()
+    to_csv_header(implementation)
   end
   def to_csv(implementation, [_ | _] = values) do
     record = Enum.map_join(values, @record_delimiter, &ToCsvRecord.to_csv_record/1)
     to_csv_header(implementation) <> @record_delimiter <> record
-  end
-  def to_csv_header(implementation) do
-    implementation.to_csv_fields()
-    |> Enum.map_join(@field_delimiter, fn (field) ->
-          implementation.to_csv_field_prefix() <> @name_delimiter <> to_string(field)
-        end)
   end
   def join_csv_fields(values) when is_list(values) do
     values
@@ -26,6 +20,19 @@ defmodule ToCsv do
     |> Enum.map(&String.to_existing_atom/1)
     |> Enum.map(fn (field) -> Map.get(struct, field) end)
     |> join_csv_fields()
+  end
+  def prefix(binary, prefix) when is_binary(binary) do
+    prefix <> @name_delimiter <> binary
+  end
+  def prefix(list, prefix) when is_list(list) do
+    list
+    |> Enum.map(fn (binary) -> prefix(binary, prefix) end)
+  end
+  def to_csv_header(implementation) do
+    implementation.to_csv_fields()
+    |> Enum.map_join(@field_delimiter, fn (field) ->
+          implementation.to_csv_field_prefix() <> @name_delimiter <> to_string(field)
+        end)
   end
 end
 

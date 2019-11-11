@@ -4,7 +4,7 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
   alias Assessment.OrderStates.OrderState
   alias Assessment.Patients.Patient
 
-  import ToCsv, only: [join_csv_fields: 1]
+  import ToCsv, only: [join_csv_fields: 1, prefix: 2]
 
   defmodule CourierToCsv do
     @behaviour ToCsv
@@ -16,25 +16,31 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
 
   defmodule OrderToCsv do
     @behaviour ToCsv
+    @prefix "order"
     @impl ToCsv
-    def to_csv_field_prefix(), do: "order"
+    def to_csv_field_prefix(), do: @prefix
     @impl ToCsv
     def to_csv_fields() do
       [ "id",
-         ToCsv.to_csv_header(Assessment.ToCsv.PatientToCsv),
-         ToCsv.to_csv_header(Assessment.ToCsv.PharmacyToCsv),
-         ToCsv.to_csv_header(Assessment.ToCsv.CourierToCsv),
-         ToCsv.to_csv_header(Assessment.ToCsv.OrderStateToCsv),
-         "pickup_date",
-         "pickup_time",
+        ToCsv.to_csv_header(Assessment.ToCsv.PatientToCsv),
+        ToCsv.to_csv_header(Assessment.ToCsv.PharmacyToCsv),
+        ToCsv.to_csv_header(Assessment.ToCsv.CourierToCsv),
+        ToCsv.to_csv_header(Assessment.ToCsv.OrderStateToCsv),
+        "pickup_date",
+        "pickup_time",
       ]
+      |> Enum.join(",")
+      |> String.split(",")
+    end
+    defp prefix(value) do
+      prefix(value, @prefix)
     end
   end
 
   defmodule OrderStateToCsv do
     @behaviour ToCsv
     @impl ToCsv
-    def to_csv_field_prefix(), do: "order_state"
+    def to_csv_field_prefix(), do: "state"
     @impl ToCsv
     def to_csv_fields(), do: ["description"]
   end
