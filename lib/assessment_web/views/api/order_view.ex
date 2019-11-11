@@ -9,7 +9,6 @@ defmodule AssessmentWeb.Api.OrderView do
   @not_authorized :not_authorized
   @order_state :order_state
   @order_state_description :order_state_description
-  @order_state_id :order_state_id
   @patient_id :patient_id
   @pharmacy_id :pharmacy_id
   @pickup_date :pickup_date
@@ -93,15 +92,15 @@ defmodule AssessmentWeb.Api.OrderView do
     end
   end
 
-  defp display_query_params(%{order_state_id: @all} = query_params) do
+  defp display_query_params(%{order_state_description: @all} = query_params) do
     query_params
-    |> Map.delete(@order_state_id)
+    |> Map.delete(@order_state_description)
     |> Map.put(@order_state, "all")
   end
-  defp display_query_params(%{order_state_id: id} = query_params) do
+  defp display_query_params(%{order_state_description: description} = query_params) do
     query_params
-    |> Map.delete(@order_state_id)
-    |> Map.put(@order_state, OrderStates.to_description(id))
+    |> Map.delete(@order_state_description)
+    |> Map.put(@order_state, description)
   end
   defp display_query_params(query_params), do: query_params
 
