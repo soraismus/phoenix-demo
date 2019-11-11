@@ -1,16 +1,20 @@
 defmodule ToCsv do
   @callback to_csv_field_prefix() :: String.t
   @callback to_csv_fields() :: [String.t]
+
   @field_delimiter ","
   @name_delimiter "_"
   @record_delimiter "\n"
-  def to_csv(implementation, []) do
-    to_csv_header(implementation)
+
+  def to_csv(implementation, list, should_prefix? \\ true)
+  def to_csv(implementation, [], should_prefix?) do
+    to_csv_header(implementation, should_prefix?)
   end
-  def to_csv(implementation, [_ | _] = values) do
+  def to_csv(implementation, [_ | _] = values, should_prefix?) do
     record = Enum.map_join(values, @record_delimiter, &ToCsvRecord.to_csv_record/1)
-    to_csv_header(implementation) <> @record_delimiter <> record
+    to_csv_header(implementation, should_prefix?) <> @record_delimiter <> record
   end
+
   def join_csv_fields(values) when is_list(values) do
     values
     |> Enum.map_join(",", &ToCsvRecord.to_csv_record/1)
@@ -21,17 +25,18 @@ defmodule ToCsv do
     |> Enum.map(fn (field) -> Map.get(struct, field) end)
     |> join_csv_fields()
   end
-  def prefix(binary, prefix) when is_binary(binary) do
-    prefix <> @name_delimiter <> binary
-  end
-  def prefix(list, prefix) when is_list(list) do
-    list
-    |> Enum.map(fn (binary) -> prefix(binary, prefix) end)
-  end
-  def to_csv_header(implementation) do
+
+  def to_csv_header(implementation, should_prefix? \\ true)
+  def to_csv_header(implementation, should_prefix?) do
+    prefix =
+      if should_prefix? do
+        implementation.to_csv_field_prefix() <> @name_delimiter
+      else
+        ""
+      end
     implementation.to_csv_fields()
     |> Enum.map_join(@field_delimiter, fn (field) ->
-          implementation.to_csv_field_prefix() <> @name_delimiter <> to_string(field)
+          prefix <> to_string(field)
         end)
   end
 end

@@ -4,7 +4,7 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
   alias Assessment.OrderStates.OrderState
   alias Assessment.Patients.Patient
 
-  import ToCsv, only: [join_csv_fields: 1, prefix: 2]
+  import ToCsv, only: [join_csv_fields: 1]
 
   defmodule CourierToCsv do
     @behaviour ToCsv
@@ -31,9 +31,6 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
       ]
       |> Enum.join(",")
       |> String.split(",")
-    end
-    defp prefix(value) do
-      prefix(value, @prefix)
     end
   end
 
