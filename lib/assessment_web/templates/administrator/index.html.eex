@@ -3,6 +3,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th>ID</th>
       <th>Username</th>
       <th>Email</th>
       <th></th>
@@ -11,6 +12,7 @@
   <tbody>
 <%= for administrator <- @administrators do %>
     <tr>
+      <td><%= administrator.id %></td>
       <td><%= administrator.username %></td>
       <td><%= administrator.email %></td>
 

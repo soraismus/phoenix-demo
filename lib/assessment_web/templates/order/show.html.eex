@@ -3,6 +3,11 @@
 <ul>
 
   <li>
+    <strong>ID:</strong>
+    <%= @order.id %>
+  </li>
+
+  <li>
     <strong>Patient:</strong>
     <%= @order.patient.name %>
   </li>

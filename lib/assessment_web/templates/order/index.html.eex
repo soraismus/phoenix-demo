@@ -12,6 +12,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th>ID</th>
       <th>Patient</th>
       <th>Pharmacy</th>
       <th>Courier</th>
@@ -25,6 +26,7 @@
   <tbody>
 <%= for order <- @orders do %>
     <tr>
+      <td><%= order.id %></td>
       <td><%= order.patient.name %></td>
       <td><%= order.pharmacy.name %></td>
       <td><%= order.courier.name %></td>

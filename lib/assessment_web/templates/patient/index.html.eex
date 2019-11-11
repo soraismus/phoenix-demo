@@ -3,6 +3,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Address</th>
 
@@ -12,6 +13,7 @@
   <tbody>
 <%= for patient <- @patients do %>
     <tr>
+      <td><%= patient.id %></td>
       <td><%= patient.name %></td>
       <td><%= patient.address %></td>
 

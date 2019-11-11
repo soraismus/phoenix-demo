@@ -3,6 +3,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Username</th>
       <th>Address</th>
@@ -13,6 +14,7 @@
   <tbody>
 <%= for courier <- @couriers do %>
     <tr>
+      <td><%= courier.id %></td>
       <td><%= courier.name %></td>
       <td><%= courier.username %></td>
       <td><%= courier.address %></td>
