@@ -4,7 +4,7 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
   alias Assessment.OrderStates.OrderState
   alias Assessment.Patients.Patient
 
-  import ToCsv, only: [join_csv_fields: 1]
+  import ToCsv, only: [join_csv_fields: 1, separate_composite_fields: 1]
 
   defmodule CourierToCsv do
     @behaviour ToCsv
@@ -12,6 +12,16 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
     def to_csv_field_prefix(), do: "courier"
     @impl ToCsv
     def to_csv_fields(), do: ~w(id name email address)s
+  end
+  defimpl ToCsvRecord, for: Courier do
+    def to_csv_record(%Courier{} = courier) do
+      join_csv_fields(courier)
+    end
+  end
+  defimpl HasCsvFields, for: Courier do
+    def to_csv_implementation(%Courier{}) do
+      Assessment.ToCsv.CourierToCsv
+    end
   end
 
   defmodule OrderToCsv do
@@ -29,46 +39,9 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
         "pickup_date",
         "pickup_time",
       ]
-      |> Enum.join(",")
-      |> String.split(",")
+      |> separate_composite_fields()
     end
   end
-
-  defmodule OrderStateToCsv do
-    @behaviour ToCsv
-    @impl ToCsv
-    def to_csv_field_prefix(), do: "state"
-    @impl ToCsv
-    def to_csv_fields(), do: ["description"]
-  end
-
-  defmodule PatientToCsv do
-    @behaviour ToCsv
-    @impl ToCsv
-    def to_csv_field_prefix(), do: "patient"
-    @impl ToCsv
-    def to_csv_fields(), do: ~w(id name address)s
-  end
-
-  defmodule PharmacyToCsv do
-    @behaviour ToCsv
-    @impl ToCsv
-    def to_csv_field_prefix(), do: "pharmacy"
-    @impl ToCsv
-    def to_csv_fields(), do: ~w(id name email address)s
-  end
-
-  defimpl ToCsvRecord, for: Courier do
-    def to_csv_record(%Courier{} = courier) do
-      join_csv_fields(courier)
-    end
-  end
-  defimpl HasCsvFields, for: Courier do
-    def to_csv_implementation(%Courier{}) do
-      Assessment.ToCsv.CourierToCsv
-    end
-  end
-
   defimpl ToCsvRecord, for: Order do
     def to_csv_record(%Order{} = order) do
       [ order.id,
@@ -88,6 +61,13 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
     end
   end
 
+  defmodule OrderStateToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "order_state"
+    @impl ToCsv
+    def to_csv_fields(), do: ["description"]
+  end
   defimpl ToCsvRecord, for: OrderState do
     def to_csv_record(%OrderState{} = order_state) do
       join_csv_fields(order_state)
@@ -99,6 +79,13 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
     end
   end
 
+  defmodule PatientToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "patient"
+    @impl ToCsv
+    def to_csv_fields(), do: ~w(id name address)s
+  end
   defimpl ToCsvRecord, for: Patient do
     def to_csv_record(%Patient{} = patient) do
       join_csv_fields(patient)
@@ -110,6 +97,13 @@ defmodule Assessment.ToCsv do alias Assessment.Orders.Order
     end
   end
 
+  defmodule PharmacyToCsv do
+    @behaviour ToCsv
+    @impl ToCsv
+    def to_csv_field_prefix(), do: "pharmacy"
+    @impl ToCsv
+    def to_csv_fields(), do: ~w(id name email address)s
+  end
   defimpl ToCsvRecord, for: Pharmacy do
     def to_csv_record(%Pharmacy{} = pharmacy) do
       join_csv_fields(pharmacy)

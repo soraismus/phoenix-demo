@@ -26,6 +26,12 @@ defmodule ToCsv do
     |> join_csv_fields()
   end
 
+  def separate_composite_fields(fields_and_headers) when is_list(fields_and_headers) do
+    fields_and_headers
+    |> Enum.join(",")
+    |> String.split(",")
+  end
+
   def to_csv_header(implementation, should_prefix? \\ true)
   def to_csv_header(implementation, should_prefix?) do
     prefix =
