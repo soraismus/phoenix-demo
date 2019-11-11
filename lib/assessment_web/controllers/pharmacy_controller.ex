@@ -1,19 +1,24 @@
 defmodule AssessmentWeb.PharmacyController do
   use AssessmentWeb, :controller
 
+  import AssessmentWeb.ControllerUtilities,
+    only: [ internal_error: 2,
+            resource_error: 3,
+          ]
+
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
   plug :authenticate_administrator
 
   def index(conn, _params) do
-    pharmacies = Accounts.list_pharmacies()
-    render(conn, "index.html", pharmacies: pharmacies)
+    conn
+    |> render("index.html", pharmacies: Accounts.list_pharmacies())
   end
 
   def new(conn, _params) do
-    changeset = Accounts.change_pharmacy()
-    render(conn, "new.html", changeset: changeset)
+    conn
+    |> render("new.html", changeset: Accounts.change_pharmacy())
   end
 
   def create(conn, %{"agent" => agent_params}) do
@@ -23,13 +28,25 @@ defmodule AssessmentWeb.PharmacyController do
         |> put_flash(:info, "Pharmacy created successfully.")
         |> redirect(to: pharmacy_path(conn, :show, pharmacy))
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        conn
+        |> render("new.html", changeset: changeset)
+      _ ->
+        conn
+        |> internal_error("PHCR_B")
     end
   end
 
   def show(conn, %{"id" => id}) do
     with {:ok, pharmacy} = Accounts.get_pharmacy(id) do
-      render(conn, "show.html", pharmacy: pharmacy)
+      conn
+      |> render("show.html", pharmacy: pharmacy)
+    else
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("pharmacy ##{id}", "does not exist")
+      _ ->
+        conn
+        |> internal_error("PHSH_B")
     end
   end
 
@@ -39,6 +56,13 @@ defmodule AssessmentWeb.PharmacyController do
       conn
       |> put_flash(:info, "Pharmacy deleted successfully.")
       |> redirect(to: pharmacy_path(conn, :index))
+    else
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("pharmacy ##{id}", "does not exist")
+      _ ->
+        conn
+        |> internal_error("PHDE_B")
     end
   end
 

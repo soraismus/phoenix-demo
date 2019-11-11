@@ -35,7 +35,7 @@ defmodule AssessmentWeb.Api.AdministratorController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("ADCR")
+        |> internal_error("ADCR_A")
     end
   end
 
@@ -52,7 +52,7 @@ defmodule AssessmentWeb.Api.AdministratorController do
         |> authorization_error()
       _ ->
         conn
-        |> internal_error("ADIN")
+        |> internal_error("ADIN_A")
     end
   end
 
@@ -73,7 +73,7 @@ defmodule AssessmentWeb.Api.AdministratorController do
         |> resource_error("administrator ##{id}", "does not exist", :not_found)
       _ ->
         conn
-        |> internal_error("ADSH")
+        |> internal_error("ADSH_A")
     end
   end
 end

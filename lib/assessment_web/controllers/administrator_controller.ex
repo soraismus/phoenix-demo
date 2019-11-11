@@ -1,19 +1,24 @@
 defmodule AssessmentWeb.AdministratorController do
   use AssessmentWeb, :controller
 
+  import AssessmentWeb.ControllerUtilities,
+    only: [ internal_error: 2,
+            resource_error: 3,
+          ]
+
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent
 
   plug :authenticate_administrator
 
   def index(conn, _params) do
-    administrators = Accounts.list_administrators()
-    render(conn, "index.html", administrators: administrators)
+    conn
+    |> render("index.html", administrators: Accounts.list_administrators())
   end
 
   def new(conn, _params) do
-    changeset = Accounts.change_administrator()
-    render(conn, "new.html", changeset: changeset)
+    conn
+    |> render("new.html", changeset: Accounts.change_administrator())
   end
 
   def create(conn, %{"agent" => agent_params}) do
@@ -23,13 +28,25 @@ defmodule AssessmentWeb.AdministratorController do
         |> put_flash(:info, "Administrator created successfully.")
         |> redirect(to: administrator_path(conn, :show, administrator))
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        conn
+        |> render("new.html", changeset: changeset)
+      _ ->
+        conn
+        |> internal_error("ADCR_B")
     end
   end
 
   def show(conn, %{"id" => id}) do
     with {:ok, administrator} = Accounts.get_administrator(id) do
-      render(conn, "show.html", administrator: administrator)
+      conn
+      |> render("show.html", administrator: administrator)
+    else
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("administrator ##{id}", "does not exist")
+      _ ->
+        conn
+        |> internal_error("ADSH_B")
     end
   end
 
@@ -39,6 +56,13 @@ defmodule AssessmentWeb.AdministratorController do
       conn
       |> put_flash(:info, "Administrator deleted successfully.")
       |> redirect(to: administrator_path(conn, :index))
+    else
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("administrator ##{id}", "does not exist")
+      _ ->
+        conn
+        |> internal_error("ADDE_B")
     end
   end
 

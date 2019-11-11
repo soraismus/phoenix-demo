@@ -29,10 +29,10 @@ defmodule AssessmentWeb.Api.SessionController do
     else
       {:error, :invalid_claims} ->
         conn
-        |> internal_error("SEIC")
+        |> internal_error("SECRIC_A")
       {:error, :invalid_resource} ->
         conn
-        |> internal_error("SEIR")
+        |> internal_error("SECRIR_A")
       {:error, :unauthenticated} ->
         conn
         |> resource_error(
@@ -41,7 +41,7 @@ defmodule AssessmentWeb.Api.SessionController do
               :unauthorized)
       _ ->
         conn
-        |> internal_error("SECR")
+        |> internal_error("SECR_A")
     end
   end
 

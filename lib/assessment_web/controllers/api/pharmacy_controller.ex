@@ -35,7 +35,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("PHCR")
+        |> internal_error("PHCR_A")
     end
   end
 
@@ -52,7 +52,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
         |> authorization_error()
       _ ->
         conn
-        |> internal_error("PHIN")
+        |> internal_error("PHIN_A")
     end
   end
 
@@ -73,7 +73,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
         |> resource_error("pharmacy ##{id}", "does not exist", :not_found)
       _ ->
         conn
-        |> internal_error("PHSH")
+        |> internal_error("PHSH_A")
     end
   end
 end

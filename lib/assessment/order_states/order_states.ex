@@ -127,12 +127,5 @@ defmodule Assessment.OrderStates do
   def to_description(@undeliverable_id), do: @undeliverable
 
   @doc false
-  def to_id(@active), do: {:ok, @active_id}
-  def to_id(@canceled), do: {:ok, @canceled_id}
-  def to_id(@delivered), do: {:ok, @delivered_id}
-  def to_id(@undeliverable), do: {:ok, @undeliverable_id}
-  def to_id(_), do: {:error, :invalid_order_state}
-
-  @doc false
   def undeliverable_id(), do: @undeliverable_id
 end
