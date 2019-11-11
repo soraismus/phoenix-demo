@@ -134,7 +134,7 @@ defmodule AssessmentWeb.OrderController do
          {@ok, new_order} <- Orders.update_order(order, normalized_params) do
       conn
       |> put_flash(@info, "Order ##{id} updated successfully.")
-      |> redirect(to: order_path(conn, "show.html", new_order))
+      |> redirect(to: order_path(conn, @show, new_order))
     else
       {@error, @not_authenticated} ->
         conn
