@@ -40,17 +40,23 @@ defmodule Utilities do
     Enum.reduce(map, {@ok, %{}}, reduce)
   end
 
+  def atomify_map_keys(%{} = map, permissible_atoms) do
+    permissible_keys = Enum.map(permissible_atoms, &Atom.to_string/1)
+    map
+    |> Map.new(fn ({key, value}) when is_binary(key) ->
+          if key in permissible_keys do
+            {String.to_existing_atom(key), value}
+          else
+            raise "Invalid binary key"
+          end
+        end)
+  end
+
   def bind_error({@ok, value}, _fun), do: {@ok, value}
   def bind_error({@error, value}, fun), do: fun.(value)
 
   def bind_value({@ok, value}, fun), do: fun.(value)
   def bind_value({@error, value}, _fun), do: {@error, value}
-
-  def error_data(%{} = data) do
-    fn (ok_or_error) ->
-      map_error(ok_or_error, fn (value) -> Map.put(data, @error, value) end)
-    end
-  end
 
   def get_date_today() do
     :calendar.local_time()

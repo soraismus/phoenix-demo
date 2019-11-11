@@ -67,7 +67,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> validation_error(OrderView.format_upsert_errors(partition))
       _ ->
         conn
-        |> internal_error("ORCR")
+        |> internal_error("ORCR_A")
     end
   end
 
@@ -98,7 +98,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> validation_error(OrderView.format_index_errors(partition))
       _ ->
         conn
-        |> internal_error("ORIN")
+        |> internal_error("ORIN_A")
     end
   end
 
@@ -121,7 +121,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> resource_error("order ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("ORSH")
+        |> internal_error("ORSH_A")
     end
   end
 
@@ -193,7 +193,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("ORUP")
+        |> internal_error("ORUP_A")
     end
   end
 end

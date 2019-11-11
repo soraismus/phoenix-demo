@@ -6,40 +6,38 @@ defmodule AssessmentWeb.OrderController do
             authorization_error: 2,
             changeset_error: 2,
             internal_error: 2,
+            resource_error: 4,
             validation_error: 2,
           ]
-  import AssessmentWeb.GuardianController,
-    only: [ authenticate_agent: 1,
-            get_account: 1,
-          ]
+  import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_validate_creation: 2,
             normalize_validate_index: 2,
             normalize_validate_update: 3,
           ]
-  import Utilities, only: [accumulate_errors: 1, error_data: 1]
+  import Utilities, only: [accumulate_errors: 1]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
   alias AssessmentWeb.OrderView
-  alias Ecto.Changeset
 
   plug :authenticate
-
-  action_fallback(AssessmentWeb.OrderController.ErrorController)
 
   @created :created
   @error :error
   @new :new
+  @no_resource :no_resource
   @index :index
   @info :info
   @normalized_params :normalized_params
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
+  @not_found :not_found
   @ok :ok
   @request_path :request_path
+  @show :show
 
   def create(conn, %{"order" => params}) do
     with {@ok, agent} <- authenticate_agent(conn),
@@ -54,22 +52,19 @@ defmodule AssessmentWeb.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error("Not authorized to create an order")
-      {@error, @not_authorized} ->
-        conn
-        |> authorization_error("Not authorized to create an order")
-      {@error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> changeset_error(%{view: "new.html", changeset: changeset})
+        |> authentication_error("Must log in to create an order")
       {@error, %{errors: _, valid_results: _} = partition} ->
         conn
         |> changeset_error(%{
                 view: "new.html",
                 changeset: OrderView.format_upsert_errors(partition)
               })
+      {@error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(%{view: "new.html", changeset: changeset})
       _ ->
         conn
-        |> internal_error("ORCR")
+        |> internal_error("ORCR_B")
     end
   end
 
@@ -84,37 +79,48 @@ defmodule AssessmentWeb.OrderController do
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error("Not authorized to view orders")
-      {@error, @not_authorized} ->
-        conn
-        |> authentication_error("Not authorized to view orders")
-      {@error, %{errors: errors}} ->
+        |> authentication_error("Must log in to view orders")
+      {@error, %{errors: errors, valid_results: _}} ->
         conn
         |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
-        |> internal_error("ORIN")
+        |> internal_error("ORIN_B")
     end
   end
 
   def new(conn, _params) do
-    changeset = Orders.change_order(%Order{})
-    render(conn, "new.html", changeset: changeset)
+    conn
+    |> render("new.html", changeset: Orders.change_order(%Order{}))
   end
 
   def show(conn, %{"id" => id}) do
-    data = %{msg: "Invalid order id"}
-    with {@ok, account} <- get_account(conn),
-         {@ok, order} <- Orders.get_order(id) |> error_data(data).(),
-         {@ok, _} <- authorize(account, order, "Not authorized to view order") do
-      render(conn, "show.html", order: order)
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         {@ok, order} <- Orders.get_order(id),
+         {@ok, _} <- authorize(account, order) do
+      conn
+      |> render("show.html", order: order)
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to view order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist", @not_found)
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to view order ##{id}")
+      _ ->
+        conn
+        |> internal_error("ORSH_B")
     end
   end
 
   def edit(conn, %{"id" => id}) do
     with {@ok, order} <- Orders.get_order(id) do
-      changeset = Orders.change_order(order)
-      render(conn, "edit.html", order_id: id, changeset: changeset)
+      conn
+      |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
     end
   end
 
@@ -122,27 +128,23 @@ defmodule AssessmentWeb.OrderController do
     with {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          account <- Accounts.specify_agent(agent),
-         {@ok, _} <- authorize(account, order, "Not authorized to update order"),
+         {@ok, _} <- authorize(account, order),
          validated_params <- normalize_validate_update(order, params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          {@ok, new_order} <- Orders.update_order(order, normalized_params) do
       conn
-      |> put_flash(@info, "Order updated successfully.")
+      |> put_flash(@info, "Order ##{id} updated successfully.")
       |> redirect(to: order_path(conn, "show.html", new_order))
     else
       {@error, @not_authenticated} ->
         conn
-        |> authentication_error("Not authorized to create an order")
+        |> authentication_error("Must log in to update order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist", @not_found)
       {@error, @not_authorized} ->
         conn
-        |> authorization_error("Not authorized to create an order")
-      {@error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> changeset_error(%{
-              view: "edit.html",
-              changeset: changeset,
-              order_id: id,
-            })
+        |> authorization_error("Not authorized to update order ##{id}")
       {@error, %{errors: _, valid_results: _} = partition} ->
         conn
         |> changeset_error(%{
@@ -150,34 +152,45 @@ defmodule AssessmentWeb.OrderController do
               changeset: OrderView.format_upsert_errors(partition),
               order_id: id,
             })
+      {@error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> changeset_error(%{
+              view: "edit.html",
+              changeset: changeset,
+              order_id: id,
+            })
       _ ->
         conn
-        |> internal_error("ORCR")
+        |> internal_error("ORCR_B")
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    data = %{msg: "Invalid order id"}
-    with {@ok, account} <- get_account(conn),
-         {@ok, order} <- Orders.get_order(id) |> error_data(data).(),
-         {@ok, _} <- authorize(account, order, "Not authorized to delete order"),
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         {@ok, order} <- Orders.get_order(id),
+         {@ok, _} <- authorize(account, order),
          {@ok, _} <- Orders.delete_order(order) do
       conn
-      |> put_flash(@info, "Order deleted successfully.")
+      |> put_flash(@info, "Order ##{id} deleted successfully.")
       |> redirect(to: order_path(conn, @index))
-    end
-  end
-
-  defp authorize(account, order, msg) do
-    authorized? = case account do
-      %Administrator{} -> true
-      %Courier{} -> account.id == order.courier_id
-      %Pharmacy{} -> account.id == order.pharmacy_id
-    end
-    if authorized? do
-      {@ok, account}
     else
-      {@error, %{error: @not_authorized, msg: msg}}
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to delete order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist", @not_found)
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to delete order ##{id}")
+      {@error, %Ecto.Changeset{}} ->
+        conn
+        |> put_flash(@error, "Failure to delete order ##{id}")
+        |> redirect(to: order_path(conn, @show, id))
+      _ ->
+        conn
+        |> internal_error("ORSH_B")
     end
   end
 
@@ -193,105 +206,16 @@ defmodule AssessmentWeb.OrderController do
     end
   end
 
-  defmodule ErrorController do
-    use AssessmentWeb, :controller
-
-    @error :error
-    @index :index
-    @invalid_account_type :invalid_account_type
-    @invalid_courier_id :invalid_courier_id
-    @invalid_date :invalid_date
-    @invalid_format :invalid_format
-    @invalid_integer_format :invalid_integer_format
-    @invalid_order :invalid_order
-    @invalid_order_state :invalid_order_state
-    @invalid_patient_id :invalid_patient_id
-    @invalid_pharmacy_id :invalid_pharmacy_id
-    @order :order
-    @not_authenticated :not_authenticated
-    @not_authorized :not_authorized
-
-    def call(conn, {@error, %{error: (%Changeset{} = changeset), view: view} = data}) do
-      conn
-      |> render(view, changeset: changeset, order: Map.get(data, @order))
+  defp authorize(account, order) do
+    authorized? = case account do
+      %Administrator{} -> true
+      %Courier{} -> account.id == order.courier_id
+      %Pharmacy{} -> account.id == order.pharmacy_id
     end
-
-    def call(conn, {@error, %{error: @not_authorized, msg: msg}}) do
-      conn
-      |> put_flash(@error, msg)
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_account_type}) do
-      conn
-      |> put_flash(@error, "Not authorized to create an order")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_courier_id}) do
-      conn
-      |> put_flash(@error, "Invalid courier id")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_date}) do
-      conn
-      |> put_flash(@error, "Internal error: Failure to recognize format of pickup date.")
-      |> render("new.html", changeset: Orders.change_order(%Order{}))
-    end
-
-    def call(conn, {@error, @invalid_format}) do
-      conn
-      |> put_flash(@error, "Internal error: Failure to recognize format of pickup date.")
-      |> render("new.html", changeset: Orders.change_order(%Order{}))
-    end
-
-    def call(conn, {@error, @invalid_integer_format}) do
-      conn
-      |> put_flash(@error, "Internal error: Failure to recognize resource format.")
-      |> render("new.html", changeset: Orders.change_order(%Order{}))
-    end
-
-    def call(conn, {@error, @invalid_order}) do
-      conn
-      |> put_flash(@error, "Invalid order")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_order_state}) do
-      conn
-      |> put_flash(@error, "Invalid order state")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_patient_id}) do
-      conn
-      |> put_flash(@error, "Invalid patient id")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @invalid_pharmacy_id}) do
-      conn
-      |> put_flash(@error, "Invalid pharmacy id")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @not_authenticated}) do
-      conn
-      |> put_flash(@error, "Not authorized")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, @not_authorized}) do
-      conn
-      |> put_flash(@error, "Not authorized")
-      |> redirect(to: page_path(conn, @index))
-    end
-
-    def call(conn, {@error, %{msg: msg}}) do
-      conn
-      |> put_flash(@error, msg)
-      |> redirect(to: page_path(conn, @index))
+    if authorized? do
+      {@ok, account}
+    else
+      {@error, @not_authorized}
     end
   end
 end

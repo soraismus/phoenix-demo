@@ -3,38 +3,51 @@ defmodule AssessmentWeb.ControllerUtilities do
 
   alias Ecto.Changeset
 
+  @error :error
+  @index :index
+  @order_id :order_id
+  @status :status
+  @unauthorized :unauthorized
+
   def authentication_error(conn, msg \\ "Not authorized") do
     conn
-    |> put_status(:unauthorized)
-    |> put_flash(:error, msg)
-    |> redirect(to: page_path(conn, :index))
+    |> put_status(@unauthorized)
+    |> put_flash(@error, msg)
+    |> redirect(to: page_path(conn, @index))
   end
 
   def authorization_error(conn, msg \\ "Not Authorized") do
     conn
-    |> put_status(:unauthorized)
-    |> put_flash(:error, msg)
-    |> redirect(to: page_path(conn, :index))
+    |> put_status(@unauthorized)
+    |> put_flash(@error, msg)
+    |> redirect(to: page_path(conn, @index))
   end
 
   def changeset_error(conn, %{view: view, changeset: %Changeset{} = changeset} = params) do
     conn
-    |> put_status(Map.get(params, :status, 400))
-    |> render(view, changeset: changeset, order_id: Map.get(params, :order_id))
+    |> put_status(Map.get(params, @status, 400))
+    |> render(view, changeset: changeset, order_id: Map.get(params, @order_id))
   end
 
   def internal_error(conn, code) do
     conn
     |> put_status(500)
-    |> put_flash(:error, "Internal Error -- Code: #{code}")
-    |> render(to: page_path(conn, :index))
+    |> put_flash(@error, "Internal Error -- Code: #{code}")
+    |> render(to: page_path(conn, @index))
+  end
+
+  def resource_error(conn, resource, msg, status \\ 400) do
+    conn
+    |> put_status(status)
+    |> put_flash(@error, "#{String.capitalize(resource)} #{msg}")
+    |> redirect(to: page_path(conn, @index))
   end
 
   def validation_error(conn, error_json, status \\ 400) do
     conn
     |> put_status(status)
-    |> put_flash(:error, to_error_list(error_json))
-    |> redirect(to: page_path(conn, :index))
+    |> put_flash(@error, to_error_list(error_json))
+    |> redirect(to: page_path(conn, @index))
   end
 
   defp to_error_list(%{} = map) do

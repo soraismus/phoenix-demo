@@ -15,6 +15,14 @@ defmodule AssessmentWeb.OrderUtilities do
   @default_pickup_date "today"
   @default_pickup_time "14:00"
 
+  @all :all
+  @error :error
+  @invalid_account_id :invalid_account_id
+  @invalid_date :invalid_date
+  @invalid_time :invalid_time
+  @not_authorized :not_authorized
+  @ok :ok
+
   def normalize_validate_creation(params, account) do
     requirements = get_required_ids(account)
     courier_id =
@@ -135,7 +143,7 @@ defmodule AssessmentWeb.OrderUtilities do
 
   defp check_all_or_validate(id, fun) do
     if id == "all" do
-      {:ok, :all}
+      {@ok, @all}
     else
       fun.(id)
     end
@@ -164,9 +172,9 @@ defmodule AssessmentWeb.OrderUtilities do
     when is_binary(account_id) and is_nil(required_id) do
       cond do
         account_id == "" ->
-          {:ok, :all}
+          {@ok, @all}
         account_id == "all" ->
-          {:ok, :all}
+          {@ok, @all}
         true ->
           validate_id(account_id)
       end
@@ -175,15 +183,15 @@ defmodule AssessmentWeb.OrderUtilities do
     when is_binary(account_id) and is_integer(required_id) do
       cond do
         account_id == "" ->
-          {:ok, required_id}
+          {@ok, required_id}
         account_id == to_string(required_id) ->
-          {:ok, required_id}
+          {@ok, required_id}
         true ->
           case to_integer(account_id) do
-            {:ok, _} ->
-              {:error, :not_authorized}
-            {:error, _} ->
-              {:error, :invalid_account_id}
+            {@ok, _} ->
+              {@error, @not_authorized}
+            {@error, _} ->
+              {@error, @invalid_account_id}
           end
       end
   end
@@ -196,34 +204,36 @@ defmodule AssessmentWeb.OrderUtilities do
     when is_binary(account_id) and is_integer(required_id) do
       cond do
         account_id == "" ->
-          {:ok, required_id}
+          {@ok, required_id}
         account_id == to_string(required_id) ->
-          {:ok, required_id}
+          {@ok, required_id}
         true ->
           case to_integer(account_id) do
-            {:ok, _} ->
-              {:error, :not_authorized}
-            {:error, _} ->
-              {:error, :invalid_account_id}
+            {@ok, _} ->
+              {@error, @not_authorized}
+            {@error, _} ->
+              {@error, @invalid_account_id}
           end
       end
   end
 
-  defp validate_date("today"), do: {:ok, get_date_today() }
+  defp validate_date("today"), do: {@ok, get_date_today() }
   defp validate_date(%{"year" => year, "month" => month, "day" => day}) do
     month = normalize_datetime_segment(month)
     day = normalize_datetime_segment(day)
-    Date.from_iso8601("#{year}-#{month}-#{day}")
+    validate_date("#{year}-#{month}-#{day}")
   end
   defp validate_date(iso8601_date_or_error) do
-    Date.from_iso8601(iso8601_date_or_error)
+    iso8601_date_or_error
+    |> Date.from_iso8601()
+    |> map_error(fn (_) -> @invalid_date end)
   end
 
   defp validate_id(id) do
-    msg = :invalid_account_id
+    msg = @invalid_account_id
     id
     |> to_integer()
-    |> bind_value(fn (id) -> if (id > 0), do: {:ok, id}, else: {:error, msg} end)
+    |> bind_value(fn (id) -> if (id > 0), do: {@ok, id}, else: {@error, msg} end)
     |> map_error(fn (_) -> msg end)
   end
 
@@ -231,11 +241,11 @@ defmodule AssessmentWeb.OrderUtilities do
     fn (courier_id) ->
       cond do
         authorized? ->
-          {:ok, courier_id}
+          {@ok, courier_id}
         order.courier_id == courier_id ->
-          {:ok, courier_id}
+          {@ok, courier_id}
         true ->
-          {:error, :not_authorized}
+          {@error, @not_authorized}
       end
     end
   end
@@ -244,21 +254,24 @@ defmodule AssessmentWeb.OrderUtilities do
     fn (pharmacy_id) ->
       cond do
         authorized? ->
-          {:ok, pharmacy_id}
+          {@ok, pharmacy_id}
         order.pharmacy_id == pharmacy_id ->
-          {:ok, pharmacy_id}
+          {@ok, pharmacy_id}
         true ->
-          {:error, :not_authorized}
+          {@error, @not_authorized}
       end
     end
   end
 
   defp validate_time(%{"hour" => hour, "minute" => minute}) do
-    hour = normalize_datetime_segment(hour)
-    minute = normalize_datetime_segment(minute)
-    Time.from_iso8601("#{hour}:#{minute}:00")
+    nhour = normalize_datetime_segment(hour)
+    nminute = normalize_datetime_segment(minute)
+    validate_time("#{nhour}:#{nminute}")
   end
-  defp validate_time(iso8601_time_or_error) do
-    Time.from_iso8601("#{iso8601_time_or_error}:00")
+  defp validate_time(iso8601_time_or_error)
+    when is_binary(iso8601_time_or_error) do
+      "#{iso8601_time_or_error}:00"
+      |> Time.from_iso8601()
+      |> map_error(fn (_) -> @invalid_time end)
   end
 end
