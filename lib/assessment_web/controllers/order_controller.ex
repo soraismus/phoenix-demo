@@ -62,10 +62,7 @@ defmodule AssessmentWeb.OrderController do
           |> OrderView.format_upsert_errors()
           |> to_changeset(valid_results)
         conn
-        |> changeset_error(%{
-                view: "new.html",
-                changeset: changeset,
-              })
+        |> changeset_error(%{view: "new.html", changeset: changeset})
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(%{view: "new.html", changeset: changeset})
@@ -205,11 +202,15 @@ defmodule AssessmentWeb.OrderController do
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to update order ##{id}")
-      {@error, %{errors: errors, valid_results: _}} ->
+      {@error, %{errors: errors, valid_results: valid_results}} ->
+        changeset =
+          errors
+          |> OrderView.format_upsert_errors()
+          |> to_changeset(valid_results)
         conn
         |> changeset_error(%{
               view: "edit.html",
-              changeset: OrderView.format_upsert_errors(errors),
+              changeset: changeset,
               order_id: id,
             })
       {@error, %Ecto.Changeset{} = changeset} ->
