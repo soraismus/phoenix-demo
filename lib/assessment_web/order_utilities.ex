@@ -3,59 +3,59 @@ defmodule AssessmentWeb.OrderUtilities do
     only: [ bind_value: 2,
             get_date_today: 0,
             map_error: 2,
+            map_value: 2,
+            prohibit_nil: 2,
             to_integer: 1,
           ]
 
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders.Order
-  alias Assessment.OrderStates
   alias Assessment.OrderStates.OrderState
 
-  @default_order_state OrderState.active()
+  @default_order_state_description OrderState.active()
   @default_pickup_date "today"
   @default_pickup_time "14:00"
 
+  @absent_account_id :absent_account_id
+  @absent_patient_id :absent_patient_id
   @all :all
   @error :error
   @invalid_account_id :invalid_account_id
   @invalid_date :invalid_date
+  @invalid_order_state_description :invalid_order_state_description
   @invalid_time :invalid_time
   @not_authorized :not_authorized
   @ok :ok
+  @unspecified :unspecified
 
   def normalize_validate_creation(params, account) do
     requirements = get_required_ids(account)
     courier_id =
       params
-      |> Map.get("courier_id")
-      |> to_string()
+      |> get_courier_id_param_or_unspecified()
       |> validate_account_id_upsert(requirements.courier_id)
-    order_state =
+    order_state_description =
       params
-      |> Map.get(
-            "order_state",
-            Map.get(params, "order_state_description", @default_order_state))
-      |> OrderStates.to_id()
+      |> get_order_state_description_param_or_default()
+      |> validate_order_state_description()
     patient_id =
       params
-      |> Map.get("patient_id")
-      |> to_string()
-      |> validate_id()
+      |> get_patient_id_param_result()
+      |> bind_value(&validate_id/1)
     pharmacy_id =
       params
-      |> Map.get("pharmacy_id")
-      |> to_string()
+      |> get_pharmacy_id_param_or_unspecified()
       |> validate_account_id_upsert(requirements.pharmacy_id)
     pickup_date =
       params
-      |> Map.get("pickup_date", @default_pickup_date)
+      |> get_pickup_date_param_or_default()
       |> validate_date()
     pickup_time =
       params
-      |> Map.get("pickup_time", @default_pickup_time)
+      |> get_pickup_time_param_or_default()
       |> validate_time()
     %{ courier_id: courier_id,
-       order_state_id: order_state,
+       order_state_description: order_state_description,
        patient_id: patient_id,
        pharmacy_id: pharmacy_id,
        pickup_date: pickup_date,
@@ -67,31 +67,26 @@ defmodule AssessmentWeb.OrderUtilities do
     requirements = get_required_ids(account)
     courier_id =
       params
-      |> Map.get("courier_id")
-      |> to_string()
+      |> get_courier_id_param_or_unspecified()
       |> validate_account_id_index(requirements.courier_id)
-    order_state =
+    order_state_description =
       params
-      |> Map.get(
-            "order_state",
-            Map.get(params, "order_state_description", @default_order_state))
-      |> check_all_or_validate(&OrderStates.to_id/1)
+      |> get_order_state_description_param_or_default()
+      |> check_all_or_validate(&validate_order_state_description/1)
     patient_id =
       params
-      |> Map.get("patient_id", "all")
-      |> to_string()
+      |> get_patient_id_param_or_all()
       |> check_all_or_validate(&validate_id/1)
     pharmacy_id =
       params
-      |> Map.get("pharmacy_id")
-      |> to_string()
+      |> get_pharmacy_id_param_or_unspecified()
       |> validate_account_id_index(requirements.pharmacy_id)
     pickup_date =
       params
-      |> Map.get("pickup_date", @default_pickup_date)
+      |> get_pickup_date_param_or_default()
       |> check_all_or_validate(&validate_date/1)
     %{ courier_id: courier_id,
-       order_state_id: order_state,
+       order_state_description: order_state_description,
        patient_id: patient_id,
        pharmacy_id: pharmacy_id,
        pickup_date: pickup_date,
@@ -103,37 +98,32 @@ defmodule AssessmentWeb.OrderUtilities do
     authorized? = is_integer(requirements.administrator_id)
     courier_id =
       params
-      |> Map.get("courier_id")
-      |> to_string()
+      |> get_courier_id_param_or_unspecified()
       |> validate_account_id_upsert(requirements.courier_id)
       |> bind_value(validate_order_courier(order, authorized?))
-    order_state =
+    order_state_description =
       params
-      |> Map.get(
-            "order_state",
-            Map.get(params, "order_state_description", @default_order_state))
-      |> OrderStates.to_id()
+      |> get_order_state_description_param_or_default()
+      |> validate_order_state_description()
     patient_id =
       params
-      |> Map.get("patient_id")
-      |> to_string()
-      |> validate_id()
+      |> get_patient_id_param_result()
+      |> bind_value(&validate_id/1)
     pharmacy_id =
       params
-      |> Map.get("pharmacy_id")
-      |> to_string()
+      |> get_pharmacy_id_param_or_unspecified()
       |> validate_account_id_upsert(requirements.pharmacy_id)
       |> bind_value(validate_order_pharmacy(order, authorized?))
     pickup_date =
       params
-      |> Map.get("pickup_date", @default_pickup_date)
+      |> get_pickup_date_param_or_default()
       |> validate_date()
     pickup_time =
       params
-      |> Map.get("pickup_time", @default_pickup_time)
+      |> get_pickup_time_param_or_default()
       |> validate_time()
     %{ courier_id: courier_id,
-       order_state_id: order_state,
+       order_state_description: order_state_description,
        patient_id: patient_id,
        pharmacy_id: pharmacy_id,
        pickup_date: pickup_date,
@@ -147,6 +137,58 @@ defmodule AssessmentWeb.OrderUtilities do
     else
       fun.(id)
     end
+  end
+
+  defp get_courier_id_param_or_unspecified(params) do
+    params
+    |> get_param_or_unspecified("courier_id")
+  end
+
+  defp get_order_state_description_param_or_default(params) do
+    Map.get(
+      params,
+      "order_state",
+      Map.get(
+        params,
+        "order_state_description",
+        @default_order_state_description))
+  end
+
+  defp get_param_or_unspecified(params, key) do
+    param = Map.get(params, key)
+    if is_nil(param) do
+      @unspecified
+    else
+      to_string(param)
+    end
+  end
+
+  defp get_patient_id_param_or_all(params) do
+    params
+    |> Map.get("patient_id", "all")
+    |> to_string()
+  end
+
+  defp get_patient_id_param_result(params) do
+    params
+    |> Map.get("patient_id")
+    |> prohibit_nil(@absent_patient_id)
+    |> map_value(&to_string/1)
+  end
+
+  defp get_pharmacy_id_param_or_unspecified(params) do
+    params
+    |> get_param_or_unspecified("pharmacy_id")
+  end
+
+  defp get_pickup_date_param_or_default(params) do
+    params
+    |> Map.get("pickup_date", @default_pickup_date)
+  end
+
+  defp get_pickup_time_param_or_default(params) do
+    params
+    |> Map.get("pickup_time", @default_pickup_time)
   end
 
   defp get_required_ids(account) do
@@ -168,53 +210,58 @@ defmodule AssessmentWeb.OrderUtilities do
     end
   end
 
-  defp validate_account_id_index(account_id, required_id)
-    when is_binary(account_id) and is_nil(required_id) do
-      cond do
-        account_id == "" ->
-          {@ok, @all}
-        account_id == "all" ->
-          {@ok, @all}
-        true ->
-          validate_id(account_id)
-      end
+  defp validate_account_id_index(@unspecified, required_id)
+    when is_integer(required_id) do
+      {@ok, required_id}
+  end
+  defp validate_account_id_index(@unspecified, _) do
+    {@ok, @all}
   end
   defp validate_account_id_index(account_id, required_id)
     when is_binary(account_id) and is_integer(required_id) do
-      cond do
-        account_id == "" ->
-          {@ok, required_id}
-        account_id == to_string(required_id) ->
-          {@ok, required_id}
-        true ->
-          case to_integer(account_id) do
-            {@ok, _} ->
-              {@error, @not_authorized}
-            {@error, _} ->
-              {@error, @invalid_account_id}
-          end
+      if account_id == to_string(required_id) do
+        {@ok, required_id}
+      else
+        case to_integer(account_id) do
+          {@ok, _} ->
+            {@error, @not_authorized}
+          {@error, _} ->
+            {@error, @invalid_account_id}
+        end
+      end
+  end
+  defp validate_account_id_index(account_id, _)
+    when is_binary(account_id) do
+      if account_id == "all" do
+        {@ok, @all}
+      else
+        validate_id(account_id)
       end
   end
 
-  defp validate_account_id_upsert(account_id, required_id)
-    when is_binary(account_id) and is_nil(required_id) do
-      validate_id(account_id)
+  defp validate_account_id_upsert(@unspecified, required_id)
+    when is_integer(required_id) do
+      {@ok, required_id}
+  end
+  defp validate_account_id_upsert(@unspecified, _) do
+    {@error, @absent_account_id}
   end
   defp validate_account_id_upsert(account_id, required_id)
     when is_binary(account_id) and is_integer(required_id) do
-      cond do
-        account_id == "" ->
-          {@ok, required_id}
-        account_id == to_string(required_id) ->
-          {@ok, required_id}
-        true ->
-          case to_integer(account_id) do
-            {@ok, _} ->
-              {@error, @not_authorized}
-            {@error, _} ->
-              {@error, @invalid_account_id}
-          end
+      if account_id == to_string(required_id) do
+        {@ok, required_id}
+      else
+        case to_integer(account_id) do
+          {@ok, _} ->
+            {@error, @not_authorized}
+          {@error, _} ->
+            {@error, @invalid_account_id}
+        end
       end
+  end
+  defp validate_account_id_upsert(account_id, _)
+    when is_binary(account_id) do
+      validate_id(account_id)
   end
 
   defp validate_date("today"), do: {@ok, get_date_today() }
@@ -223,10 +270,11 @@ defmodule AssessmentWeb.OrderUtilities do
     day = normalize_datetime_segment(day)
     validate_date("#{year}-#{month}-#{day}")
   end
-  defp validate_date(iso8601_date_or_error) do
-    iso8601_date_or_error
-    |> Date.from_iso8601()
-    |> map_error(fn (_) -> @invalid_date end)
+  defp validate_date(iso8601_date_or_error)
+    when is_binary(iso8601_date_or_error) do
+      iso8601_date_or_error
+      |> Date.from_iso8601()
+      |> map_error(fn (_) -> @invalid_date end)
   end
 
   defp validate_id(id) do
@@ -260,6 +308,14 @@ defmodule AssessmentWeb.OrderUtilities do
         true ->
           {@error, @not_authorized}
       end
+    end
+  end
+
+  defp validate_order_state_description(order_state_description) do
+    if order_state_description in OrderState.order_states do
+      {:ok, order_state_description}
+    else
+      {:ok, @invalid_order_state_description}
     end
   end
 

@@ -37,6 +37,9 @@ defmodule Assessment.OrderStates.OrderState do
   def delivered(), do: @delivered
 
   @doc false
+  def order_states(), do: @order_states
+
+  @doc false
   def undeliverable(), do: @undeliverable
 
   defp validate_order_state(changeset) do
