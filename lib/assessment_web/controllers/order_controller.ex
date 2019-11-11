@@ -82,8 +82,7 @@ defmodule AssessmentWeb.OrderController do
       |> put_resp_header(
             "content-disposition",
             "attachment; filename=orders.csv")
-      #|> send_resp(200, Order.display_csv(orders))
-      |> send_resp(200, "hello")
+      |> send_resp(200, ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders))
     else
       {@error, @not_authenticated} ->
         conn

@@ -105,6 +105,11 @@ defmodule Utilities do
     end
   end
 
+  def join_csv_fields(values) when is_list(values) do
+    values
+    |> Enum.map_join(",", &ToCsvRecord.to_csv_record/1)
+  end
+
   def to_json(%_{} = struct, [_ | _] = keys) do
     struct
     |> Map.from_struct()
