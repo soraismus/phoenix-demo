@@ -73,7 +73,6 @@ defmodule AssessmentWeb.OrderController do
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params) do
-      IO.inspect({"normalized_params",normalized_params})
       conn
       |> assign(@normalized_params, normalized_params)
       |> render("index.html", orders: Orders.list_orders(normalized_params))
