@@ -75,6 +75,10 @@ defmodule AssessmentWeb.OrderView do
     end
   end
 
+  def is_courier?(agent) do
+    !is_nil(agent) && agent.account_type == "courier"
+  end
+
   def is_pharmacy?(agent) do
     !is_nil(agent) && agent.account_type == "pharmacy"
   end

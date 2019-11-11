@@ -6,12 +6,14 @@ defmodule AssessmentWeb.ControllerUtilities do
   @error :error
   @index :index
   @order_id :order_id
+  @request_path :request_path
   @status :status
 
-  def authentication_error(conn, msg \\ "Not authorized") do
+  def authentication_error(conn, msg \\ "Not must log in") do
     conn
     |> put_flash(@error, msg)
-    |> redirect(to: page_path(conn, @index))
+    |> put_session(@request_path, conn.request_path)
+    |> redirect(to: session_path(conn, @new))
   end
 
   def authorization_error(conn, msg \\ "Not Authorized") do

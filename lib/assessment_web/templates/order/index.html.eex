@@ -44,4 +44,6 @@
   </tbody>
 </table>
 
-<span><%= link "New Order", to: order_path(@conn, :new) %></span>
+<%= unless is_courier?(@agent) do %>
+  <span><%= link "New Order", to: order_path(@conn, :new) %></span>
+<% end %>

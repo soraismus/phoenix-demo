@@ -41,6 +41,7 @@ defmodule AssessmentWeb.OrderController do
   def create(conn, %{"order" => params}) do
     with {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
+         {@ok, _} <- authorize_admin_or_pharmacy(account),
          validated_params <- normalize_validate_creation(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          {@ok, order} <- Orders.create_order(normalized_params) do
@@ -51,6 +52,9 @@ defmodule AssessmentWeb.OrderController do
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must log in to create an order")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to create an order")
       {@error, %{errors: _, valid_results: _} = partition} ->
         conn
         |> changeset_error(%{
@@ -88,8 +92,22 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def new(conn, _params) do
-    conn
-    |> render("new.html", changeset: Orders.change_order(%Order{}))
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         {@ok, _} <- authorize_admin_or_pharmacy(account) do
+      conn
+      |> render("new.html", changeset: Orders.change_order(%Order{}))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to create an order")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to create an order")
+      _ ->
+        conn
+        |> internal_error("ORNE_B")
+    end
   end
 
   def show(conn, %{"id" => id}) do
@@ -209,6 +227,19 @@ defmodule AssessmentWeb.OrderController do
       %Administrator{} -> true
       %Courier{} -> account.id == order.courier_id
       %Pharmacy{} -> account.id == order.pharmacy_id
+    end
+    if authorized? do
+      {@ok, account}
+    else
+      {@error, @not_authorized}
+    end
+  end
+
+  defp authorize_admin_or_pharmacy(account) do
+    authorized? = case account do
+      %Administrator{} -> true
+      %Pharmacy{} -> true
+      _ -> false
     end
     if authorized? do
       {@ok, account}
