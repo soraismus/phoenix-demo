@@ -11,6 +11,16 @@ defmodule AssessmentWeb.CourierController do
 
   plug :authenticate_administrator
 
+  @error :error
+  @ignore :ignore
+  @index :index
+  @info :info
+  @new :new
+  @no_resource :no_resource
+  @ok :ok
+  @request_path :request_path
+  @show :show
+
   def index(conn, _params) do
     conn
     |> render("index.html", couriers: Accounts.list_couriers())
@@ -23,11 +33,11 @@ defmodule AssessmentWeb.CourierController do
 
   def create(conn, %{"agent" => agent_params}) do
     case Accounts.create_courier(agent_params) do
-      {:ok, %Agent{courier: courier}} ->
+      {@ok, %Agent{courier: courier}} ->
         conn
-        |> put_flash(:info, "Courier created successfully.")
-        |> redirect(to: courier_path(conn, :show, courier))
-      {:error, %Ecto.Changeset{} = changeset} ->
+        |> put_flash(@info, "Courier created successfully.")
+        |> redirect(to: courier_path(conn, @show, courier))
+      {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> render("new.html", changeset: changeset)
       _ ->
@@ -37,7 +47,7 @@ defmodule AssessmentWeb.CourierController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, courier} = Accounts.get_courier(id) do
+    with {@ok, courier} <- Accounts.get_courier(id) do
       conn
       |> render("show.html", courier: courier)
     else
@@ -51,11 +61,11 @@ defmodule AssessmentWeb.CourierController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:ok, courier} = Accounts.get_courier(id),
-         {:ok, _} = Accounts.delete_courier(courier) do
+    with {@ok, courier} <- Accounts.get_courier(id),
+         {@ok, _} = Accounts.delete_courier(courier) do
       conn
-      |> put_flash(:info, "Courier deleted successfully.")
-      |> redirect(to: courier_path(conn, :index))
+      |> put_flash(@info, "Courier deleted successfully.")
+      |> redirect(to: courier_path(conn, @index))
     else
       {@error, @no_resource} ->
         conn
@@ -72,9 +82,9 @@ defmodule AssessmentWeb.CourierController do
       conn
     else
       conn
-      |> put_flash(:error, "You must be logged in as an administrator to manage couriers.")
-      |> put_session(:request_path, :ignore)
-      |> redirect(to: session_path(conn, :new))
+      |> put_flash(@error, "You must be logged in as an administrator to manage couriers.")
+      |> put_session(@request_path, @ignore)
+      |> redirect(to: session_path(conn, @new))
       |> halt()
     end
   end

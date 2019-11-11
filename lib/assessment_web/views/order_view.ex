@@ -61,7 +61,7 @@ defmodule AssessmentWeb.OrderView do
 
   def get_default_time(), do: {13, 0, 0}
 
-  def get_qualifier(conn, %{} = params) do
+  def get_qualifier(%{} = params) do
     order_state_description = Map.get(params, :order_state_description)
     pickup_date = Map.get(params, :pickup_date)
     today? = (get_date_today() == pickup_date)

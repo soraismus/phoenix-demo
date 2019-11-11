@@ -5,6 +5,7 @@ defmodule AssessmentWeb.ControllerUtilities do
 
   @error :error
   @index :index
+  @new :new
   @order_id :order_id
   @request_path :request_path
   @status :status

@@ -11,6 +11,16 @@ defmodule AssessmentWeb.AdministratorController do
 
   plug :authenticate_administrator
 
+  @error :error
+  @ignore :ignore
+  @index :index
+  @info :info
+  @new :new
+  @no_resource :no_resource
+  @ok :ok
+  @request_path :request_path
+  @show :show
+
   def index(conn, _params) do
     conn
     |> render("index.html", administrators: Accounts.list_administrators())
@@ -23,11 +33,11 @@ defmodule AssessmentWeb.AdministratorController do
 
   def create(conn, %{"agent" => agent_params}) do
     case Accounts.create_administrator(agent_params) do
-      {:ok, %Agent{administrator: administrator}} ->
+      {@ok, %Agent{administrator: administrator}} ->
         conn
-        |> put_flash(:info, "Administrator created successfully.")
-        |> redirect(to: administrator_path(conn, :show, administrator))
-      {:error, %Ecto.Changeset{} = changeset} ->
+        |> put_flash(@info, "Administrator created successfully.")
+        |> redirect(to: administrator_path(conn, @show, administrator))
+      {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> render("new.html", changeset: changeset)
       _ ->
@@ -37,7 +47,7 @@ defmodule AssessmentWeb.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, administrator} = Accounts.get_administrator(id) do
+    with {@ok, administrator} <- Accounts.get_administrator(id) do
       conn
       |> render("show.html", administrator: administrator)
     else
@@ -51,11 +61,11 @@ defmodule AssessmentWeb.AdministratorController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {:ok, administrator} = Accounts.get_administrator(id),
-         {:ok, _} = Accounts.delete_administrator(administrator) do
+    with {@ok, administrator} <- Accounts.get_administrator(id),
+         {@ok, _} = Accounts.delete_administrator(administrator) do
       conn
-      |> put_flash(:info, "Administrator deleted successfully.")
-      |> redirect(to: administrator_path(conn, :index))
+      |> put_flash(@info, "Administrator deleted successfully.")
+      |> redirect(to: administrator_path(conn, @index))
     else
       {@error, @no_resource} ->
         conn
@@ -72,9 +82,9 @@ defmodule AssessmentWeb.AdministratorController do
       conn
     else
       conn
-      |> put_flash(:error, "You must be logged in as an administrator to manage administrators.")
-      |> put_session(:request_path, :ignore)
-      |> redirect(to: session_path(conn, :new))
+      |> put_flash(@error, "You must be logged in as an administrator to manage administrators.")
+      |> put_session(@request_path, @ignore)
+      |> redirect(to: session_path(conn, @new))
       |> halt()
     end
   end

@@ -12,25 +12,33 @@ defmodule AssessmentWeb.Api.PharmacyController do
 
   alias Assessment.Accounts
 
+  @created :created
+  @error :error
+  @no_resource :no_resource
+  @not_authenticated :not_authenticated
+  @not_authorized :not_authorized
+  @not_found :not_found
+  @ok :ok
+
   def create(conn, %{"pharmacy" => params}) do
     params =
       %{}
       |> Map.put("username", Map.get(params, "username"))
       |> Map.put("credential", Map.take(params, ["password"]))
       |> Map.put("pharmacy", Map.take(params, ["name", "email", "address"]))
-    with {:ok, _} <- authenticate_administrator(conn),
-         {:ok, agent} <- Accounts.create_pharmacy(params) do
+    with {@ok, _} <- authenticate_administrator(conn),
+         {@ok, agent} <- Accounts.create_pharmacy(params) do
       conn
-      |> put_status(:created)
+      |> put_status(@created)
       |> render("create.json", pharmacy: agent.pharmacy)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {@error, %Ecto.Changeset{} = changeset} ->
         conn
         |> changeset_error(changeset)
       _ ->
@@ -41,13 +49,13 @@ defmodule AssessmentWeb.Api.PharmacyController do
 
   def index(conn, _params) do
     case authenticate_administrator(conn) do
-      {:ok, _} ->
+      {@ok, _} ->
         conn
         |> render("index.json", pharmacies: Accounts.list_pharmacies())
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
       _ ->
@@ -57,20 +65,20 @@ defmodule AssessmentWeb.Api.PharmacyController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, _} <- authenticate_administrator(conn),
-         {:ok, pharmacy} <- Accounts.get_pharmacy(id) do
+    with {@ok, _} <- authenticate_administrator(conn),
+         {@ok, pharmacy} <- Accounts.get_pharmacy(id) do
       conn
       |> render("show.json", pharmacy: pharmacy)
     else
-      {:error, :not_authenticated} ->
+      {@error, @not_authenticated} ->
         conn
         |> authentication_error()
-      {:error, :not_authorized} ->
+      {@error, @not_authorized} ->
         conn
         |> authorization_error()
-      {:error, :no_resource} ->
+      {@error, @no_resource} ->
         conn
-        |> resource_error("pharmacy ##{id}", "does not exist", :not_found)
+        |> resource_error("pharmacy ##{id}", "does not exist", @not_found)
       _ ->
         conn
         |> internal_error("PHSH_A")

@@ -25,7 +25,6 @@ defmodule AssessmentWeb.OrderController do
 
   plug :authenticate
 
-  @created :created
   @error :error
   @new :new
   @no_resource :no_resource

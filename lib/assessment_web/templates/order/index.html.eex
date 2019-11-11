@@ -7,7 +7,7 @@
   </a>
 </div>
 
-<h2>Listing <%= get_qualifier(@conn, @normalized_params) %> Orders</h2>
+<h2>Listing <%= get_qualifier(@normalized_params) %> Orders</h2>
 
 <table class="table">
   <thead>
