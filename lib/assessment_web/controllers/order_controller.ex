@@ -134,9 +134,25 @@ defmodule AssessmentWeb.OrderController do
   end
 
   def edit(conn, %{"id" => id}) do
-    with {@ok, order} <- Orders.get_order(id) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         {@ok, order} <- Orders.get_order(id),
+         account <- Accounts.specify_agent(agent),
+         {@ok, _} <- authorize(account, order) do
       conn
       |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to update order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to update order ##{id}")
+      _ ->
+        conn
+        |> internal_error("ORED_B")
     end
   end
 
