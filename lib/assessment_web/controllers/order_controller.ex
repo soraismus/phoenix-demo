@@ -73,6 +73,7 @@ defmodule AssessmentWeb.OrderController do
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params) do
+      IO.inspect({"normalized_params",normalized_params})
       conn
       |> assign(@normalized_params, normalized_params)
       |> render("index.html", orders: Orders.list_orders(normalized_params))
@@ -132,7 +133,6 @@ defmodule AssessmentWeb.OrderController do
          validated_params <- normalize_validate_update(order, params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          {@ok, new_order} <- Orders.update_order(order, normalized_params) do
-      IO.inspect({"normalized_params",normalized_params})
       conn
       |> put_flash(@info, "Order ##{id} updated successfully.")
       |> redirect(to: order_path(conn, @show, new_order))

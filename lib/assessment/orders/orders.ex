@@ -204,9 +204,9 @@ defmodule Assessment.Orders do
             where(query, [o], o.courier_id == ^params.courier_id)
           end)
     |> modify_if(
-          Map.has_key?(params, :order_state_id) && params.order_state_id != :all,
+          (Map.get(params, :order_state_description) in OrderState.order_states()),
           fn (query) ->
-            where(query, [o], o.order_state_id == ^params.order_state_id)
+            where(query, [o, c, os, p, ph], os.description == ^params.order_state_description)
           end)
     |> modify_if(
           Map.has_key?(params, :patient_id) && params.patient_id != :all,

@@ -61,18 +61,11 @@ defmodule AssessmentWeb.OrderView do
 
   def get_default_time(), do: {13, 0, 0}
 
-  #def get_qualifier(conn, %{order_state_id: order_state_id, pickup_date: pickup_date} = params) do
-  def get_qualifier(conn, %{order_state_description: order_state_description, pickup_date: pickup_date} = params) do
-    count =
-      case conn.assigns.agent.account_type do
-        "courier" -> 4
-        "pharmacy" -> 4
-        _ -> 3
-      end
+  def get_qualifier(conn, %{} = params) do
+    order_state_description = Map.get(params, :order_state_description)
+    pickup_date = Map.get(params, :pickup_date)
     today? = (get_date_today() == pickup_date)
     cond do
-      Enum.count(params) > count ->
-        "#{if today? do "Today's " else "" end}Matching"
       order_state_description == "active" ->
         "#{if today? do "Today's " else "" end}Active"
       order_state_description == :all ->
