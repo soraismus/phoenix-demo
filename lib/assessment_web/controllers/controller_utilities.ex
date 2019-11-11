@@ -42,6 +42,15 @@ defmodule AssessmentWeb.ControllerUtilities do
     |> redirect(to: page_path(conn, @index))
   end
 
+  def send_attachment(conn, content_type, filename, data) do
+    conn
+    |> put_resp_content_type(content_type)
+    |> put_resp_header(
+          "content-disposition",
+          "attachment; filename=#{filename}")
+    |> send_resp(200, data)
+  end
+
   def validation_error(conn, error_json) do
     conn
     |> put_flash(@error, to_error_list(error_json))

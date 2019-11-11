@@ -12,7 +12,7 @@ defmodule AssessmentWeb.Router do
   alias AssessmentWeb.GuardianController
 
   pipeline :browser do
-    plug :accepts, ["html", "csv"]
+    plug :accepts, ["html"]
     plug ProperCase.Plug.SnakeCaseParams
     plug :fetch_session
     plug :fetch_flash

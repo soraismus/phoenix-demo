@@ -27,7 +27,9 @@ defmodule AssessmentWeb.Api.OrderController do
   @already_delivered :already_delivered
   @already_has_order_state :already_has_order_state
   @created :created
+  @csv :csv
   @error :error
+  @html :html
   @ok :ok
   @no_resource :no_resource
   @not_authenticated :not_authenticated
@@ -80,19 +82,27 @@ defmodule AssessmentWeb.Api.OrderController do
     with {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_index(params, account),
-         {@ok, normalized_params} <- accumulate_errors(validated_params) do
-      conn
-      |> render(
-            "index.json",
-            orders: Orders.list_orders(normalized_params),
-            query_params: normalized_params)
+         {@ok, normalized_params} <- accumulate_errors(validated_params),
+         orders <- Orders.list_orders(normalized_params) do
+      case filetype(conn) do
+        @csv ->
+          conn
+          |> put_resp_content_type("text/csv")
+          |> put_resp_header(
+                "content-disposition",
+                "attachment; filename=orders.csv")
+          |> send_resp(200, ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders, false))
+        _ ->
+          conn
+          |> render(
+                "index.json",
+                orders: orders,
+                query_params: normalized_params)
+      end
     else
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must provide credentials to view orders")
-      {@error, @not_authorized} ->
-        conn
-        |> authorization_error("Not authorized to view orders")
       {@error, %{errors: _, valid_results: _} = partition} ->
         conn
         |> validation_error(OrderView.format_index_errors(partition))
@@ -157,6 +167,25 @@ defmodule AssessmentWeb.Api.OrderController do
       true ->
         {@ok, {order, order_state}}
     end
+  end
+
+  defp filetype(%Plug.Conn{} = conn) do
+    csv? =
+      conn
+      |> get_acceptable_filetypes()
+      |> Enum.any?(&(String.contains?(&1, "text/csv")))
+    if csv?, do: @csv, else: @html
+  end
+
+  defp get_acceptable_filetypes(conn) do
+    conn
+    |> get_req_header("accept")
+    |> Enum.flat_map(fn (header) ->
+          header
+          |> String.split(";")
+          |> List.first()
+          |> String.split(",")
+        end)
   end
 
   defp update_order_state(conn, %{"id" => id}, order_state, view) do

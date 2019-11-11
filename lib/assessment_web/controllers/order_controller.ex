@@ -7,6 +7,7 @@ defmodule AssessmentWeb.OrderController do
             changeset_error: 2,
             internal_error: 2,
             resource_error: 3,
+            send_attachment: 4,
             validation_error: 2,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
@@ -25,9 +26,7 @@ defmodule AssessmentWeb.OrderController do
 
   plug :authenticate
 
-  @csv :csv
   @error :error
-  @html :html
   @new :new
   @no_resource :no_resource
   @index :index
@@ -76,13 +75,10 @@ defmodule AssessmentWeb.OrderController do
          account <- Accounts.specify_agent(agent),
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
-         orders <- Orders.list_orders(normalized_params) do
+         orders <- Orders.list_orders(normalized_params),
+         csv <- ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders, false) do
       conn
-      |> put_resp_content_type("text/csv")
-      |> put_resp_header(
-            "content-disposition",
-            "attachment; filename=orders.csv")
-      |> send_resp(200, ToCsv.to_csv(Assessment.ToCsv.OrderToCsv, orders, false))
+      |> send_attachment("text/csv", "orders.csv", csv)
     else
       {@error, @not_authenticated} ->
         conn
@@ -102,20 +98,9 @@ defmodule AssessmentWeb.OrderController do
          validated_params <- normalize_validate_index(params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params),
          orders <- Orders.list_orders(normalized_params) do
-      case filetype(conn) do
-        @html ->
-          conn
-          |> assign(@normalized_params, normalized_params)
-          |> render("index.html", orders: orders)
-        @csv ->
-          conn
-          |> put_resp_content_type("text/csv")
-          |> put_resp_header(
-                "content-disposition",
-                "attachment; filename=orders.csv")
-          #|> send_resp(200, Order.display_csv(orders))
-          |> send_resp(200, "hello")
-      end
+      conn
+      |> assign(@normalized_params, normalized_params)
+      |> render("index.html", orders: orders)
     else
       {@error, @not_authenticated} ->
         conn
@@ -300,23 +285,5 @@ defmodule AssessmentWeb.OrderController do
     else
       {@error, @not_authorized}
     end
-  end
-
-  defp filetype(%Plug.Conn{} = conn) do
-    acceptable_filetypes = get_acceptable_filetypes(conn)
-    if "text/csv" in acceptable_filetypes do
-      @csv
-    else
-      # "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-      @html
-    end
-  end
-  defp get_acceptable_filetypes(conn) do
-    conn
-    |> get_req_header("accept")
-    |> List.first()
-    |> String.split(";")
-    |> List.first()
-    |> String.split(",")
   end
 end
