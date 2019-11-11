@@ -313,9 +313,9 @@ defmodule AssessmentWeb.OrderUtilities do
 
   defp validate_order_state_description(order_state_description) do
     if order_state_description in OrderState.order_states do
-      {:ok, order_state_description}
+      {@ok, order_state_description}
     else
-      {:ok, @invalid_order_state_description}
+      {@error, @invalid_order_state_description}
     end
   end
 
