@@ -17,12 +17,13 @@ defmodule AssessmentWeb.OrderController do
             normalize_validate_update: 3,
           ]
   import Utilities, only: [accumulate_errors: 1]
+  import AssessmentWeb.Utilities, only: [to_changeset: 2]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
-  alias AssessmentWeb.OrderView
+  alias AssessmentWeb.Browser.OrderView
 
   plug :authenticate
 
@@ -55,11 +56,15 @@ defmodule AssessmentWeb.OrderController do
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to create an order")
-      {@error, %{errors: _, valid_results: _} = partition} ->
+      {@error, %{errors: errors, valid_results: valid_results}} ->
+        changeset =
+          errors
+          |> OrderView.format_upsert_errors()
+          |> to_changeset(valid_results)
         conn
         |> changeset_error(%{
                 view: "new.html",
-                changeset: OrderView.format_upsert_errors(partition)
+                changeset: changeset,
               })
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
@@ -200,11 +205,11 @@ defmodule AssessmentWeb.OrderController do
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to update order ##{id}")
-      {@error, %{errors: _, valid_results: _} = partition} ->
+      {@error, %{errors: errors, valid_results: _}} ->
         conn
         |> changeset_error(%{
               view: "edit.html",
-              changeset: OrderView.format_upsert_errors(partition),
+              changeset: OrderView.format_upsert_errors(errors),
               order_id: id,
             })
       {@error, %Ecto.Changeset{} = changeset} ->
