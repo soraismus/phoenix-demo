@@ -41,11 +41,11 @@ defmodule Assessment.AccountsTest do
     @invalid_attrs %{email: nil}
 
     def administrator_fixture(attrs \\ %{}) do
-      {:ok, %Agent{administrator: administrator}} =
+      {:ok, %Agent{administrator: administrator} = agent} =
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_administrator()
-      %{administrator | agent: %Agent{}}
+      %{administrator | agent: agent}
     end
 
     test "list_administrators/0 returns all administrators" do
@@ -93,11 +93,11 @@ defmodule Assessment.AccountsTest do
     @invalid_attrs %{address: nil, email: nil, name: nil}
 
     def pharmacy_fixture(attrs \\ %{}) do
-      {:ok, %Agent{pharmacy: pharmacy}} =
+      {:ok, %Agent{pharmacy: pharmacy} = agent} =
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_pharmacy()
-      %{pharmacy | agent: %Agent{}}
+      %{pharmacy | agent: agent}
     end
 
     test "list_pharmacies/0 returns all pharmacies" do
@@ -147,11 +147,11 @@ defmodule Assessment.AccountsTest do
     @invalid_attrs %{address: nil, email: nil, name: nil}
 
     def courier_fixture(attrs \\ %{}) do
-      {:ok, %Agent{courier: courier}} =
+      {:ok, %Agent{courier: courier} = agent} =
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_courier()
-      %{courier | agent: %Agent{}}
+      %{courier | agent: agent}
     end
 
     test "list_couriers/0 returns all couriers" do
