@@ -19,7 +19,7 @@ defmodule AssessmentWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: AssessmentWeb
+      use Phoenix.Controller, namespace: AssessmentWeb.Browser
       import Plug.Conn
       import AssessmentWeb.Router.Helpers
       import AssessmentWeb.Gettext

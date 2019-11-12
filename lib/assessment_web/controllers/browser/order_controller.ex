@@ -23,7 +23,7 @@ defmodule AssessmentWeb.Browser.OrderController do
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.Orders.Order
-  alias AssessmentWeb.Browser.OrderView
+  alias AssessmentWeb.OrderView
 
   plug :authenticate
 

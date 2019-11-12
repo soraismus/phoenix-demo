@@ -5,14 +5,7 @@ defmodule AssessmentWeb.Browser.OrderView do
 
   alias Assessment.Orders.Order
 
-  @authorization_msg "is prohibited to unauthorized users"
-  @index_id_msg "must be either 'all' or a positive integer"
-  @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
-  @pickup_time_msg "must be a valid time of the form 'HH:MM'"
-  @upsert_id_msg "must be specified and must be a positive integer"
-  @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
-  @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
+  @pickup_date :pickup_date
 
   def current_order_state(conn) do
     case conn.params["order_state"] do

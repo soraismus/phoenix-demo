@@ -22,7 +22,7 @@ defmodule AssessmentWeb.Api.OrderController do
   alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
   alias Assessment.Orders
   alias Assessment.OrderStates.OrderState
-  alias AssessmentWeb.Browser.OrderView
+  alias AssessmentWeb.OrderView
 
   @already_canceled :already_canceled
   @already_delivered :already_delivered
