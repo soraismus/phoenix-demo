@@ -80,10 +80,26 @@ defmodule AssessmentWeb.Browser.OrderView do
     end
   end
 
+  def order_state_toggle_path(conn) do
+    order_path(
+      conn,
+      :index,
+      order_state: next_order_state(conn),
+      pickup_date: current_pickup_date(conn))
+  end
+
   def pickup_date_label(conn) do
     case conn.params["pickup_date"] do
       "all" -> "Today"
       _     -> "All Dates"
     end
+  end
+
+  def pickup_date_toggle_path(conn) do
+    order_path(
+      conn,
+      :index,
+      order_state: current_order_state(conn),
+      pickup_date: next_pickup_date(conn))
   end
 end
