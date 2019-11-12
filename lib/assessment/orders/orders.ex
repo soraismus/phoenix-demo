@@ -17,7 +17,6 @@ defmodule Assessment.Orders do
   alias Assessment.OrderStates.OrderState
   alias Ecto.Changeset
 
-
   @no_resource :no_resource
   @active_order_state_id 1
 

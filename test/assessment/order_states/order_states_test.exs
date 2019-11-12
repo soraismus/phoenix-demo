@@ -6,9 +6,8 @@ defmodule Assessment.OrderStatesTest do
   describe "order_states" do
     alias Assessment.OrderStates.OrderState
 
-    @valid_attrs %{description: "some description"}
-    @update_attrs %{description: "some updated description"}
-    @invalid_attrs %{description: nil}
+    @valid_attrs %{description: "delivered"}
+    @invalid_attrs %{description: "arbitrary"}
 
     def order_state_fixture(attrs \\ %{}) do
       {:ok, order_state} =
@@ -31,30 +30,11 @@ defmodule Assessment.OrderStatesTest do
 
     test "create_order_state/1 with valid data creates a order_state" do
       assert {:ok, %OrderState{} = order_state} = OrderStates.create_order_state(@valid_attrs)
-      assert order_state.description == "some description"
+      assert order_state.description == "delivered"
     end
 
     test "create_order_state/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = OrderStates.create_order_state(@invalid_attrs)
-    end
-
-    test "update_order_state/2 with valid data updates the order_state" do
-      order_state = order_state_fixture()
-      assert {:ok, order_state} = OrderStates.update_order_state(order_state, @update_attrs)
-      assert %OrderState{} = order_state
-      assert order_state.description == "some updated description"
-    end
-
-    test "update_order_state/2 with invalid data returns error changeset" do
-      order_state = order_state_fixture()
-      assert {:error, %Ecto.Changeset{}} = OrderStates.update_order_state(order_state, @invalid_attrs)
-      assert order_state == OrderStates.get_order_state(order_state.id) |> elem(1)
-    end
-
-    test "delete_order_state/1 deletes the order_state" do
-      order_state = order_state_fixture()
-      assert {:ok, %OrderState{}} = OrderStates.delete_order_state(order_state)
-      assert {:error, :no_resource} = OrderStates.get_order_state(order_state.id)
     end
 
     test "change_order_state/1 returns a order_state changeset" do
