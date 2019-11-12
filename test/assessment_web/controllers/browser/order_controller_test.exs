@@ -47,27 +47,25 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
         |> Enum.into(@create_attrs)
       response0 = post conn, order_path(conn, :create), order: attrs
       assert %{id: id} = redirected_params(response0)
-      #assert redirected_to(response0) == order_path(response0, :show, id)
-      #response1 = get conn, order_path(conn, :show, id)
-      #assert html_response(response1, 200) =~ "Show Order"
+      assert redirected_to(response0) == order_path(response0, :show, id)
+      response1 = get conn, order_path(conn, :show, id)
+      assert html_response(response1, 200) =~ "Show Order"
     end
 
-#    test "renders errors when data is invalid", %{conn: conn} do
-#      response = post conn, order_path(conn, :create), order: @invalid_attrs
-#      assert html_response(response, 400) =~ "New Order"
-#    end
+    test "renders errors when data is invalid", %{conn: conn} do
+      response = post conn, order_path(conn, :create), order: @invalid_attrs
+      assert html_response(response, 400) =~ "New Order"
+    end
   end
 
-#  describe "edit order" do
-#    setup [:log_in_admin]
-#
-#    setup [:create_order]
-#
-#    test "renders form for editing chosen order", %{conn: conn, order: order} do
-#      conn = get conn, order_path(conn, :edit, order)
-#      assert html_response(conn, 200) =~ "Edit Order"
-#    end
-#  end
+  describe "edit order" do
+    setup [:log_in_admin, :create_order]
+
+    test "renders form for editing chosen order", %{conn: conn, order: order} do
+      conn = get conn, order_path(conn, :edit, order)
+      assert html_response(conn, 200) =~ "Edit Order"
+    end
+  end
 
 #  describe "update order" do
 #    setup [:log_in_admin, :create_order]

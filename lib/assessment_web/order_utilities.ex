@@ -145,13 +145,9 @@ defmodule AssessmentWeb.OrderUtilities do
   end
 
   defp get_order_state_description_param_or_default(params) do
-    Map.get(
-      params,
-      "order_state",
-      Map.get(
-        params,
-        "order_state_description",
-        @default_order_state_description))
+    Map.get(params, "order_state")
+      || Map.get(params, "order_state_description")
+      || @default_order_state_description
   end
 
   defp get_param_or_unspecified(params, key) do
@@ -182,13 +178,11 @@ defmodule AssessmentWeb.OrderUtilities do
   end
 
   defp get_pickup_date_param_or_default(params) do
-    params
-    |> Map.get("pickup_date", @default_pickup_date)
+    Map.get(params, "pickup_date") || @default_pickup_date
   end
 
   defp get_pickup_time_param_or_default(params) do
-    params
-    |> Map.get("pickup_time", @default_pickup_time)
+    Map.get(params, "pickup_time") || @default_pickup_time
   end
 
   defp get_required_ids(account) do
