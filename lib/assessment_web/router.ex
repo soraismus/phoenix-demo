@@ -24,7 +24,7 @@ defmodule AssessmentWeb.Router do
   end
 
   scope "/", AssessmentWeb.Browser do
-    pipe_through :browser # Use the default browser stack
+    pipe_through :browser
 
     get "/", PageController, :index
 

@@ -1,11 +1,8 @@
 defmodule AssessmentWeb.OrderView do
   use AssessmentWeb, :view
 
-  import Utilities, only: [get_date_today: 0]
-
   alias Assessment.Orders.Order
 
-  @all :all
   @courier_id :courier_id
   @invalid_account_id :invalid_account_id
   @not_authorized :not_authorized

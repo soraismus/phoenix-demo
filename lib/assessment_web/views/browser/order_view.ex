@@ -3,8 +3,8 @@ defmodule AssessmentWeb.Browser.OrderView do
 
   import Utilities, only: [get_date_today: 0]
 
-  alias Assessment.Orders.Order
-
+  @all :all
+  @order_state_description :order_state_description
   @pickup_date :pickup_date
 
   def current_order_state(conn) do
