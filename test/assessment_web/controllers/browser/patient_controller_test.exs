@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.PatientControllerTest do
+defmodule AssessmentWeb.Browser.PatientControllerTest do
   use AssessmentWeb.ConnCase
 
   alias Assessment.Patients

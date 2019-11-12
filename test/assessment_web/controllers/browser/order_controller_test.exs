@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.OrderControllerTest do
+defmodule AssessmentWeb.Browser.OrderControllerTest do
   use AssessmentWeb.ConnCase
 
   alias Assessment.Orders

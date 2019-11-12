@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.PageControllerTest do
+defmodule AssessmentWeb.Browser.PageControllerTest do
   use AssessmentWeb.ConnCase
 
   test "GET /", %{conn: conn} do

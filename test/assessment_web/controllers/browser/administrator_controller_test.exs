@@ -1,5 +1,7 @@
-defmodule AssessmentWeb.AdministratorControllerTest do
-  use AssessmentWeb.ConnCase
+defmodule AssessmentWeb.Browser.AdministratorControllerTest do
+  use AssessmentWeb.Browser.ConnCase
+
+  import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
 
   alias Assessment.Accounts
 
@@ -69,23 +71,5 @@ defmodule AssessmentWeb.AdministratorControllerTest do
   defp create_administrator(_) do
     administrator = fixture(:administrator)
     {:ok, administrator: administrator}
-  end
-
-  defp log_in_admin(_) do
-    {:ok, admin} =
-      Accounts.create_administrator(%{
-        username: "admin",
-        administrator: %{
-          email: "admin@example.com"
-        },
-        credential: %{
-          password: "admin"
-        }
-      })
-    subject = %{agent_id: admin.id}
-    conn =
-      build_conn()
-      |> AssessmentWeb.Guardian.Plug.sign_in(subject)
-    {:ok, conn: conn}
   end
 end

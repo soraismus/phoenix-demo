@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.CourierControllerTest do
+defmodule AssessmentWeb.Browser.CourierControllerTest do
   use AssessmentWeb.ConnCase
 
   alias Assessment.Accounts
