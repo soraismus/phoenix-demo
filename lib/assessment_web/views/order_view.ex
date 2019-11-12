@@ -2,6 +2,7 @@ defmodule AssessmentWeb.OrderView do
   alias Assessment.Orders.Order
 
   @absent_account_id :absent_account_id
+  @absent_patient_id :absent_patient_id
   @courier_id :courier_id
   @invalid_account_id :invalid_account_id
   @not_authorized :not_authorized
@@ -41,7 +42,7 @@ defmodule AssessmentWeb.OrderView do
   @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
   @request :request
-  @upsert_id_msg "must be specified and must be a positive integer"
+  @upsert_id_msg "must be a positive integer"
   @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
   @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
 
@@ -54,9 +55,9 @@ defmodule AssessmentWeb.OrderView do
     errors
     |> order_state_error_msg(@index_order_state_msg)
     |> Utilities.replace_old(@pickup_date, [@index_pickup_date_msg])
-    |> Utilities.replace_old(@patient_id, [@index_id_msg])
-    |> account_id_error_msg(@courier_id, msgs)
-    |> account_id_error_msg(@pharmacy_id, msgs)
+    |> id_error_msg(@patient_id, msgs)
+    |> id_error_msg(@courier_id, msgs)
+    |> id_error_msg(@pharmacy_id, msgs)
   end
 
   def format_upsert_errors(errors) do
@@ -69,9 +70,9 @@ defmodule AssessmentWeb.OrderView do
     |> order_state_error_msg(@upsert_order_state_msg)
     |> Utilities.replace_old(@pickup_date, [@upsert_pickup_date_msg])
     |> Utilities.replace_old(@pickup_time, [@pickup_time_msg])
-    |> Utilities.replace_old(@patient_id, [@upsert_id_msg])
-    |> account_id_error_msg(@courier_id, msgs)
-    |> account_id_error_msg(@pharmacy_id, msgs)
+    |> id_error_msg(@patient_id, msgs)
+    |> id_error_msg(@courier_id, msgs)
+    |> id_error_msg(@pharmacy_id, msgs)
   end
 
   def to_csv([]) do
@@ -82,17 +83,29 @@ defmodule AssessmentWeb.OrderView do
     @order_fields <> @record_delimiter <> records
   end
 
-  defp account_id_error_msg(errors, account_id, msgs) do
-    if Map.has_key?(errors, account_id) do
-      case errors[account_id] do
+  defp id_error_msg(errors, id, msgs) do
+    if Map.has_key?(errors, id) do
+      case errors[id] do
         @absent_account_id ->
+          new_error_msgs = ["#{msgs.absent_id_msg}'#{to_string(id)}'"]
           errors
-          |> Map.put(account_id, [msgs.id_msg])
-          |> Map.put(@request, [msgs.absent_id_msg <> account_id])
+          |> Map.put(id, [msgs.id_msg])
+          |> Map.update(
+                @request,
+                new_error_msgs,
+                fn (error_msgs) -> error_msgs ++ new_error_msgs end)
+        @absent_patient_id ->
+          new_error_msgs = ["#{msgs.absent_id_msg}'#{to_string(id)}'"]
+          errors
+          |> Map.put(id, [msgs.id_msg])
+          |> Map.update(
+                @request,
+                new_error_msgs,
+                fn (error_msgs) -> error_msgs ++ new_error_msgs end)
         @invalid_account_id ->
-          Map.put(errors, account_id, [msgs.id_msg])
+          Map.put(errors, id, [msgs.id_msg])
         @not_authorized ->
-          Map.put(errors, account_id, [msgs.authorization_msg])
+          Map.put(errors, id, [msgs.authorization_msg])
       end
     else
       errors
