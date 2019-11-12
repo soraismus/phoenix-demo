@@ -50,6 +50,5 @@
 
 <br>
 <span>
-  <%= link "Download CSV file",
-        to: "#{@conn.request_path}.csv?#{@conn.query_string}" %>
+  <%= link "Download CSV file", to: csv_index_path(@conn) %>
 </span>

@@ -44,7 +44,9 @@ defmodule AssessmentWeb.Utilities do
   previous form into the new form below that includes pertinent error
   messages as well as previously submitted valid data.
 
-      iex> changeset = to_changeset(%{owner: ["is a Melmackian"]}, %{name: "Bastet", age: 4909})
+      iex> errors = %{owner: ["is a Melmackian"]}
+      iex> valid_data = %{name: "Bastet", age: 4909}
+      iex> changeset = to_changeset(errors, valid_data)
       iex> form_for(changeset, "/cats", [as: "cat", method: "put"], fn (form) -> ... end)
 
       ```

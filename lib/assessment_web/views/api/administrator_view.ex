@@ -6,10 +6,9 @@ defmodule AssessmentWeb.Api.AdministratorView do
   end
 
   def render("index.json", %{administrators: administrators}) do
-    %{
-      count: length(administrators),
-      administrators: ToJson.to_json(administrators),
-    }
+    %{ count: length(administrators),
+       administrators: ToJson.to_json(administrators),
+     }
   end
 
   def render("show.json", %{administrator: administrator}) do

@@ -6,10 +6,9 @@ defmodule AssessmentWeb.Api.CourierView do
   end
 
   def render("index.json", %{couriers: couriers}) do
-    %{
-      count: length(couriers),
-      couriers: ToJson.to_json(couriers),
-    }
+    %{ count: length(couriers),
+       couriers: ToJson.to_json(couriers),
+     }
   end
 
   def render("show.json", %{courier: courier}) do

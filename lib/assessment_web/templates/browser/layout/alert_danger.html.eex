@@ -9,4 +9,3 @@
 <% else %>
   <p class="alert alert-danger" role="alert"><%= error %></p>
 <% end %>
-

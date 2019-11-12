@@ -1,6 +1,4 @@
 defmodule AssessmentWeb.OrderView do
-  use AssessmentWeb, :view
-
   alias Assessment.Orders.Order
 
   @courier_id :courier_id

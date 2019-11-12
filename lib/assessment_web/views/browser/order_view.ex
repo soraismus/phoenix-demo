@@ -7,6 +7,16 @@ defmodule AssessmentWeb.Browser.OrderView do
   @order_state_description :order_state_description
   @pickup_date :pickup_date
 
+  def csv_index_path(conn) do
+    request_path = conn.request_path
+    query_string = conn.query_string
+    if query_string == "" do
+      request_path <> ".csv"
+    else
+      request_path <> ".csv?" <> query_string
+    end
+  end
+
   def current_order_state(conn) do
     case conn.params["order_state"] do
       "all" -> "all"

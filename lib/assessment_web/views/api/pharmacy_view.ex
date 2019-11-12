@@ -6,10 +6,9 @@ defmodule AssessmentWeb.Api.PharmacyView do
   end
 
   def render("index.json", %{pharmacies: pharmacies}) do
-    %{
-      count: length(pharmacies),
-      pharmacies: ToJson.to_json(pharmacies),
-    }
+    %{ count: length(pharmacies),
+       pharmacies: ToJson.to_json(pharmacies),
+     }
   end
 
   def render("show.json", %{pharmacy: pharmacy}) do

@@ -6,10 +6,9 @@ defmodule AssessmentWeb.Api.PatientView do
   end
 
   def render("index.json", %{patients: patients}) do
-    %{
-      count: length(patients),
-      patients: ToJson.to_json(patients),
-    }
+    %{ count: length(patients),
+       patients: ToJson.to_json(patients),
+     }
   end
 
   def render("show.json", %{patient: patient}) do
