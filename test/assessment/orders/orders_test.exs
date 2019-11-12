@@ -1,37 +1,103 @@
 defmodule Assessment.OrdersTest do
   use Assessment.DataCase
 
+  alias Assessment.Accounts
+  alias Assessment.Accounts.Agent
   alias Assessment.Orders
+  alias Assessment.Patients
 
   describe "orders" do
     alias Assessment.Orders.Order
 
-    @valid_attrs %{pickup_date: ~D[2010-04-17], pickup_time: ~T[14:00:00.000000]}
+    @valid_attrs %{ order_state_description: "active",
+                    pickup_date: ~D[2010-04-17],
+                    pickup_time: ~T[14:00:00.000000],
+                  }
     @update_attrs %{pickup_date: ~D[2011-05-18], pickup_time: ~T[15:01:01.000000]}
     @invalid_attrs %{pickup_date: nil, pickup_time: nil}
 
+    def random_name() do
+      :rand.uniform(10000000000000) |> to_string()
+    end
+
+    def pharmacy_fixture() do
+      attrs = %{ username: random_name(),
+                 pharmacy: %{
+                   address: "some address",
+                   email: "some email",
+                   name: "some name",
+                 },
+                 credential: %{password: "some password"}
+               }
+      {:ok, %Agent{pharmacy: pharmacy} = agent} =
+        attrs
+        |> Enum.into(attrs)
+        |> Accounts.create_pharmacy()
+      %{pharmacy | agent: agent}
+    end
+
+    def courier_fixture() do
+      attrs = %{ username: random_name(),
+                 courier: %{
+                   address: "some address",
+                   email: "some email",
+                   name: "some name",
+                 },
+                 credential: %{password: "some password"}
+               }
+      {:ok, %Agent{courier: courier} = agent} =
+        attrs
+        |> Enum.into(attrs)
+        |> Accounts.create_courier()
+      %{courier | agent: agent}
+    end
+
+    def patient_fixture() do
+      attrs = %{address: "some address", name: "some name"}
+      {:ok, patient} =
+        attrs
+        |> Enum.into(attrs)
+        |> Patients.create_patient()
+      patient
+    end
+
     def order_fixture(attrs \\ %{}) do
+      pharmacy = pharmacy_fixture()
+      courier = courier_fixture()
+      patient = patient_fixture()
       {:ok, order} =
         attrs
         |> Enum.into(@valid_attrs)
+        |> Enum.into(%{patient_id: patient.id, pharmacy_id: pharmacy.id, courier_id: courier.id})
         |> Orders.create_order()
       order
     end
 
-    test "list_orders/0 returns all orders" do
+    def equiv?([], []), do: true
+    def equiv?([_ | _], []), do: false
+    def equiv?([], [_ | _]), do: false
+    def equiv?([value0 | values0], [value1 | values1]) do
+      equiv?(value0, value1)
+        && equiv?(values0, values1)
+    end
+    def equiv?(%Order{} = order0, %Order{} = order1) do
+      order0.id == order1.id
+        && order0.order_state_id == order1.order_state_id
+        && order0.patient_id == order1.patient_id
+        && order0.pharmacy_id == order1.pharmacy_id
+        && order0.courier_id == order1.courier_id
+        && order0.pickup_date == order1.pickup_date
+        && order0.pickup_time == order1.pickup_time
+    end
+
+    test "list_orders/1 returns all orders" do
       order = order_fixture()
-      assert Orders.list_orders() == [order]
+      assert(equiv?(Orders.list_orders(%{}), [order]))
     end
 
     test "get_order/1 returns the order with given id" do
       order = order_fixture()
       assert Orders.get_order(order.id) |> elem(1) == order
-    end
-
-    test "create_order/1 with valid data creates a order" do
-      assert {:ok, %Order{} = order} = Orders.create_order(@valid_attrs)
-      assert order.pickup_date == ~D[2010-04-17]
-      assert order.pickup_time == ~T[14:00:00.000000]
     end
 
     test "create_order/1 with invalid data returns error changeset" do

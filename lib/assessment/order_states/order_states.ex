@@ -10,14 +10,10 @@ defmodule Assessment.OrderStates do
   alias Assessment.OrderStates.OrderState
 
   @active OrderState.active()
-  @active_id 1
   @canceled OrderState.canceled()
-  @canceled_id 2
   @delivered OrderState.delivered()
-  @delivered_id 3
   @no_resource :no_resource
   @undeliverable OrderState.undeliverable()
-  @undeliverable_id 4
 
   @doc """
   Returns the list of order_states.
@@ -82,20 +78,32 @@ defmodule Assessment.OrderStates do
   end
 
   @doc false
-  def active_id(), do: @active_id
+  def active_id(), do: get_order_state_id(@active)
 
   @doc false
-  def canceled_id(), do: @canceled_id
+  def canceled_id(), do: get_order_state_id(@canceled)
 
   @doc false
-  def delivered_id(), do: @delivered_id
+  def delivered_id(), do: get_order_state_id(@delivered)
 
   @doc false
-  def to_description(@active_id), do: @active
-  def to_description(@canceled_id), do: @canceled
-  def to_description(@delivered_id), do: @delivered
-  def to_description(@undeliverable_id), do: @undeliverable
+  def to_description(value) when is_integer(value) do
+    order_state =
+      list_order_states()
+      |> Enum.find(fn (%{id: id}) -> id == value end)
+    if is_nil(order_state) do
+      raise "Description cannot be determined for the value #{value}"
+    else
+      order_state.description
+    end
+  end
 
   @doc false
-  def undeliverable_id(), do: @undeliverable_id
+  def undeliverable_id(), do: get_order_state_id(@undeliverable)
+
+  defp get_order_state_id(description) do
+    OrderState
+    |> Repo.get_by!(description: description)
+    |> Map.get(:id)
+  end
 end
