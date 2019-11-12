@@ -1,6 +1,7 @@
 defmodule AssessmentWeb.OrderView do
   alias Assessment.Orders.Order
 
+  @absent_account_id :absent_account_id
   @courier_id :courier_id
   @invalid_account_id :invalid_account_id
   @not_authorized :not_authorized
@@ -33,18 +34,21 @@ defmodule AssessmentWeb.OrderView do
                   )
                   |> Enum.join(@field_delimiter)
 
+  @absent_id_msg "lacks the required field: "
   @authorization_msg "is prohibited to unauthorized users"
   @index_id_msg "must be either 'all' or a positive integer"
   @index_order_state_msg "must be one of 'all', 'active', 'canceled', 'delivered', or 'undeliverable'"
   @index_pickup_date_msg "must either be one of 'all' or 'today' or be a valid date of the form 'YYYY-MM-DD'"
   @pickup_time_msg "must be a valid time of the form 'HH:MM'"
+  @request :request
   @upsert_id_msg "must be specified and must be a positive integer"
   @upsert_order_state_msg "must be one of 'active', 'canceled', 'delivered', or 'undeliverable'"
   @upsert_pickup_date_msg "must either be 'today' or be a valid date of the form 'YYYY-MM-DD'"
 
   def format_index_errors(errors) do
     msgs =
-      %{ authorization_msg: @authorization_msg,
+      %{ absent_id_msg: @absent_id_msg,
+         authorization_msg: @authorization_msg,
          id_msg: @index_id_msg,
        }
     errors
@@ -57,7 +61,8 @@ defmodule AssessmentWeb.OrderView do
 
   def format_upsert_errors(errors) do
     msgs =
-      %{ authorization_msg: @authorization_msg,
+      %{ absent_id_msg: @absent_id_msg,
+         authorization_msg: @authorization_msg,
          id_msg: @upsert_id_msg,
        }
     errors
@@ -80,10 +85,14 @@ defmodule AssessmentWeb.OrderView do
   defp account_id_error_msg(errors, account_id, msgs) do
     if Map.has_key?(errors, account_id) do
       case errors[account_id] do
-        @not_authorized ->
-          Map.put(errors, account_id, [msgs.authorization_msg])
+        @absent_account_id ->
+          errors
+          |> Map.put(account_id, [msgs.id_msg])
+          |> Map.put(@request, [msgs.absent_id_msg <> account_id])
         @invalid_account_id ->
           Map.put(errors, account_id, [msgs.id_msg])
+        @not_authorized ->
+          Map.put(errors, account_id, [msgs.authorization_msg])
       end
     else
       errors

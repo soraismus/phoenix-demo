@@ -176,7 +176,7 @@ defmodule Assessment.Accounts do
   ## Examples
 
       iex> create_pharmacy(%{field: value})
-      {:ok, %Agent{administrator: %Pharmacy{}}}
+      {:ok, %Agent{pharmacy: %Pharmacy{}}}
 
       iex> create_pharmacy(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
@@ -244,7 +244,7 @@ defmodule Assessment.Accounts do
   ## Examples
 
       iex> create_courier(%{field: value})
-      {:ok, %Agent{administrator: %Courier{}}}
+      {:ok, %Agent{courier: %Courier{}}}
 
       iex> create_courier(%{field: bad_value})
       {:error, %Ecto.Changeset{}}

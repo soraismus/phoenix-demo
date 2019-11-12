@@ -17,8 +17,8 @@ defmodule AssessmentWeb.Browser.PatientControllerTest do
     setup [:log_in_admin]
 
     test "lists all patients", %{conn: conn} do
-      conn = get conn, patient_path(conn, :index)
-      assert html_response(conn, 200) =~ "Listing Patients"
+      response = get conn, patient_path(conn, :index)
+      assert html_response(response, 200) =~ "Listing Patients"
     end
   end
 
@@ -26,8 +26,8 @@ defmodule AssessmentWeb.Browser.PatientControllerTest do
     setup [:log_in_admin]
 
     test "renders form", %{conn: conn} do
-      conn = get conn, patient_path(conn, :new)
-      assert html_response(conn, 200) =~ "New Patient"
+      response = get conn, patient_path(conn, :new)
+      assert html_response(response, 200) =~ "New Patient"
     end
   end
 

@@ -23,8 +23,8 @@ defmodule AssessmentWeb.Browser.AdministratorControllerTest do
     setup [:log_in_admin]
 
     test "lists all administrators", %{conn: conn} do
-      conn = get conn, administrator_path(conn, :index)
-      assert html_response(conn, 200) =~ "Listing Administrators"
+      response = get conn, administrator_path(conn, :index)
+      assert html_response(response, 200) =~ "Listing Administrators"
     end
   end
 
@@ -32,8 +32,8 @@ defmodule AssessmentWeb.Browser.AdministratorControllerTest do
     setup [:log_in_admin]
 
     test "renders form", %{conn: conn} do
-      conn = get conn, administrator_path(conn, :new)
-      assert html_response(conn, 200) =~ "New Administrator"
+      response = get conn, administrator_path(conn, :new)
+      assert html_response(response, 200) =~ "New Administrator"
     end
   end
 
@@ -49,8 +49,8 @@ defmodule AssessmentWeb.Browser.AdministratorControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, administrator_path(conn, :create), agent: @invalid_attrs
-      assert html_response(conn, 400) =~ "New Administrator"
+      response = post conn, administrator_path(conn, :create), agent: @invalid_attrs
+      assert html_response(response, 400) =~ "New Administrator"
     end
   end
 

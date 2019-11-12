@@ -39,6 +39,7 @@ defmodule AssessmentWeb.Browser.CourierController do
         |> redirect(to: courier_path(conn, @show, courier))
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
+        |> put_status(400)
         |> render("new.html", changeset: changeset)
       _ ->
         conn

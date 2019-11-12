@@ -25,8 +25,8 @@ defmodule AssessmentWeb.Browser.CourierControllerTest do
     setup [:log_in_admin]
 
     test "lists all couriers", %{conn: conn} do
-      conn = get conn, courier_path(conn, :index)
-      assert html_response(conn, 200) =~ "Listing Couriers"
+      response = get conn, courier_path(conn, :index)
+      assert html_response(response, 200) =~ "Listing Couriers"
     end
   end
 
@@ -34,8 +34,8 @@ defmodule AssessmentWeb.Browser.CourierControllerTest do
     setup [:log_in_admin]
 
     test "renders form", %{conn: conn} do
-      conn = get conn, courier_path(conn, :new)
-      assert html_response(conn, 200) =~ "New Courier"
+      response = get conn, courier_path(conn, :new)
+      assert html_response(response, 200) =~ "New Courier"
     end
   end
 
@@ -51,8 +51,8 @@ defmodule AssessmentWeb.Browser.CourierControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, courier_path(conn, :create), agent: @invalid_attrs
-      assert html_response(conn, 200) =~ "New Courier"
+      response = post conn, courier_path(conn, :create), agent: @invalid_attrs
+      assert html_response(response, 200) =~ "New Courier"
     end
   end
 

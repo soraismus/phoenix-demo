@@ -39,6 +39,7 @@ defmodule AssessmentWeb.Browser.PatientController do
         |> redirect(to: patient_path(conn, @show, patient))
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
+        |> put_status(400)
         |> render("new.html", changeset: changeset)
       _ ->
         conn

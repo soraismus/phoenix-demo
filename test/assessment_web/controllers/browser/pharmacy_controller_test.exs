@@ -25,8 +25,8 @@ defmodule AssessmentWeb.Browser.PharmacyControllerTest do
     setup [:log_in_admin]
 
     test "lists all pharmacies", %{conn: conn} do
-      conn = get conn, pharmacy_path(conn, :index)
-      assert html_response(conn, 200) =~ "Listing Pharmacies"
+      response = get conn, pharmacy_path(conn, :index)
+      assert html_response(response, 200) =~ "Listing Pharmacies"
     end
   end
 
@@ -34,8 +34,8 @@ defmodule AssessmentWeb.Browser.PharmacyControllerTest do
     setup [:log_in_admin]
 
     test "renders form", %{conn: conn} do
-      conn = get conn, pharmacy_path(conn, :new)
-      assert html_response(conn, 200) =~ "New Pharmacy"
+      response = get conn, pharmacy_path(conn, :new)
+      assert html_response(response, 200) =~ "New Pharmacy"
     end
   end
 
@@ -51,8 +51,8 @@ defmodule AssessmentWeb.Browser.PharmacyControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post conn, pharmacy_path(conn, :create), agent: @invalid_attrs
-      assert html_response(conn, 200) =~ "New Pharmacy"
+      response = post conn, pharmacy_path(conn, :create), agent: @invalid_attrs
+      assert html_response(response, 200) =~ "New Pharmacy"
     end
   end
 

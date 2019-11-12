@@ -39,6 +39,7 @@ defmodule AssessmentWeb.Browser.PharmacyController do
         |> redirect(to: pharmacy_path(conn, @show, pharmacy))
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
+        |> put_status(400)
         |> render("new.html", changeset: changeset)
       _ ->
         conn
