@@ -5,6 +5,8 @@ start_postgres() {
   createuser postgres --createdb
 }
 stop_postgres() {
+  mix ecto.drop
+  MIX_ENV=test mix ecto.drop
   dropuser postgres
   pg_ctl stop
 }
