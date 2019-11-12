@@ -15,7 +15,6 @@ defmodule Assessment.PatientsTest do
         attrs
         |> Enum.into(@valid_attrs)
         |> Patients.create_patient()
-
       patient
     end
 
@@ -24,9 +23,9 @@ defmodule Assessment.PatientsTest do
       assert Patients.list_patients() == [patient]
     end
 
-    test "get_patient!/1 returns the patient with given id" do
+    test "get_patient/1 returns the patient with given id" do
       patient = patient_fixture()
-      assert Patients.get_patient!(patient.id) == patient
+      assert Patients.get_patient(patient.id) |> elem(1) == patient
     end
 
     test "create_patient/1 with valid data creates a patient" do
@@ -50,13 +49,13 @@ defmodule Assessment.PatientsTest do
     test "update_patient/2 with invalid data returns error changeset" do
       patient = patient_fixture()
       assert {:error, %Ecto.Changeset{}} = Patients.update_patient(patient, @invalid_attrs)
-      assert patient == Patients.get_patient!(patient.id)
+      assert patient == Patients.get_patient(patient.id) |> elem(1)
     end
 
     test "delete_patient/1 deletes the patient" do
       patient = patient_fixture()
       assert {:ok, %Patient{}} = Patients.delete_patient(patient)
-      assert_raise Ecto.NoResultsError, fn -> Patients.get_patient!(patient.id) end
+      assert {:error, :no_resource} = Patients.get_patient(patient.id)
     end
 
     test "change_patient/1 returns a patient changeset" do

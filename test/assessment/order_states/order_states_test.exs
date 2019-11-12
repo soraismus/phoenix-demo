@@ -24,9 +24,9 @@ defmodule Assessment.OrderStatesTest do
       assert OrderStates.list_order_states() == [order_state]
     end
 
-    test "get_order_state!/1 returns the order_state with given id" do
+    test "get_order_state/1 returns the order_state with given id" do
       order_state = order_state_fixture()
-      assert OrderStates.get_order_state!(order_state.id) == order_state
+      assert OrderStates.get_order_state(order_state.id) |> elem(1) == order_state
     end
 
     test "create_order_state/1 with valid data creates a order_state" do
@@ -48,13 +48,13 @@ defmodule Assessment.OrderStatesTest do
     test "update_order_state/2 with invalid data returns error changeset" do
       order_state = order_state_fixture()
       assert {:error, %Ecto.Changeset{}} = OrderStates.update_order_state(order_state, @invalid_attrs)
-      assert order_state == OrderStates.get_order_state!(order_state.id)
+      assert order_state == OrderStates.get_order_state(order_state.id) |> elem(1)
     end
 
     test "delete_order_state/1 deletes the order_state" do
       order_state = order_state_fixture()
       assert {:ok, %OrderState{}} = OrderStates.delete_order_state(order_state)
-      assert_raise Ecto.NoResultsError, fn -> OrderStates.get_order_state!(order_state.id) end
+      assert {:error, :no_resource} = OrderStates.get_order_state(order_state.id)
     end
 
     test "change_order_state/1 returns a order_state changeset" do
