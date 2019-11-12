@@ -60,7 +60,8 @@ defmodule Assessment.AccountsTest do
     end
 
     test "create_administrator/1 with valid data creates a administrator" do
-      assert {:ok, %Administrator{} = administrator} = Accounts.create_administrator(@valid_attrs)
+      assert {:ok, %Agent{administrator: administrator}} =
+        Accounts.create_administrator(@valid_attrs)
       assert administrator.email == "some email"
     end
 
