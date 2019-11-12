@@ -15,8 +15,7 @@ defmodule AssessmentWeb.Browser.AdministratorControllerTest do
 
   def fixture(:administrator) do
     {:ok, %_{administrator: administrator} = agent} =
-      @create_attrs
-      |> Accounts.create_administrator()
+      Accounts.create_administrator(@create_attrs)
     %{administrator | agent: agent}
   end
 
