@@ -39,6 +39,7 @@ defmodule AssessmentWeb.Browser.AdministratorController do
         |> redirect(to: administrator_path(conn, @show, administrator))
       {@error, %Ecto.Changeset{} = changeset} ->
         conn
+        |> put_status(400)
         |> render("new.html", changeset: changeset)
       _ ->
         conn
