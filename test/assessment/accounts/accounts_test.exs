@@ -45,7 +45,7 @@ defmodule Assessment.AccountsTest do
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_administrator()
-      administrator
+      %{administrator | agent: %Agent{}}
     end
 
     test "list_administrators/0 returns all administrators" do
@@ -97,7 +97,7 @@ defmodule Assessment.AccountsTest do
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_pharmacy()
-      pharmacy
+      %{pharmacy | agent: %Agent{}}
     end
 
     test "list_pharmacies/0 returns all pharmacies" do
@@ -112,7 +112,7 @@ defmodule Assessment.AccountsTest do
     end
 
     test "create_pharmacy/1 with valid data creates a pharmacy" do
-      assert {:ok, %Pharmacy{} = pharmacy} = Accounts.create_pharmacy(@valid_attrs)
+      assert {:ok, %Agent{pharmacy: pharmacy}} = Accounts.create_pharmacy(@valid_attrs)
       assert pharmacy.address == "some address"
       assert pharmacy.email == "some email"
       assert pharmacy.name == "some name"
@@ -151,7 +151,7 @@ defmodule Assessment.AccountsTest do
         attrs
         |> Enum.into(@valid_attrs)
         |> Accounts.create_courier()
-      courier
+      %{courier | agent: %Agent{}}
     end
 
     test "list_couriers/0 returns all couriers" do
