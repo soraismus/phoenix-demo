@@ -1,8 +1,8 @@
 defmodule AssessmentWeb.Api.OrderControllerTest do
-  use AssessmentWeb.ConnCase
+  use AssessmentWeb.Api.ConnCase
 
   import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
+  import AssessmentWeb.Api.ConnCase, only: [log_in_admin: 1]
 
   @update_attrs %{pickup_date: "2011-05-18", pickup_time: "15:01"}
   @invalid_attrs %{pickup_date: nil, pickup_time: nil}
