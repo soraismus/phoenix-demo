@@ -33,7 +33,7 @@ defmodule AssessmentWeb.OrderUtilities do
     courier_id =
       params
       |> get_courier_id_param_or_unspecified()
-      |> validate_account_id_upsert(requirements.courier_id)
+      |> validate_account_id_create(requirements.courier_id)
     order_state_description =
       params
       |> get_order_state_description_param_or_default()
@@ -45,7 +45,7 @@ defmodule AssessmentWeb.OrderUtilities do
     pharmacy_id =
       params
       |> get_pharmacy_id_param_or_unspecified()
-      |> validate_account_id_upsert(requirements.pharmacy_id)
+      |> validate_account_id_create(requirements.pharmacy_id)
     pickup_date =
       params
       |> get_pickup_date_param_or_default()
@@ -99,7 +99,7 @@ defmodule AssessmentWeb.OrderUtilities do
     courier_id =
       params
       |> get_courier_id_param_or_unspecified()
-      |> validate_account_id_upsert(requirements.courier_id)
+      |> validate_account_id_update(requirements.courier_id)
       |> bind_value(validate_order_courier(order, authorized?))
     order_state_description =
       params
@@ -107,12 +107,12 @@ defmodule AssessmentWeb.OrderUtilities do
       |> validate_order_state_description()
     patient_id =
       params
-      |> get_patient_id_param_result()
-      |> bind_value(&validate_id/1)
+      |> get_pharmacy_id_param_or_unspecified()
+      |> check_unspecified_or_validate(order.patient.id, &validate_id/1)
     pharmacy_id =
       params
       |> get_pharmacy_id_param_or_unspecified()
-      |> validate_account_id_upsert(requirements.pharmacy_id)
+      |> validate_account_id_update(requirements.pharmacy_id)
       |> bind_value(validate_order_pharmacy(order, authorized?))
     pickup_date =
       params
@@ -136,6 +136,14 @@ defmodule AssessmentWeb.OrderUtilities do
       {@ok, @all}
     else
       fun.(id)
+    end
+  end
+
+  defp check_unspecified_or_validate(value, default, fun) do
+    if value == @unspecified do
+      {@ok, default}
+    else
+      fun.(value)
     end
   end
 
@@ -172,6 +180,11 @@ defmodule AssessmentWeb.OrderUtilities do
     |> map_value(&to_string/1)
   end
 
+  defp get_patient_id_param_or_unspecified(params) do
+    params
+    |> get_param_or_unspecified("patient_id")
+  end
+
   defp get_pharmacy_id_param_or_unspecified(params) do
     params
     |> get_param_or_unspecified("pharmacy_id")
@@ -204,6 +217,31 @@ defmodule AssessmentWeb.OrderUtilities do
     end
   end
 
+  defp validate_account_id_create(@unspecified, required_id)
+    when is_integer(required_id) do
+      {@ok, required_id}
+  end
+  defp validate_account_id_create(@unspecified, _) do
+    {@error, @absent_account_id}
+  end
+  defp validate_account_id_create(account_id, required_id)
+    when is_binary(account_id) and is_integer(required_id) do
+      if account_id == to_string(required_id) do
+        {@ok, required_id}
+      else
+        case to_integer(account_id) do
+          {@ok, _} ->
+            {@error, @not_authorized}
+          {@error, _} ->
+            {@error, @invalid_account_id}
+        end
+      end
+  end
+  defp validate_account_id_create(account_id, _)
+    when is_binary(account_id) do
+      validate_id(account_id)
+  end
+
   defp validate_account_id_index(@unspecified, required_id)
     when is_integer(required_id) do
       {@ok, required_id}
@@ -233,14 +271,14 @@ defmodule AssessmentWeb.OrderUtilities do
       end
   end
 
-  defp validate_account_id_upsert(@unspecified, required_id)
+  defp validate_account_id_update(@unspecified, required_id)
     when is_integer(required_id) do
       {@ok, required_id}
   end
-  defp validate_account_id_upsert(@unspecified, _) do
-    {@error, @absent_account_id}
+  defp validate_account_id_update(@unspecified, _) do
+    {@ok, @unspecified}
   end
-  defp validate_account_id_upsert(account_id, required_id)
+  defp validate_account_id_update(account_id, required_id)
     when is_binary(account_id) and is_integer(required_id) do
       if account_id == to_string(required_id) do
         {@ok, required_id}
@@ -253,7 +291,7 @@ defmodule AssessmentWeb.OrderUtilities do
         end
       end
   end
-  defp validate_account_id_upsert(account_id, _)
+  defp validate_account_id_update(account_id, _)
     when is_binary(account_id) do
       validate_id(account_id)
   end
@@ -279,30 +317,27 @@ defmodule AssessmentWeb.OrderUtilities do
     |> map_error(fn (_) -> msg end)
   end
 
-  defp validate_order_courier(%Order{} = order, authorized?) do
-    fn (courier_id) ->
+  defp validate_order_account(account_id_key, %Order{} = order, authorized?) do
+    fn (account_id) ->
       cond do
+        account_id == @unspecified ->
+          {@ok, Map.get(order, account_id_key)}
+        account_id == Map.get(order, account_id_key) ->
+          {@ok, account_id}
         authorized? ->
-          {@ok, courier_id}
-        order.courier_id == courier_id ->
-          {@ok, courier_id}
+          {@ok, account_id}
         true ->
           {@error, @not_authorized}
       end
     end
   end
 
+  defp validate_order_courier(%Order{} = order, authorized?) do
+    validate_order_account(:courier_id, order, authorized?)
+  end
+
   defp validate_order_pharmacy(%Order{} = order, authorized?) do
-    fn (pharmacy_id) ->
-      cond do
-        authorized? ->
-          {@ok, pharmacy_id}
-        order.pharmacy_id == pharmacy_id ->
-          {@ok, pharmacy_id}
-        true ->
-          {@error, @not_authorized}
-      end
-    end
+    validate_order_account(:pharmacy_id, order, authorized?)
   end
 
   defp validate_order_state_description(order_state_description) do

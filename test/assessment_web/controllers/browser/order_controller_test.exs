@@ -8,7 +8,7 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
   alias Assessment.Orders
   alias Assessment.Patients
 
-  @update_attrs %{pickup_date: ~D[2011-05-18], pickup_time: ~T[15:01:01.000000]}
+  @update_attrs %{pickup_date: "2011-05-18", pickup_time: "15:01:01.000000"}
   @invalid_attrs %{pickup_date: nil, pickup_time: nil}
   @create_attrs %{ "order_state_description" => "active",
                    "pickup_date" => "2010-04-17",
@@ -62,27 +62,26 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
     setup [:log_in_admin, :create_order]
 
     test "renders form for editing chosen order", %{conn: conn, order: order} do
-      conn = get conn, order_path(conn, :edit, order)
-      assert html_response(conn, 200) =~ "Edit Order"
+      response = get conn, order_path(conn, :edit, order)
+      assert html_response(response, 200) =~ "Edit Order"
     end
   end
 
-#  describe "update order" do
-#    setup [:log_in_admin, :create_order]
-#
+  describe "update order" do
+    setup [:log_in_admin, :create_order]
+
 #    test "redirects when data is valid", %{conn: conn, order: order} do
-#      conn = put conn, order_path(conn, :update, order), order: @update_attrs
-#      assert redirected_to(conn) == order_path(conn, :show, order)
-#
-#      conn = get conn, order_path(conn, :show, order)
-#      assert html_response(conn, 200)
+#      response0 = put conn, order_path(conn, :update, order), order: @update_attrs
+#      assert redirected_to(response0) == order_path(response0, :show, order)
+#      response1 = get conn, order_path(conn, :show, order)
+#      assert html_response(response1, 200)
 #    end
-#
-#    test "renders errors when data is invalid", %{conn: conn, order: order} do
-#      conn = put conn, order_path(conn, :update, order), order: @invalid_attrs
-#      assert html_response(conn, 200) =~ "Edit Order"
-#    end
-#  end
+
+    test "renders errors when data is invalid", %{conn: conn, order: order} do
+      response = put conn, order_path(conn, :update, order), order: @invalid_attrs
+      assert html_response(response, 400) =~ "Edit Order"
+    end
+  end
 
 #  describe "delete order" do
 #    setup [:log_in_admin, :create_order]
