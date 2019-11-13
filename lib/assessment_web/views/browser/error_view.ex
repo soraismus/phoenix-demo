@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.ErrorView do
+defmodule AssessmentWeb.Browser.ErrorView do
   use AssessmentWeb, :view
 
   # If you want to customize a particular status code
