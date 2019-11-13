@@ -131,11 +131,11 @@ defmodule AssessmentWeb.OrderUtilities do
      }
   end
 
-  defp check_all_or_validate(id, fun) do
+  defp check_all_or_validate(id, validator) do
     if id == "all" do
       {@ok, @all}
     else
-      fun.(id)
+      validator.(id)
     end
   end
 
@@ -212,14 +212,12 @@ defmodule AssessmentWeb.OrderUtilities do
     end
   end
 
-  defp validate_account_id_create(@unspecified, required_id)
+  # --------------------------------------------------
+  defp validate_account_id_against_authenticated_user_id(@unspecified, required_id)
     when is_integer(required_id) do
       {@ok, required_id}
   end
-  defp validate_account_id_create(@unspecified, _) do
-    {@error, @absent_account_id}
-  end
-  defp validate_account_id_create(account_id, required_id)
+  defp validate_account_id_against_authenticated_user_id(account_id, required_id)
     when is_binary(account_id) and is_integer(required_id) do
       if account_id == to_string(required_id) do
         {@ok, required_id}
@@ -232,64 +230,48 @@ defmodule AssessmentWeb.OrderUtilities do
         end
       end
   end
-  defp validate_account_id_create(account_id, _)
-    when is_binary(account_id) do
-      validate_id(account_id)
+  defp validate_account_id(prevalidator, account_id, if_unspecified: unspecified_result) do
+    if account_id == @unspecified do
+      unspecified_result
+    else
+      prevalidator.(account_id, &validate_id/1)
+    end
+  end
+  defp validate_account_id_create(account_id, required_id) do
+    if is_integer(required_id) do
+      validate_account_id_against_authenticated_user_id(account_id, required_id)
+    else
+      validate_account_id(
+        &immediately_validate/2,
+        account_id,
+        if_unspecified: {@error, @absent_account_id})
+    end
+  end
+  defp validate_account_id_index(account_id, required_id) do
+    if is_integer(required_id) do
+      validate_account_id_against_authenticated_user_id(account_id, required_id)
+    else
+      validate_account_id(
+        &check_all_or_validate/2,
+        account_id,
+        if_unspecified: {@ok, @all})
+    end
+  end
+  defp validate_account_id_update(account_id, required_id) do
+    if is_integer(required_id) do
+      validate_account_id_against_authenticated_user_id(account_id, required_id)
+    else
+      validate_account_id(
+        &immediately_validate/2,
+        account_id,
+        if_unspecified: {@ok, @unspecified})
+    end
+  end
+  defp immediately_validate(id, validator) do
+    validator.(id)
   end
 
-  defp validate_account_id_index(@unspecified, required_id)
-    when is_integer(required_id) do
-      {@ok, required_id}
-  end
-  defp validate_account_id_index(@unspecified, _) do
-    {@ok, @all}
-  end
-  defp validate_account_id_index(account_id, required_id)
-    when is_binary(account_id) and is_integer(required_id) do
-      if account_id == to_string(required_id) do
-        {@ok, required_id}
-      else
-        case to_integer(account_id) do
-          {@ok, _} ->
-            {@error, @not_authorized}
-          {@error, _} ->
-            {@error, @invalid_account_id}
-        end
-      end
-  end
-  defp validate_account_id_index(account_id, _)
-    when is_binary(account_id) do
-      if account_id == "all" do
-        {@ok, @all}
-      else
-        validate_id(account_id)
-      end
-  end
-
-  defp validate_account_id_update(@unspecified, required_id)
-    when is_integer(required_id) do
-      {@ok, required_id}
-  end
-  defp validate_account_id_update(@unspecified, _) do
-    {@ok, @unspecified}
-  end
-  defp validate_account_id_update(account_id, required_id)
-    when is_binary(account_id) and is_integer(required_id) do
-      if account_id == to_string(required_id) do
-        {@ok, required_id}
-      else
-        case to_integer(account_id) do
-          {@ok, _} ->
-            {@error, @not_authorized}
-          {@error, _} ->
-            {@error, @invalid_account_id}
-        end
-      end
-  end
-  defp validate_account_id_update(account_id, _)
-    when is_binary(account_id) do
-      validate_id(account_id)
-  end
+  # --------------------------------------------------
 
   defp validate_date("today"), do: {@ok, get_date_today() }
   defp validate_date(%{"year" => year, "month" => month, "day" => day}) do
