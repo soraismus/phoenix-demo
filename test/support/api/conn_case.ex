@@ -44,32 +44,56 @@ defmodule AssessmentWeb.Api.ConnCase do
   def add_administrator(context) do
     administrators = Map.get(context, :administrators) || []
     administrator = fixture(:administrator)
-    {:ok, administrators: [administrator | administrators]}
+    { :ok,
+      administrator: administrator,
+      administrators: [administrator | administrators],
+    }
   end
 
   def add_courier(context) do
     couriers = Map.get(context, :couriers) || []
     courier = fixture(:courier)
-    {:ok, couriers: [courier | couriers]}
+    { :ok,
+      courier: courier,
+      couriers: [courier | couriers],
+    }
+  end
+
+  def add_order(context) do
+    orders = Map.get(context, :orders) || []
+    order = fixture(:order)
+    { :ok,
+      order: order,
+      orders: [order | orders],
+    }
   end
 
   def add_patient(context) do
     patients = Map.get(context, :patients) || []
     patient = fixture(:patient)
-    {:ok, patients: [patient | patients]}
+    { :ok,
+      patient: patient,
+      patients: [patient | patients],
+    }
   end
 
   def add_pharmacy(context) do
     pharmacies = Map.get(context, :pharmacies) || []
     pharmacy = fixture(:pharmacy)
-    {:ok, pharmacies: [pharmacy | pharmacies]}
+    { :ok,
+      pharmacy: pharmacy,
+      pharmacies: [pharmacy | pharmacies],
+    }
   end
 
   def log_in_admin(%{administrators: [administrator | _]}) do
     credential = %{ "username" => administrator.username,
                     "password" => get_password(administrator),
                   }
-    {:ok, conn: get_authenticated_connection(credential)}
+    { :ok,
+      conn: get_authenticated_connection(credential),
+      logged_in_admin: administrator,
+    }
   end
 
   defp get_authenticated_connection(credential) do

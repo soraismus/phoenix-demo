@@ -21,7 +21,7 @@ defmodule Assessment.ToJson do
   defimpl ToJson, for: Courier do
     def to_json(%Courier{} = courier) do
       courier
-      |> Utilities.to_json([:id, :name, :username, :email])
+      |> Utilities.to_json([:id, :name, :email])
     end
   end
 
@@ -46,7 +46,7 @@ defmodule Assessment.ToJson do
   defimpl ToJson, for: Pharmacy do
     def to_json(%Pharmacy{} = pharmacy) do
       pharmacy
-      |> Utilities.to_json([:id, :name, :username, :email])
+      |> Utilities.to_json([:id, :name, :email])
     end
   end
 end
