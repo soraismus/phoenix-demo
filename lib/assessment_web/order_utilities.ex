@@ -180,11 +180,6 @@ defmodule AssessmentWeb.OrderUtilities do
     |> map_value(&to_string/1)
   end
 
-  defp get_patient_id_param_or_unspecified(params) do
-    params
-    |> get_param_or_unspecified("patient_id")
-  end
-
   defp get_pharmacy_id_param_or_unspecified(params) do
     params
     |> get_param_or_unspecified("pharmacy_id")
