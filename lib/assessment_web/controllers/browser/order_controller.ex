@@ -11,8 +11,8 @@ defmodule AssessmentWeb.Browser.OrderController do
             resource_error: 3,
             send_attachment: 4,
             validation_error: 2,
-            validate_id_type: 1,
           ]
+  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_validate_creation: 2,

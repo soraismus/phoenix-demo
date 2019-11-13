@@ -5,9 +5,7 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
 
   @error :error
   @index :index
-  @invalid_parameter :invalid_parameter
   @new :new
-  @ok :ok
   @order_id :order_id
   @request_path :request_path
   @status :status
@@ -63,18 +61,6 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
           "content-disposition",
           "attachment; filename=#{filename}")
     |> send_resp(200, data)
-  end
-
-  def validate_id_type(value) do
-    validate_parameter(value, "id", fn (x) -> is_integer(x) && x > 0 end)
-  end
-
-  def validate_parameter(value, parameter_name, predicate) do
-    if predicate.(value) do
-      {@ok, value}
-    else
-      {@error, {@invalid_parameter, parameter_name}}
-    end
   end
 
   def validation_error(conn, error_json) do

@@ -21,9 +21,22 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
     |> json(%{errors: translate_errors(changeset)})
   end
 
+  def id_type_validation_error(conn, status \\ 400) do
+    conn
+    |> resource_error("id", "must be a positive integer", status)
+  end
+
   def internal_error(conn, code) do
     conn
     |> resource_error("Internal Error", "Code: #{code}", 500)
+  end
+
+  def match_error(conn, purpose, status \\ 400) do
+    conn
+    |> resource_error(
+          "Request #{purpose}",
+          "has been given invalid data.",
+          status)
   end
 
   def resource_error(conn, resource, msg, status \\ 400) do

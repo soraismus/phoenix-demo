@@ -19,7 +19,7 @@ defmodule AssessmentWeb.Browser.SessionController do
     |> put_status(:forbidden)
     |> json(%{errors: %{request: [msg]}})
   end
-  def auth_error(conn, _, _), do: conn |> internal_error("SEAE")
+  def auth_error(conn, _, _), do: conn |> internal_error("SEAE_B")
 
   def new(conn, _params) do
     conn

@@ -3,6 +3,7 @@ defmodule AssessmentWeb.Api.SessionController do
 
   import AssessmentWeb.Api.ControllerUtilities,
     only: [ internal_error: 2,
+            match_error: 2,
             resource_error: 4,
           ]
 
@@ -29,6 +30,7 @@ defmodule AssessmentWeb.Api.SessionController do
     |> put_status(@forbidden)
     |> json(%{errors: %{request: [msg]}})
   end
+  def auth_error(conn, _, _), do: conn |> internal_error("SEAE_A")
 
   def create(conn, %{"username" => u, "password" => p}) do
     with {@ok, agent} <- Sessions.get_agent_by_username_and_password(u, p),
@@ -53,6 +55,10 @@ defmodule AssessmentWeb.Api.SessionController do
         conn
         |> internal_error("SECR_A")
     end
+  end
+  def create(conn, _) do
+    conn
+    |> match_error("to create a session")
   end
 
   defp get_token(%{id: id}) do

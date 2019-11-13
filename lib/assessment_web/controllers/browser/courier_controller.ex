@@ -6,8 +6,8 @@ defmodule AssessmentWeb.Browser.CourierController do
             internal_error: 2,
             match_error: 2,
             resource_error: 3,
-            validate_id_type: 1,
           ]
+  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
 
   alias Assessment.Accounts
   alias Assessment.Accounts.Agent

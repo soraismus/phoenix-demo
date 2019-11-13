@@ -5,15 +5,19 @@ defmodule AssessmentWeb.Api.AdministratorController do
     only: [ authentication_error: 1,
             authorization_error: 1,
             changeset_error: 2,
+            id_type_validation_error: 1,
             internal_error: 2,
+            match_error: 2,
             resource_error: 4
           ]
+  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
   import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
 
   alias Assessment.Accounts
 
   @created :created
   @error :error
+  @invalid_parameter :invalid_parameter
   @no_resource :no_resource
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
@@ -46,6 +50,10 @@ defmodule AssessmentWeb.Api.AdministratorController do
         |> internal_error("ADCR_A")
     end
   end
+  def create(conn, _) do
+    conn
+    |> match_error("to create an administrator")
+  end
 
   def index(conn, _params) do
     case authenticate_administrator(conn) do
@@ -65,11 +73,15 @@ defmodule AssessmentWeb.Api.AdministratorController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, _} <- authenticate_administrator(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, _} <- authenticate_administrator(conn),
          {@ok, administrator} <- Accounts.get_administrator(id) do
       conn
       |> render("show.json", administrator: administrator)
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error()
@@ -81,7 +93,8 @@ defmodule AssessmentWeb.Api.AdministratorController do
         |> resource_error("administrator ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("ADSH_A")
+        |> internal_error("ADSH_A_1")
     end
   end
+  def show(conn, _), do: conn |> internal_error("ADSH_A_2")
 end

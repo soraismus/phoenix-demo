@@ -5,12 +5,15 @@ defmodule AssessmentWeb.Api.OrderController do
     only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,
+            id_type_validation_error: 1,
             internal_error: 2,
+            match_error: 2,
             resource_error: 3,
             resource_error: 4,
             send_attachment: 4,
             validation_error: 2,
           ]
+  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
     only: [ normalize_validate_creation: 2,
@@ -30,7 +33,8 @@ defmodule AssessmentWeb.Api.OrderController do
   @created :created
   @csv :csv
   @error :error
-  @html :html
+  @invalid_parameter :invalid_parameter
+  @json :json
   @ok :ok
   @no_resource :no_resource
   @not_authenticated :not_authenticated
@@ -73,6 +77,10 @@ defmodule AssessmentWeb.Api.OrderController do
         |> internal_error("ORCR_A")
     end
   end
+  def create(conn, _) do
+    conn
+    |> match_error("to create an order")
+  end
 
   def deliver(conn, params) do
     conn
@@ -88,16 +96,10 @@ defmodule AssessmentWeb.Api.OrderController do
       case filetype(conn) do
         @csv ->
           conn
-          |> send_attachment(
-                "text/csv",
-                "orders.csv",
-                OrderView.to_csv(orders))
+          |> csv_index(orders)
         _ ->
           conn
-          |> render(
-                "index.json",
-                orders: orders,
-                query_params: normalized_params)
+          |> json_index(orders, normalized_params)
       end
     else
       {@error, @not_authenticated} ->
@@ -118,11 +120,15 @@ defmodule AssessmentWeb.Api.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, _} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, _} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id) do
       conn
       |> render("show.json", order: order)
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must provide credentials to view an order")
@@ -131,9 +137,10 @@ defmodule AssessmentWeb.Api.OrderController do
         |> resource_error("order ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("ORSH_A")
+        |> internal_error("ORSH_A_1")
     end
   end
+  def show(conn, _), do: conn |> internal_error("ORSH_A_2")
 
   defp authorize_update(account, order) do
     case account do
@@ -169,12 +176,20 @@ defmodule AssessmentWeb.Api.OrderController do
     end
   end
 
+  defp csv_index(conn, orders) do
+    conn
+    |> send_attachment(
+          "text/csv",
+          "orders.csv",
+          OrderView.to_csv(orders))
+  end
+
   defp filetype(%Plug.Conn{} = conn) do
     csv? =
       conn
       |> get_acceptable_filetypes()
       |> Enum.any?(&(String.contains?(&1, "text/csv")))
-    if csv?, do: @csv, else: @html
+    if csv?, do: @csv, else: @json
   end
 
   defp get_acceptable_filetypes(conn) do
@@ -188,9 +203,18 @@ defmodule AssessmentWeb.Api.OrderController do
         end)
   end
 
+  defp json_index(conn, orders, normalized_params) do
+    conn
+    |> render(
+          "index.json",
+          orders: orders,
+          query_params: normalized_params)
+  end
+
   defp update_order_state(conn, %{"id" => id}, order_state, view) do
     resource = "order ##{id}"
-    with {@ok, agent} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          {@ok, _} <- authorize_update(Accounts.specify_agent(agent), order),
          {@ok, _} <- check_elibility(order, order_state),
@@ -198,6 +222,9 @@ defmodule AssessmentWeb.Api.OrderController do
       conn
       |> render(view, order: new_order)
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must provide credentials to update an order")
@@ -222,7 +249,8 @@ defmodule AssessmentWeb.Api.OrderController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("ORUP_A")
+        |> internal_error("ORUP_A_1")
     end
   end
+  defp update_order_state(conn, _, _, _), do: conn |> internal_error("ORUP_A_2")
 end
