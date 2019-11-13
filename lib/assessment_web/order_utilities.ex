@@ -153,9 +153,9 @@ defmodule AssessmentWeb.OrderUtilities do
   end
 
   defp get_order_state_description_param_or_default(params) do
-    Map.get(params, "order_state")
-      || Map.get(params, "order_state_description")
-      || @default_order_state_description
+    Map.get(params, "order_state",
+      Map.get(params, "order_state_description",
+         @default_order_state_description))
   end
 
   defp get_param_or_unspecified(params, key) do
@@ -191,11 +191,11 @@ defmodule AssessmentWeb.OrderUtilities do
   end
 
   defp get_pickup_date_param_or_default(params) do
-    Map.get(params, "pickup_date") || @default_pickup_date
+    Map.get(params, "pickup_date", @default_pickup_date)
   end
 
   defp get_pickup_time_param_or_default(params) do
-    Map.get(params, "pickup_time") || @default_pickup_time
+    Map.get(params, "pickup_time", @default_pickup_time)
   end
 
   defp get_required_ids(account) do
@@ -308,6 +308,7 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Date.from_iso8601()
       |> map_error(fn (_) -> @invalid_date end)
   end
+  defp validate_date(_), do: {:error, @invalid_date}
 
   defp validate_id(id) do
     msg = @invalid_account_id
@@ -359,4 +360,5 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Time.from_iso8601()
       |> map_error(fn (_) -> @invalid_time end)
   end
+  defp validate_time(_), do: {:error, @invalid_time}
 end
