@@ -78,10 +78,10 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
       assert json_equiv?(json["order"], template)
     end
 
-#    test "renders errors when data is invalid", %{conn: conn} do
-#      invalid_attrs = %{}
-#      response = post conn, api_order_path(conn, :create), order: invalid_attrs
-#      json_response(response, 400)
-#    end
+    test "renders errors when data is invalid", %{conn: conn} do
+      invalid_attrs = %{}
+      response = post conn, api_order_path(conn, :create), order: invalid_attrs
+      json_response(response, 400)
+    end
   end
 end
