@@ -37,7 +37,7 @@ defmodule AssessmentWeb.Browser.AdministratorController do
         |> render("new.html", changeset: changeset)
       _ ->
         conn
-        |> internal_error("ADCR_B")
+        |> internal_error("ADCR-B")
     end
   end
   def create(conn, _) do
@@ -61,10 +61,10 @@ defmodule AssessmentWeb.Browser.AdministratorController do
         |> resource_error("administrator ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("ADDE_B_1")
+        |> internal_error("ADDE-B-1")
     end
   end
-  def delete(conn, _), do: conn |> internal_error("ADDE_B_2")
+  def delete(conn, _), do: conn |> internal_error("ADDE-B-2")
 
   def index(conn, _params) do
     conn
@@ -90,10 +90,10 @@ defmodule AssessmentWeb.Browser.AdministratorController do
         |> resource_error("administrator ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("ADSH_B_1")
+        |> internal_error("ADSH-B-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("ADSH_B_2")
+  def show(conn, _), do: conn |> internal_error("ADSH-B-2")
 
   defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent

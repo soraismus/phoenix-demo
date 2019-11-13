@@ -30,7 +30,7 @@ defmodule AssessmentWeb.Api.SessionController do
     |> put_status(@forbidden)
     |> json(%{errors: %{request: [msg]}})
   end
-  def auth_error(conn, _, _), do: conn |> internal_error("SEAE_A")
+  def auth_error(conn, _, _), do: conn |> internal_error("SEAE-A")
 
   def create(conn, %{"username" => u, "password" => p}) do
     with {@ok, agent} <- Sessions.get_agent_by_username_and_password(u, p),
@@ -41,10 +41,10 @@ defmodule AssessmentWeb.Api.SessionController do
     else
       {@error, @invalid_claims} ->
         conn
-        |> internal_error("SECRIC_A")
+        |> internal_error("SECRIC-A")
       {@error, @invalid_resource} ->
         conn
-        |> internal_error("SECRIR_A")
+        |> internal_error("SECRIR-A")
       {@error, @unauthenticated} ->
         conn
         |> resource_error(
@@ -53,7 +53,7 @@ defmodule AssessmentWeb.Api.SessionController do
               @unauthorized)
       _ ->
         conn
-        |> internal_error("SECR_A")
+        |> internal_error("SECR-A")
     end
   end
   def create(conn, _) do

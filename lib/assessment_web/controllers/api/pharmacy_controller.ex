@@ -47,7 +47,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("PHCR_A")
+        |> internal_error("PHCR-A")
     end
   end
   def create(conn, _) do
@@ -68,7 +68,7 @@ defmodule AssessmentWeb.Api.PharmacyController do
         |> authorization_error()
       _ ->
         conn
-        |> internal_error("PHIN_A")
+        |> internal_error("PHIN-A")
     end
   end
 

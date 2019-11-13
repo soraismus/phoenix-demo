@@ -37,7 +37,7 @@ defmodule AssessmentWeb.Browser.PharmacyController do
         |> render("new.html", changeset: changeset)
       _ ->
         conn
-        |> internal_error("PHCR_B")
+        |> internal_error("PHCR-B")
     end
   end
   def create(conn, _) do
@@ -61,10 +61,10 @@ defmodule AssessmentWeb.Browser.PharmacyController do
         |> resource_error("pharmacy ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("PHDE_B_1")
+        |> internal_error("PHDE-B-1")
     end
   end
-  def delete(conn, _), do: conn |> internal_error("PHDE_B_2")
+  def delete(conn, _), do: conn |> internal_error("PHDE-B-2")
 
   def index(conn, _params) do
     conn
@@ -90,10 +90,10 @@ defmodule AssessmentWeb.Browser.PharmacyController do
         |> resource_error("pharmacy ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("PHSH_B_1")
+        |> internal_error("PHSH-B-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("PHSH_B_2")
+  def show(conn, _), do: conn |> internal_error("PHSH-B-2")
 
   defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent

@@ -74,7 +74,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> validation_error(OrderView.format_upsert_errors(errors))
       _ ->
         conn
-        |> internal_error("ORCR_A")
+        |> internal_error("ORCR-A")
     end
   end
   def create(conn, _) do
@@ -110,7 +110,7 @@ defmodule AssessmentWeb.Api.OrderController do
         |> validation_error(OrderView.format_index_errors(partition))
       _ ->
         conn
-        |> internal_error("ORIN_A")
+        |> internal_error("ORIN-A")
     end
   end
 
@@ -137,10 +137,10 @@ defmodule AssessmentWeb.Api.OrderController do
         |> resource_error("order ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("ORSH_A_1")
+        |> internal_error("ORSH-A-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("ORSH_A_2")
+  def show(conn, _), do: conn |> internal_error("ORSH-A-2")
 
   defp authorize_update(account, order) do
     case account do
@@ -249,8 +249,8 @@ defmodule AssessmentWeb.Api.OrderController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("ORUP_A_1")
+        |> internal_error("ORUP-A-1")
     end
   end
-  defp update_order_state(conn, _, _, _), do: conn |> internal_error("ORUP_A_2")
+  defp update_order_state(conn, _, _, _), do: conn |> internal_error("ORUP-A-2")
 end

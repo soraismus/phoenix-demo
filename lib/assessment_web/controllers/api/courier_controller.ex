@@ -47,7 +47,7 @@ defmodule AssessmentWeb.Api.CourierController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("COCR_A")
+        |> internal_error("COCR-A")
     end
   end
   def create(conn, _) do
@@ -68,7 +68,7 @@ defmodule AssessmentWeb.Api.CourierController do
         |> authorization_error()
       _ ->
         conn
-        |> internal_error("COIN_A")
+        |> internal_error("COIN-A")
     end
   end
 
@@ -93,8 +93,8 @@ defmodule AssessmentWeb.Api.CourierController do
         |> resource_error("courier ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("COSH_A_1")
+        |> internal_error("COSH-A-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("COSH_A_2")
+  def show(conn, _), do: conn |> internal_error("COSH-A-2")
 end

@@ -37,7 +37,7 @@ defmodule AssessmentWeb.Browser.PatientController do
         |> render("new.html", changeset: changeset)
       _ ->
         conn
-        |> internal_error("PACR_B")
+        |> internal_error("PACR-B")
     end
   end
   def create(conn, _) do
@@ -61,10 +61,10 @@ defmodule AssessmentWeb.Browser.PatientController do
         |> resource_error("patient ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("PADE_B_1")
+        |> internal_error("PADE-B-1")
     end
   end
-  def delete(conn, _), do: conn |> internal_error("PADE_B_2")
+  def delete(conn, _), do: conn |> internal_error("PADE-B-2")
 
   def index(conn, _params) do
     conn
@@ -90,10 +90,10 @@ defmodule AssessmentWeb.Browser.PatientController do
         |> resource_error("patient ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("PASH_B_1")
+        |> internal_error("PASH-B-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("PASH_B_2")
+  def show(conn, _), do: conn |> internal_error("PASH-B-2")
 
   defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent

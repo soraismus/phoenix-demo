@@ -42,7 +42,7 @@ defmodule AssessmentWeb.Api.PatientController do
         |> changeset_error(changeset)
       _ ->
         conn
-        |> internal_error("PACR_A")
+        |> internal_error("PACR-A")
     end
   end
   def create(conn, _) do
@@ -63,7 +63,7 @@ defmodule AssessmentWeb.Api.PatientController do
         |> authorization_error()
       _ ->
         conn
-        |> internal_error("PAIN_A")
+        |> internal_error("PAIN-A")
     end
   end
 
@@ -88,8 +88,8 @@ defmodule AssessmentWeb.Api.PatientController do
         |> resource_error("patient ##{id}", "does not exist", @not_found)
       _ ->
         conn
-        |> internal_error("PASH_A_1")
+        |> internal_error("PASH-A-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("PASH_A_2")
+  def show(conn, _), do: conn |> internal_error("PASH-A-2")
 end

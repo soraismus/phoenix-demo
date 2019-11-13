@@ -68,7 +68,7 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> changeset_error(%{view: "new.html", changeset: changeset})
       _ ->
         conn
-        |> internal_error("ORCR_B")
+        |> internal_error("ORCR-B")
     end
   end
   def create(conn, _) do
@@ -94,7 +94,7 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
-        |> internal_error("ORINCSV_B")
+        |> internal_error("ORINCSV-B")
     end
   end
 
@@ -127,10 +127,10 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> redirect(to: order_path(conn, @show, id))
       _ ->
         conn
-        |> internal_error("ORSH_B_1")
+        |> internal_error("ORSH-B-1")
     end
   end
-  def delete(conn, _), do: conn |> internal_error("ORSH_B_2")
+  def delete(conn, _), do: conn |> internal_error("ORSH-B-2")
 
   def edit(conn, %{"id" => id}) do
     with {@ok, _} <- validate_id_type(id),
@@ -155,10 +155,10 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> authorization_error("Not authorized to update order ##{id}")
       _ ->
         conn
-        |> internal_error("ORED_B_1")
+        |> internal_error("ORED-B-1")
     end
   end
-  def edit(conn, _), do: conn |> internal_error("ORED_B_2")
+  def edit(conn, _), do: conn |> internal_error("ORED-B-2")
 
   def index(conn, params) do
     with {@ok, agent} <- authenticate_agent(conn),
@@ -178,7 +178,7 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
-        |> internal_error("ORIN_B")
+        |> internal_error("ORIN-B")
     end
   end
 
@@ -197,7 +197,7 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> authorization_error("Not authorized to create an order")
       _ ->
         conn
-        |> internal_error("ORNE_B")
+        |> internal_error("ORNE-B")
     end
   end
 
@@ -224,10 +224,10 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> authorization_error("Not authorized to view order ##{id}")
       _ ->
         conn
-        |> internal_error("ORSH_B_1")
+        |> internal_error("ORSH-B-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("ORSH_B_2")
+  def show(conn, _), do: conn |> internal_error("ORSH-B-2")
 
   def update(conn, %{"id" => id, "order" => params}) do
     with {@ok, _} <- validate_id_type(id),
@@ -274,7 +274,7 @@ defmodule AssessmentWeb.Browser.OrderController do
             })
       _ ->
         conn
-        |> internal_error("ORCR_B")
+        |> internal_error("ORCR-B")
     end
   end
   def update(conn, _) do

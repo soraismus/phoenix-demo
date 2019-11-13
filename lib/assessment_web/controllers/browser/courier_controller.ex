@@ -37,7 +37,7 @@ defmodule AssessmentWeb.Browser.CourierController do
         |> render("new.html", changeset: changeset)
       _ ->
         conn
-        |> internal_error("COCR_B")
+        |> internal_error("COCR-B")
     end
   end
   def create(conn, _) do
@@ -61,10 +61,10 @@ defmodule AssessmentWeb.Browser.CourierController do
         |> resource_error("courier ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("CODE_B_1")
+        |> internal_error("CODE-B-1")
     end
   end
-  def delete(conn, _), do: conn |> internal_error("CODE_B_2")
+  def delete(conn, _), do: conn |> internal_error("CODE-B-2")
 
   def index(conn, _params) do
     conn
@@ -90,10 +90,10 @@ defmodule AssessmentWeb.Browser.CourierController do
         |> resource_error("courier ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("COSH_B_1")
+        |> internal_error("COSH-B-1")
     end
   end
-  def show(conn, _), do: conn |> internal_error("COSH_B_2")
+  def show(conn, _), do: conn |> internal_error("COSH-B-2")
 
   defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent
