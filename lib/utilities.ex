@@ -101,7 +101,7 @@ defmodule Utilities do
   end
 
   def same_members?(list0, list1) when is_list(list0) and is_list(list1) do
-    Equiv.equiv?(:lists.sort(list0), :lists.sort(list1))
+    :lists.sort(list0) == :lists.sort(list1)
   end
 
   def to_integer(value) when is_binary(value) do

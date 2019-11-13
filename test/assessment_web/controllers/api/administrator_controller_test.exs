@@ -18,7 +18,7 @@ defmodule AssessmentWeb.Api.AdministratorControllerTest do
                  }
 
   describe "index" do
-    setup [:add_administrator, :log_in_admin]
+    setup [:add_administrator, :add_administrator, :add_administrator, :log_in_admin]
 
     test "lists all administrators", %{conn: conn, administrators: administrators} do
       response = get conn, api_administrator_path(conn, :index)
@@ -27,15 +27,6 @@ defmodule AssessmentWeb.Api.AdministratorControllerTest do
     end
   end
 
-#  describe "new administrator" do
-#    setup [:log_in_admin]
-#
-#    test "renders form", %{conn: conn} do
-#      response = get conn, api_administrator_path(conn, :new)
-#      assert html_response(response, 200) =~ "New Administrator"
-#    end
-#  end
-#
 #  describe "create administrator" do
 #    setup [:log_in_admin]
 #
@@ -44,12 +35,12 @@ defmodule AssessmentWeb.Api.AdministratorControllerTest do
 #      assert %{id: id} = redirected_params(response0)
 #      assert redirected_to(response0) == api_administrator_path(response0, :show, id)
 #      response1 = get conn, api_administrator_path(conn, :show, id)
-#      assert html_response(response1, 200) =~ "Show Administrator"
+#      assert json_response(response1, 200) =~ "Show Administrator"
 #    end
 #
 #    test "renders errors when data is invalid", %{conn: conn} do
 #      response = post conn, api_administrator_path(conn, :create), agent: @invalid_attrs
-#      assert html_response(response, 400) =~ "New Administrator"
+#      assert json_response(response, 400) =~ "New Administrator"
 #    end
 #  end
 #

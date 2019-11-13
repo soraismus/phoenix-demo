@@ -137,6 +137,9 @@ defmodule Assessment.DataCase do
     json_list = list |> Enum.map(&ToJson.to_json/1)
     Utilities.same_members?(json, json_list)
   end
+  def json_equiv?(json, value) do
+    json == ToJson.to_json(value)
+  end
 
   defp get_username() do
     :rand.uniform(1000000000) |> to_string()
