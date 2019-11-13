@@ -21,7 +21,7 @@ defmodule AssessmentWeb.Api.CourierControllerTest do
   describe "show courier" do
     setup [:add_administrator, :log_in_admin, :add_courier]
 
-    test "renders an courier when the id is valid" , %{conn: conn, couriers: couriers} do
+    test "renders a courier when the id is valid" , %{conn: conn, couriers: couriers} do
       courier = List.first(couriers)
       response1 = get conn, api_courier_path(conn, :show, courier)
       json = json_response(response1, 200)
@@ -32,7 +32,7 @@ defmodule AssessmentWeb.Api.CourierControllerTest do
   describe "create courier" do
     setup [:add_administrator, :log_in_admin, :add_courier]
 
-    test "creates and renders an courier when the data is valid" , %{conn: conn} do
+    test "creates and renders a courier when the data is valid" , %{conn: conn} do
       name = "some name"
       username = "some username"
       email = "some email"

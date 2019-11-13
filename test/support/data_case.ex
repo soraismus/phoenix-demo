@@ -67,8 +67,6 @@ defmodule Assessment.DataCase do
                   "pickup_time" => "14:00",
                 }
 
-  @patient_attrs %{"name" => "some name", "address" => "some address"}
-
   def fixture(@administrator) do
     fixture(@administrator, get_username())
   end
@@ -82,8 +80,7 @@ defmodule Assessment.DataCase do
   end
 
   def fixture(@patient) do
-    {@ok, patient} = Patients.create_patient(@patient_attrs)
-    patient
+    fixture(@patient, get_username())
   end
 
   def fixture(@pharmacy) do
@@ -120,6 +117,12 @@ defmodule Assessment.DataCase do
       |> Enum.into(@order_attrs)
       |> Orders.create_order()
     order
+  end
+
+  def fixture(@patient, name) do
+    attrs = %{"name" => name, "address" => name <> "_address"}
+    {@ok, patient} = Patients.create_patient(attrs)
+    patient
   end
 
   def fixture(@pharmacy, username) do

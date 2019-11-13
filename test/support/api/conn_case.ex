@@ -53,6 +53,12 @@ defmodule AssessmentWeb.Api.ConnCase do
     {:ok, couriers: [courier | couriers]}
   end
 
+  def add_patient(context) do
+    patients = Map.get(context, :patients) || []
+    patient = fixture(:patient)
+    {:ok, patients: [patient | patients]}
+  end
+
   def add_pharmacy(context) do
     pharmacies = Map.get(context, :pharmacies) || []
     pharmacy = fixture(:pharmacy)

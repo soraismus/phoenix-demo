@@ -21,7 +21,7 @@ defmodule AssessmentWeb.Api.PharmacyControllerTest do
   describe "show pharmacy" do
     setup [:add_administrator, :log_in_admin, :add_pharmacy]
 
-    test "renders an pharmacy when the id is valid" , %{conn: conn, pharmacies: pharmacies} do
+    test "renders a pharmacy when the id is valid" , %{conn: conn, pharmacies: pharmacies} do
       pharmacy = List.first(pharmacies)
       response1 = get conn, api_pharmacy_path(conn, :show, pharmacy)
       json = json_response(response1, 200)
@@ -32,7 +32,7 @@ defmodule AssessmentWeb.Api.PharmacyControllerTest do
   describe "create pharmacy" do
     setup [:add_administrator, :log_in_admin, :add_pharmacy]
 
-    test "creates and renders an pharmacy when the data is valid" , %{conn: conn} do
+    test "creates and renders a pharmacy when the data is valid" , %{conn: conn} do
       name = "some name"
       username = "some username"
       email = "some email"

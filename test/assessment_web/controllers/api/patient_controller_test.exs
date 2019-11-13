@@ -1,62 +1,61 @@
 defmodule AssessmentWeb.Api.PatientControllerTest do
   use AssessmentWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Api.ConnCase, only: [log_in_admin: 1]
-
-  @invalid_attrs %{address: nil, name: nil}
-  @create_attrs %{name: "some name", address: "some address"}
+  import Assessment.DataCase, only: [json_equiv?: 2]
+  import AssessmentWeb.Api.ConnCase,
+    only: [ add_administrator: 1,
+            add_patient: 1,
+            log_in_admin: 1,
+          ]
 
   describe "index" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_patient, :add_patient]
 
-    test "lists all patients", %{conn: conn} do
-      response = get conn, patient_path(conn, :index)
-      assert html_response(response, 200) =~ "Listing Patients"
+    test "lists all patients", %{conn: conn, patients: patients} do
+      response = get conn, api_patient_path(conn, :index)
+      json = json_response(response, 200)
+      assert json_equiv?(json["patients"], patients)
     end
   end
 
-  describe "new patient" do
-    setup [:log_in_admin]
+  describe "show patient" do
+    setup [:add_administrator, :log_in_admin, :add_patient]
 
-    test "renders form", %{conn: conn} do
-      response = get conn, patient_path(conn, :new)
-      assert html_response(response, 200) =~ "New Patient"
+    test "renders a patient when the id is valid" , %{conn: conn, patients: patients} do
+      patient = List.first(patients)
+      response1 = get conn, api_patient_path(conn, :show, patient)
+      json = json_response(response1, 200)
+      assert json_equiv?(json["patient"], patient)
     end
   end
 
   describe "create patient" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_patient]
 
-    test "redirects to show when data is valid", %{conn: conn} do
-      response0 = post conn, patient_path(conn, :create), patient: @create_attrs
-      assert %{id: id} = redirected_params(response0)
-      assert redirected_to(response0) == patient_path(response0, :show, id)
-      response1 = get conn, patient_path(conn, :show, id)
-      assert html_response(response1, 200) =~ "Show Patient"
+    test "creates and renders a patient when the data is valid" , %{conn: conn} do
+      name = "some name"
+      address = "some address"
+
+      attrs = %{"name" => name, "address" => address}
+
+      response0 = post conn, api_patient_path(conn, :create), patient: attrs
+      json = json_response(response0, :created)
+      created = json["created"]["patient"]
+      created_id = created["id"]
+
+      template = %{"id" => created_id} |> Enum.into(attrs)
+
+      assert created == template
+
+      response1 = get conn, api_patient_path(conn, :show, created_id)
+      json = json_response(response1, 200)
+      assert json["patient"] == template
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      response = post conn, patient_path(conn, :create), patient: @invalid_attrs
-      assert html_response(response, 400) =~ "New Patient"
+      invalid_attrs = %{}
+      response = post conn, api_patient_path(conn, :create), patient: invalid_attrs
+      json_response(response, 400)
     end
-  end
-
-  describe "delete patient" do
-    setup [:log_in_admin, :create_patient]
-
-    test "deletes chosen patient", %{conn: conn, patient: patient} do
-      response0 = delete conn, patient_path(conn, :delete, patient)
-      assert redirected_to(response0) == patient_path(response0, :index)
-      response1 = get conn, patient_path(conn, :show, patient)
-      assert redirected_to(response1) == page_path(response1, :index)
-      error = "Patient ##{patient.id} does not exist"
-      assert get_flash(response1, :error) =~ error
-    end
-  end
-
-  defp create_patient(_) do
-    patient = fixture(:patient)
-    {:ok, patient: patient}
   end
 end
