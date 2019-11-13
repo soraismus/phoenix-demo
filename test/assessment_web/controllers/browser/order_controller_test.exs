@@ -4,11 +4,7 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
   import Assessment.DataCase, only: [fixture: 1]
   import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
 
-  alias Assessment.Accounts
-  alias Assessment.Orders
-  alias Assessment.Patients
-
-  @update_attrs %{pickup_date: "2011-05-18", pickup_time: "15:01:01.000000"}
+  @update_attrs %{pickup_date: "2011-05-18", pickup_time: "15:01"}
   @invalid_attrs %{pickup_date: nil, pickup_time: nil}
   @create_attrs %{ "order_state_description" => "active",
                    "pickup_date" => "2010-04-17",
@@ -70,12 +66,12 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
   describe "update order" do
     setup [:log_in_admin, :create_order]
 
-#    test "redirects when data is valid", %{conn: conn, order: order} do
-#      response0 = put conn, order_path(conn, :update, order), order: @update_attrs
-#      assert redirected_to(response0) == order_path(response0, :show, order)
-#      response1 = get conn, order_path(conn, :show, order)
-#      assert html_response(response1, 200)
-#    end
+    test "redirects when data is valid", %{conn: conn, order: order} do
+      response0 = put conn, order_path(conn, :update, order), order: @update_attrs
+      assert redirected_to(response0) == order_path(response0, :show, order)
+      response1 = get conn, order_path(conn, :show, order)
+      assert html_response(response1, 200)
+    end
 
     test "renders errors when data is invalid", %{conn: conn, order: order} do
       response = put conn, order_path(conn, :update, order), order: @invalid_attrs
