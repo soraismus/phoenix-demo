@@ -66,6 +66,9 @@ defmodule Utilities do
     |> Date.to_iso8601()
   end
 
+  def is_valid_result({:ok, _}), do: true
+  def is_valid_result({:error, _}), do: false
+
   def map_error({@ok, value}, _fun), do: {@ok, value}
   def map_error({@error, value}, fun), do: {@error, fun.(value)}
 
