@@ -30,10 +30,8 @@ defmodule Assessment.ToJson do
       fields = ~w(id patient pharmacy courier pickup_date pickup_time)a
       order
       |> Utilities.to_json(fields)
-      |> Map.put("order_state", to_description(id))
+      |> Map.put("order_state", OrderStates.to_description(id))
     end
-    def to_description(:all), do: "all"
-    def to_description(id), do: OrderStates.to_description(id)
   end
 
   defimpl ToJson, for: Patient do

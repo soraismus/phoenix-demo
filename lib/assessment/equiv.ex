@@ -29,7 +29,7 @@ defmodule Assessment.Equiv do
   defimpl Equiv, for: Order do
     def equiv?(%Order{} = order0, %Order{} = order1) do
       order0.courier_id == order1.courier_id
-        && order0.order_state_description == order1.order_state_description
+        && order0.order_state_id == order1.order_state_id
         && order0.patient_id == order1.patient_id
         && order0.pharmacy_id == order1.pharmacy_id
         && order0.pickup_date == order1.pickup_date
