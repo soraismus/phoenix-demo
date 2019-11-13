@@ -5,7 +5,9 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
 
   @error :error
   @index :index
+  @invalid_parameter :invalid_parameter
   @new :new
+  @ok :ok
   @order_id :order_id
   @request_path :request_path
   @status :status
@@ -29,6 +31,12 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
     |> render(view, changeset: changeset, order_id: Map.get(params, @order_id))
   end
 
+  def id_type_validation_error(conn) do
+    conn
+    |> put_flash(@error, to_error_list(%{id: ["must be a positive integer"]}))
+    |> redirect(to: page_path(conn, @index))
+  end
+
   def internal_error(conn, code) do
     conn
     |> put_status(500)
@@ -36,7 +44,7 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
     |> render(to: page_path(conn, @index))
   end
 
-  def invalid_request_error(conn, purpose) do
+  def match_error(conn, purpose) do
     conn
     |> put_flash(@error, "Request #{purpose} has been given invalid data.")
     |> redirect(to: page_path(conn, @index))
@@ -55,6 +63,18 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
           "content-disposition",
           "attachment; filename=#{filename}")
     |> send_resp(200, data)
+  end
+
+  def validate_id_type(value) do
+    validate_parameter(value, "id", fn (x) -> is_integer(x) && x > 0 end)
+  end
+
+  def validate_parameter(value, parameter_name, predicate) do
+    if predicate.(value) do
+      {@ok, value}
+    else
+      {@error, {@invalid_parameter, parameter_name}}
+    end
   end
 
   def validation_error(conn, error_json) do

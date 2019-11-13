@@ -5,11 +5,13 @@ defmodule AssessmentWeb.Browser.OrderController do
     only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,
+            id_type_validation_error: 1,
             internal_error: 2,
-            invalid_request_error: 2,
+            match_error: 2,
             resource_error: 3,
             send_attachment: 4,
             validation_error: 2,
+            validate_id_type: 1,
           ]
   import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
   import AssessmentWeb.OrderUtilities,
@@ -30,6 +32,7 @@ defmodule AssessmentWeb.Browser.OrderController do
   @no_resource :no_resource
   @index :index
   @info :info
+  @invalid_parameter :invalid_parameter
   @normalized_params :normalized_params
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
@@ -70,7 +73,7 @@ defmodule AssessmentWeb.Browser.OrderController do
   end
   def create(conn, _) do
     conn
-    |> invalid_request_error("to create an order")
+    |> match_error("to create an order")
   end
 
   def csv_index(conn, params) do
@@ -96,7 +99,8 @@ defmodule AssessmentWeb.Browser.OrderController do
   end
 
   def delete(conn, %{"id" => id}) do
-    with {@ok, agent} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
          {@ok, order} <- Orders.get_order(id),
          {@ok, _} <- authorize(account, order),
@@ -105,6 +109,9 @@ defmodule AssessmentWeb.Browser.OrderController do
       |> put_flash(@info, "Order ##{id} canceled successfully.")
       |> redirect(to: order_path(conn, @index))
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must log in to cancel order ##{id}")
@@ -120,22 +127,23 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> redirect(to: order_path(conn, @show, id))
       _ ->
         conn
-        |> internal_error("ORSH_B")
+        |> internal_error("ORSH_B_1")
     end
   end
-  def delete(conn, _) do
-    conn
-    |> invalid_request_error("to cancel an order")
-  end
+  def delete(conn, _), do: conn |> internal_error("ORSH_B_2")
 
   def edit(conn, %{"id" => id}) do
-    with {@ok, agent} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          account <- Accounts.specify_agent(agent),
          {@ok, _} <- authorize(account, order) do
       conn
       |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must log in to update order ##{id}")
@@ -147,13 +155,10 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> authorization_error("Not authorized to update order ##{id}")
       _ ->
         conn
-        |> internal_error("ORED_B")
+        |> internal_error("ORED_B_1")
     end
   end
-  def edit(conn, _) do
-    conn
-    |> invalid_request_error("to edit an order")
-  end
+  def edit(conn, _), do: conn |> internal_error("ORED_B_2")
 
   def index(conn, params) do
     with {@ok, agent} <- authenticate_agent(conn),
@@ -197,13 +202,17 @@ defmodule AssessmentWeb.Browser.OrderController do
   end
 
   def show(conn, %{"id" => id}) do
-    with {@ok, agent} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, agent} <- authenticate_agent(conn),
          account <- Accounts.specify_agent(agent),
          {@ok, order} <- Orders.get_order(id),
          {@ok, _} <- authorize(account, order) do
       conn
       |> render("show.html", order: order)
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must log in to view order ##{id}")
@@ -215,16 +224,14 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> authorization_error("Not authorized to view order ##{id}")
       _ ->
         conn
-        |> internal_error("ORSH_B")
+        |> internal_error("ORSH_B_1")
     end
   end
-  def show(conn, _) do
-    conn
-    |> invalid_request_error("to view an order")
-  end
+  def show(conn, _), do: conn |> internal_error("ORSH_B_2")
 
   def update(conn, %{"id" => id, "order" => params}) do
-    with {@ok, agent} <- authenticate_agent(conn),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          account <- Accounts.specify_agent(agent),
          {@ok, _} <- authorize(account, order),
@@ -235,6 +242,9 @@ defmodule AssessmentWeb.Browser.OrderController do
       |> put_flash(@info, "Order ##{id} updated successfully.")
       |> redirect(to: order_path(conn, @show, new_order))
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must log in to update order ##{id}")
@@ -269,7 +279,7 @@ defmodule AssessmentWeb.Browser.OrderController do
   end
   def update(conn, _) do
     conn
-    |> invalid_request_error("to update an order")
+    |> match_error("to update an order")
   end
 
   defp authorize(account, order) do
