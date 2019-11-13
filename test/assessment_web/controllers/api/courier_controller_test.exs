@@ -34,11 +34,10 @@ defmodule AssessmentWeb.Api.CourierControllerTest do
 
     test "creates and renders a courier when the data is valid" , %{conn: conn} do
       name = "some name"
-      username = "some username"
       email = "some email"
 
       attrs = %{ "name" => name,
-                 "username" => username,
+                 "username" => "some username",
                  "email" => email,
                  "address" => "some address",
                  "password" => "some password",
@@ -51,7 +50,6 @@ defmodule AssessmentWeb.Api.CourierControllerTest do
 
       template = %{ "id" => created_id,
                     "name" => name,
-                    "username" => username,
                     "email" => email,
                   }
 

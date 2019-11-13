@@ -73,26 +73,9 @@ defmodule Assessment.OrdersTest do
       order
     end
 
-    def equiv?([], []), do: true
-    def equiv?([_ | _], []), do: false
-    def equiv?([], [_ | _]), do: false
-    def equiv?([value0 | values0], [value1 | values1]) do
-      equiv?(value0, value1)
-        && equiv?(values0, values1)
-    end
-    def equiv?(%Order{} = order0, %Order{} = order1) do
-      order0.id == order1.id
-        && order0.order_state_id == order1.order_state_id
-        && order0.patient_id == order1.patient_id
-        && order0.pharmacy_id == order1.pharmacy_id
-        && order0.courier_id == order1.courier_id
-        && order0.pickup_date == order1.pickup_date
-        && order0.pickup_time == order1.pickup_time
-    end
-
     test "list_orders/1 returns all orders" do
       order = order_fixture()
-      assert(equiv?(Orders.list_orders(%{}), [order]))
+      assert(Equiv.equiv?(Orders.list_orders(%{}), [order]))
     end
 
     test "get_order/1 returns the order with given id" do
