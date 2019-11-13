@@ -21,10 +21,9 @@ defmodule AssessmentWeb.Api.CourierControllerTest do
   describe "show courier" do
     setup [:add_administrator, :log_in_admin, :add_courier]
 
-    test "renders a courier when the id is valid" , %{conn: conn, couriers: couriers} do
-      courier = List.first(couriers)
-      response1 = get conn, api_courier_path(conn, :show, courier)
-      json = json_response(response1, 200)
+    test "renders a courier when the id is valid" , %{conn: conn, courier: courier} do
+      response0 = get conn, api_courier_path(conn, :show, courier)
+      json = json_response(response0, 200)
       assert json_equiv?(json["courier"], courier)
     end
   end

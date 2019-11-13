@@ -21,10 +21,9 @@ defmodule AssessmentWeb.Api.PatientControllerTest do
   describe "show patient" do
     setup [:add_administrator, :log_in_admin, :add_patient]
 
-    test "renders a patient when the id is valid" , %{conn: conn, patients: patients} do
-      patient = List.first(patients)
-      response1 = get conn, api_patient_path(conn, :show, patient)
-      json = json_response(response1, 200)
+    test "renders a patient when the id is valid" , %{conn: conn, patient: patient} do
+      response0 = get conn, api_patient_path(conn, :show, patient)
+      json = json_response(response0, 200)
       assert json_equiv?(json["patient"], patient)
     end
   end

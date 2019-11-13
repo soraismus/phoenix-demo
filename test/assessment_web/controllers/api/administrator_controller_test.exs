@@ -20,10 +20,9 @@ defmodule AssessmentWeb.Api.AdministratorControllerTest do
   describe "show administrator" do
     setup [:add_administrator, :log_in_admin]
 
-    test "renders an administrator when the id is valid" , %{conn: conn, administrators: administrators} do
-      administrator = List.first(administrators)
-      response1 = get conn, api_administrator_path(conn, :show, administrator)
-      json = json_response(response1, 200)
+    test "renders an administrator when the id is valid" , %{conn: conn, administrator: administrator} do
+      response0 = get conn, api_administrator_path(conn, :show, administrator)
+      json = json_response(response0, 200)
       assert json_equiv?(json["administrator"], administrator)
     end
   end

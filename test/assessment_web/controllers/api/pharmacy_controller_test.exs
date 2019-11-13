@@ -21,10 +21,9 @@ defmodule AssessmentWeb.Api.PharmacyControllerTest do
   describe "show pharmacy" do
     setup [:add_administrator, :log_in_admin, :add_pharmacy]
 
-    test "renders a pharmacy when the id is valid" , %{conn: conn, pharmacies: pharmacies} do
-      pharmacy = List.first(pharmacies)
-      response1 = get conn, api_pharmacy_path(conn, :show, pharmacy)
-      json = json_response(response1, 200)
+    test "renders a pharmacy when the id is valid" , %{conn: conn, pharmacy: pharmacy} do
+      response0 = get conn, api_pharmacy_path(conn, :show, pharmacy)
+      json = json_response(response0, 200)
       assert json_equiv?(json["pharmacy"], pharmacy)
     end
   end

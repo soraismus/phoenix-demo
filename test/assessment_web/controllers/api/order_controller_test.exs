@@ -11,12 +11,12 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
             log_in_admin: 1,
           ]
 
+  alias Assessment.OrderStates
+
   @base_attrs %{ "order_state" => "active",
                  "pickup_date" => "2010-04-17",
                  "pickup_time" => "14:00",
                 }
-
-  @update_attrs %{pickup_date: "2011-05-18", pickup_time: "15:01"}
 
   describe "index" do
     setup [:add_administrator, :log_in_admin, :add_order, :add_order]
@@ -31,10 +31,9 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
   describe "show order" do
     setup [:add_administrator, :log_in_admin, :add_order]
 
-    test "renders a order when the id is valid" , %{conn: conn, orders: orders} do
-      order = List.first(orders)
-      response1 = get conn, api_order_path(conn, :show, order)
-      json = json_response(response1, 200)
+    test "renders an order when the id is valid" , %{conn: conn, order: order} do
+      response0 = get conn, api_order_path(conn, :show, order)
+      json = json_response(response0, 200)
       assert json_equiv?(json["order"], order)
     end
   end
@@ -48,7 +47,7 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
             :add_order,
           ]
 
-    test "creates and renders a order when the data is valid", %{conn: conn} = params do
+    test "creates and renders an order when the data is valid", %{conn: conn} = params do
       %{courier: courier, patient: patient, pharmacy: pharmacy} = params
 
       attrs =
@@ -82,6 +81,42 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
       invalid_attrs = %{}
       response = post conn, api_order_path(conn, :create), order: invalid_attrs
       json_response(response, 400)
+    end
+  end
+
+  describe "cancel order" do
+    setup [:add_administrator, :log_in_admin, :add_order]
+
+    test "cancels an order" , %{conn: conn, order: order} do
+      response0 = delete conn, api_order_path(conn, :cancel, order)
+      json = json_response(response0, 200)
+      assert json_equiv?(
+        json["canceled"]["order"],
+        %{order | order_state_id: OrderStates.canceled_id()})
+    end
+  end
+
+  describe "deliver an order" do
+    setup [:add_administrator, :log_in_admin, :add_order]
+
+    test "delivers an order" , %{conn: conn, order: order} do
+      response0 = post conn, api_order_path(conn, :deliver, order)
+      json = json_response(response0, 200)
+      assert json_equiv?(
+        json["delivered"]["order"],
+        %{order | order_state_id: OrderStates.delivered_id()})
+    end
+  end
+
+  describe "mark an order undeliverable" do
+    setup [:add_administrator, :log_in_admin, :add_order]
+
+    test "marks an order undeliverable" , %{conn: conn, order: order} do
+      response0 = post conn, api_order_path(conn, :mark_undeliverable, order)
+      json = json_response(response0, 200)
+      assert json_equiv?(
+        json["undeliverable"]["order"],
+        %{order | order_state_id: OrderStates.undeliverable_id()})
     end
   end
 end
