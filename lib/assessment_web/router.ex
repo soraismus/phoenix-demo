@@ -51,7 +51,7 @@ defmodule AssessmentWeb.Router do
     plug Guardian_LoadResource, allow_blank: true
   end
 
-  scope "/api", AssessmentWeb.Api do
+  scope "/api", AssessmentWeb.Api, as: :api do
     pipe_through :api
 
     post   "/login",              SessionController,       :create

@@ -15,8 +15,9 @@ defmodule AssessmentWeb.Api.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  import AssessmentWeb.Router.Helpers, only: [api_session_path: 2]
   import Phoenix.ConnTest, only: [build_conn: 0, post: 3]
-  import AssessmentWeb.Router.Helpers, only: [session_path: 2]
+  import Plug.Conn, only: [put_req_header: 3]
 
   using do
     quote do
@@ -52,14 +53,18 @@ defmodule AssessmentWeb.Api.ConnCase do
           password: password,
         }
       })
-    credential = %{username: username, password: password}
+    credential = %{"username" => username, "password" => password}
     {:ok, conn: get_authenticated_connection(credential)}
   end
 
   defp get_authenticated_connection(credential) do
     conn0 = build_conn()
-    response = post(conn0, session_path(conn0, :create), credential)
-    token = Poison.Parser.parse!(response.resp_body)["token"]
-    Plug.Conn.put_req_header(build_conn(), "authorization", "token: #{token}")
+    response =
+      conn0
+      |> put_req_header("content-type", "application/json")
+      |> put_req_header("accept", "application/json")
+      |> post(api_session_path(conn0, :create), credential)
+    token = Poison.Parser.parse!(response.resp_body)["session"]["token"]
+    put_req_header(build_conn(), "authorization", "token: #{token}")
   end
 end

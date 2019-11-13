@@ -17,6 +17,9 @@ defmodule AssessmentWeb.GuardianController do
         "administrator" -> {@ok, agent.administrator}
         _ -> {@error, @not_authorized}
       end
+    else
+      _ ->
+        {@error, @not_authenticated}
     end
   end
 
