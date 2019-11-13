@@ -58,6 +58,10 @@ defmodule Utilities do
   def bind_value({@ok, value}, fun), do: fun.(value)
   def bind_value({@error, value}, _fun), do: {@error, value}
 
+  def same_members?(list0, list1) when is_list(list0) and is_list(list1) do
+    Equiv.equiv?(:lists.sort(list0), :lists.sort(list1))
+  end
+
   def get_date_today() do
     :calendar.local_time()
     |> elem(0)
