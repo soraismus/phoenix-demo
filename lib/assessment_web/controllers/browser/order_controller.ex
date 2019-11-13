@@ -6,6 +6,7 @@ defmodule AssessmentWeb.Browser.OrderController do
             authorization_error: 2,
             changeset_error: 2,
             internal_error: 2,
+            invalid_request_error: 2,
             resource_error: 3,
             send_attachment: 4,
             validation_error: 2,
@@ -25,10 +26,7 @@ defmodule AssessmentWeb.Browser.OrderController do
   alias Assessment.Orders.Order
   alias AssessmentWeb.OrderView
 
-  plug :authenticate
-
   @error :error
-  @new :new
   @no_resource :no_resource
   @index :index
   @info :info
@@ -36,7 +34,6 @@ defmodule AssessmentWeb.Browser.OrderController do
   @not_authenticated :not_authenticated
   @not_authorized :not_authorized
   @ok :ok
-  @request_path :request_path
   @show :show
 
   def create(conn, %{"order" => params}) do
@@ -71,6 +68,10 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> internal_error("ORCR_B")
     end
   end
+  def create(conn, _) do
+    conn
+    |> invalid_request_error("to create an order")
+  end
 
   def csv_index(conn, params) do
     with {@ok, agent} <- authenticate_agent(conn),
@@ -90,8 +91,68 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
-        |> internal_error("ORIN_B")
+        |> internal_error("ORINCSV_B")
     end
+  end
+
+  def delete(conn, %{"id" => id}) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         account <- Accounts.specify_agent(agent),
+         {@ok, order} <- Orders.get_order(id),
+         {@ok, _} <- authorize(account, order),
+         {@ok, _} <- Orders.delete_order(order) do
+      conn
+      |> put_flash(@info, "Order ##{id} canceled successfully.")
+      |> redirect(to: order_path(conn, @index))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to cancel order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to cancel order ##{id}")
+      {@error, %Ecto.Changeset{}} ->
+        conn
+        |> put_flash(@error, "Failure to cancel order ##{id}")
+        |> redirect(to: order_path(conn, @show, id))
+      _ ->
+        conn
+        |> internal_error("ORSH_B")
+    end
+  end
+  def delete(conn, _) do
+    conn
+    |> invalid_request_error("to cancel an order")
+  end
+
+  def edit(conn, %{"id" => id}) do
+    with {@ok, agent} <- authenticate_agent(conn),
+         {@ok, order} <- Orders.get_order(id),
+         account <- Accounts.specify_agent(agent),
+         {@ok, _} <- authorize(account, order) do
+      conn
+      |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
+    else
+      {@error, @not_authenticated} ->
+        conn
+        |> authentication_error("Must log in to update order ##{id}")
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("order ##{id}", "does not exist")
+      {@error, @not_authorized} ->
+        conn
+        |> authorization_error("Not authorized to update order ##{id}")
+      _ ->
+        conn
+        |> internal_error("ORED_B")
+    end
+  end
+  def edit(conn, _) do
+    conn
+    |> invalid_request_error("to edit an order")
   end
 
   def index(conn, params) do
@@ -157,28 +218,9 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> internal_error("ORSH_B")
     end
   end
-
-  def edit(conn, %{"id" => id}) do
-    with {@ok, agent} <- authenticate_agent(conn),
-         {@ok, order} <- Orders.get_order(id),
-         account <- Accounts.specify_agent(agent),
-         {@ok, _} <- authorize(account, order) do
-      conn
-      |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
-    else
-      {@error, @not_authenticated} ->
-        conn
-        |> authentication_error("Must log in to update order ##{id}")
-      {@error, @no_resource} ->
-        conn
-        |> resource_error("order ##{id}", "does not exist")
-      {@error, @not_authorized} ->
-        conn
-        |> authorization_error("Not authorized to update order ##{id}")
-      _ ->
-        conn
-        |> internal_error("ORED_B")
-    end
+  def show(conn, _) do
+    conn
+    |> invalid_request_error("to view an order")
   end
 
   def update(conn, %{"id" => id, "order" => params}) do
@@ -225,46 +267,9 @@ defmodule AssessmentWeb.Browser.OrderController do
         |> internal_error("ORCR_B")
     end
   end
-
-  def delete(conn, %{"id" => id}) do
-    with {@ok, agent} <- authenticate_agent(conn),
-         account <- Accounts.specify_agent(agent),
-         {@ok, order} <- Orders.get_order(id),
-         {@ok, _} <- authorize(account, order),
-         {@ok, _} <- Orders.delete_order(order) do
-      conn
-      |> put_flash(@info, "Order ##{id} deleted successfully.")
-      |> redirect(to: order_path(conn, @index))
-    else
-      {@error, @not_authenticated} ->
-        conn
-        |> authentication_error("Must log in to delete order ##{id}")
-      {@error, @no_resource} ->
-        conn
-        |> resource_error("order ##{id}", "does not exist")
-      {@error, @not_authorized} ->
-        conn
-        |> authorization_error("Not authorized to delete order ##{id}")
-      {@error, %Ecto.Changeset{}} ->
-        conn
-        |> put_flash(@error, "Failure to delete order ##{id}")
-        |> redirect(to: order_path(conn, @show, id))
-      _ ->
-        conn
-        |> internal_error("ORSH_B")
-    end
-  end
-
-  defp authenticate(conn, _) do
-    if conn.assigns.agent do
-      conn
-    else
-      conn
-      |> put_flash(@error, "You must be logged in to manage orders.")
-      |> put_session(@request_path, conn.request_path)
-      |> redirect(to: session_path(conn, @new))
-      |> halt()
-    end
+  def update(conn, _) do
+    conn
+    |> invalid_request_error("to update an order")
   end
 
   defp authorize(account, order) do

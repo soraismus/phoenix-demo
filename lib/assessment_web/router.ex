@@ -29,10 +29,10 @@ defmodule AssessmentWeb.Router do
     get "/", PageController, :index
 
     resources "/administrators", AdministratorController, except: [:edit, :update]
-    resources "/couriers", CourierController, except: [:edit, :update]
-    resources "/orders", OrderController
-    resources "/patients", PatientController, except: [:edit, :update]
-    resources "/pharmacies", PharmacyController, except: [:edit, :update]
+    resources "/couriers",       CourierController,       except: [:edit, :update]
+    resources "/orders",         OrderController
+    resources "/patients",       PatientController,       except: [:edit, :update]
+    resources "/pharmacies",     PharmacyController,      except: [:edit, :update]
 
     get "/orders.csv", OrderController, :csv_index
 
@@ -82,6 +82,9 @@ defmodule AssessmentWeb.Router do
   end
 
   defp authenticate_agent(conn, _) do
-    assign(conn, :agent, GuardianController.identify_agent(conn) |> nilify_error())
+    assign(
+      conn,
+      :agent,
+      GuardianController.identify_agent(conn) |> nilify_error())
   end
 end

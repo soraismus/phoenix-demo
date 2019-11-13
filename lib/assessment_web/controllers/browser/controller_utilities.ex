@@ -36,6 +36,12 @@ defmodule AssessmentWeb.Browser.ControllerUtilities do
     |> render(to: page_path(conn, @index))
   end
 
+  def invalid_request_error(conn, purpose) do
+    conn
+    |> put_flash(@error, "Request #{purpose} has been given invalid data.")
+    |> redirect(to: page_path(conn, @index))
+  end
+
   def resource_error(conn, resource, msg) do
     conn
     |> put_flash(@error, "#{String.capitalize(resource)} #{msg}")
