@@ -19,6 +19,7 @@ defmodule AssessmentWeb.OrderUtilities do
   @absent_account_id :absent_account_id
   @absent_patient_id :absent_patient_id
   @all :all
+  @courier_id :courier_id
   @error :error
   @invalid_account_id :invalid_account_id
   @invalid_date :invalid_date
@@ -26,6 +27,7 @@ defmodule AssessmentWeb.OrderUtilities do
   @invalid_time :invalid_time
   @not_authorized :not_authorized
   @ok :ok
+  @pharmacy_id :pharmacy_id
   @unspecified :unspecified
 
   def normalize_validate_creation(params, account) do
@@ -275,7 +277,7 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Date.from_iso8601()
       |> map_error(fn (_) -> @invalid_date end)
   end
-  defp validate_date(_), do: {:error, @invalid_date}
+  defp validate_date(_), do: {@error, @invalid_date}
 
   defp validate_id(id) do
     msg = @invalid_account_id
@@ -301,11 +303,11 @@ defmodule AssessmentWeb.OrderUtilities do
   end
 
   defp validate_order_courier(%Order{} = order, authorized?) do
-    validate_order_account(:courier_id, order, authorized?)
+    validate_order_account(@courier_id, order, authorized?)
   end
 
   defp validate_order_pharmacy(%Order{} = order, authorized?) do
-    validate_order_account(:pharmacy_id, order, authorized?)
+    validate_order_account(@pharmacy_id, order, authorized?)
   end
 
   defp validate_order_state_description(order_state_description) do
@@ -327,5 +329,5 @@ defmodule AssessmentWeb.OrderUtilities do
       |> Time.from_iso8601()
       |> map_error(fn (_) -> @invalid_time end)
   end
-  defp validate_time(_), do: {:error, @invalid_time}
+  defp validate_time(_), do: {@error, @invalid_time}
 end

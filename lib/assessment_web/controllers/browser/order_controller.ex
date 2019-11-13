@@ -182,33 +182,27 @@ defmodule AssessmentWeb.Browser.OrderController do
   end
 
   def update(conn, %{"id" => id, "order" => params}) do
-    IO.inspect({"OrderController update", id, params})
     with {@ok, agent} <- authenticate_agent(conn),
          {@ok, order} <- Orders.get_order(id),
          account <- Accounts.specify_agent(agent),
          {@ok, _} <- authorize(account, order),
          validated_params <- normalize_validate_update(order, params, account),
          {@ok, normalized_params} <- accumulate_errors(validated_params) do
-      IO.inspect({"update ok normalized_params:", normalized_params})
       {@ok, new_order} = Orders.update_order(order, normalized_params)
       conn
       |> put_flash(@info, "Order ##{id} updated successfully.")
       |> redirect(to: order_path(conn, @show, new_order))
     else
       {@error, @not_authenticated} ->
-        IO.inspect("not_authenticated")
         conn
         |> authentication_error("Must log in to update order ##{id}")
       {@error, @no_resource} ->
-        IO.inspect("no_resource")
         conn
         |> resource_error("order ##{id}", "does not exist")
       {@error, @not_authorized} ->
-        IO.inspect("not_authorized")
         conn
         |> authorization_error("Not authorized to update order ##{id}")
       {@error, %{errors: errors, valid_results: valid_results}} ->
-        IO.inspect({"partition error",errors, valid_results})
         changeset =
           errors
           |> OrderView.format_upsert_errors()
@@ -220,15 +214,13 @@ defmodule AssessmentWeb.Browser.OrderController do
               order_id: id,
             })
       {@error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect({"changeset error",changeset})
         conn
         |> changeset_error(%{
               view: "edit.html",
               changeset: changeset,
               order_id: id,
             })
-      x ->
-        IO.inspect({"default error", x})
+      _ ->
         conn
         |> internal_error("ORCR_B")
     end
