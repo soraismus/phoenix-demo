@@ -1,69 +1,71 @@
 defmodule AssessmentWeb.Api.CourierControllerTest do
   use AssessmentWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Api.ConnCase, only: [log_in_admin: 1]
-
-  @invalid_attrs %{address: nil, email: nil, name: nil}
-  @create_attrs %{ username: "some username",
-                   courier: %{
-                     name: "some name",
-                     email: "some email",
-                     address: "some address",
-                   },
-                   credential: %{password: "some password"}
-                 }
+  import Assessment.DataCase, only: [json_equiv?: 2]
+  import AssessmentWeb.Api.ConnCase,
+    only: [ add_administrator: 1,
+            add_courier: 1,
+            log_in_admin: 1,
+          ]
 
   describe "index" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_courier, :add_courier]
 
-    test "lists all couriers", %{conn: conn} do
-      response = get conn, courier_path(conn, :index)
-      assert html_response(response, 200) =~ "Listing Couriers"
+    test "lists all couriers", %{conn: conn, couriers: couriers} do
+      response = get conn, api_courier_path(conn, :index)
+      json = json_response(response, 200)
+      assert json_equiv?(json["couriers"], couriers)
     end
   end
 
-  describe "new courier" do
-    setup [:log_in_admin]
+  describe "show courier" do
+    setup [:add_administrator, :log_in_admin, :add_courier]
 
-    test "renders form", %{conn: conn} do
-      response = get conn, courier_path(conn, :new)
-      assert html_response(response, 200) =~ "New Courier"
+    test "renders an courier when the id is valid" , %{conn: conn, couriers: couriers} do
+      courier = List.first(couriers)
+      response1 = get conn, api_courier_path(conn, :show, courier)
+      json = json_response(response1, 200)
+      assert json_equiv?(json["courier"], courier)
     end
   end
 
   describe "create courier" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_courier]
 
-    test "redirects to show when data is valid", %{conn: conn} do
-      response0 = post conn, courier_path(conn, :create), agent: @create_attrs
-      assert %{id: id} = redirected_params(response0)
-      assert redirected_to(response0) == courier_path(response0, :show, id)
-      response1 = get conn, courier_path(conn, :show, id)
-      assert html_response(response1, 200) =~ "Show Courier"
+    test "creates and renders an courier when the data is valid" , %{conn: conn} do
+      name = "some name"
+      username = "some username"
+      email = "some email"
+
+      attrs = %{ "name" => name,
+                 "username" => username,
+                 "email" => email,
+                 "address" => "some address",
+                 "password" => "some password",
+               }
+
+      response0 = post conn, api_courier_path(conn, :create), courier: attrs
+      json = json_response(response0, :created)
+      created = json["created"]["courier"]
+      created_id = created["id"]
+
+      template = %{ "id" => created_id,
+                    "name" => name,
+                    "username" => username,
+                    "email" => email,
+                  }
+
+      assert created == template
+
+      response1 = get conn, api_courier_path(conn, :show, created_id)
+      json = json_response(response1, 200)
+      assert json["courier"] == template
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      response = post conn, courier_path(conn, :create), agent: @invalid_attrs
-      assert html_response(response, 400) =~ "New Courier"
+      invalid_attrs = %{}
+      response = post conn, api_courier_path(conn, :create), courier: invalid_attrs
+      json_response(response, 400)
     end
-  end
-
-  describe "delete courier" do
-    setup [:log_in_admin, :create_courier]
-
-    test "deletes chosen courier", %{conn: conn, courier: courier} do
-      response0 = delete conn, courier_path(conn, :delete, courier)
-      assert redirected_to(response0) == courier_path(response0, :index)
-      response1 = get conn, courier_path(conn, :show, courier)
-      assert redirected_to(response1) == page_path(response1, :index)
-      error = "Courier ##{courier.id} does not exist"
-      assert get_flash(response1, :error) =~ error
-    end
-  end
-
-  defp create_courier(_) do
-    courier = fixture(:courier)
-    {:ok, courier: courier}
   end
 end

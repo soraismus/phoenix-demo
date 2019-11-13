@@ -1,69 +1,71 @@
 defmodule AssessmentWeb.Api.PharmacyControllerTest do
   use AssessmentWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Api.ConnCase, only: [log_in_admin: 1]
-
-  @invalid_attrs %{address: nil, email: nil, name: nil}
-  @create_attrs %{ username: "some username",
-                   pharmacy: %{
-                     name: "some name",
-                     email: "some email",
-                     address: "some address",
-                   },
-                   credential: %{password: "some password"}
-                 }
+  import Assessment.DataCase, only: [json_equiv?: 2]
+  import AssessmentWeb.Api.ConnCase,
+    only: [ add_administrator: 1,
+            add_pharmacy: 1,
+            log_in_admin: 1,
+          ]
 
   describe "index" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_pharmacy, :add_pharmacy]
 
-    test "lists all pharmacies", %{conn: conn} do
-      response = get conn, pharmacy_path(conn, :index)
-      assert html_response(response, 200) =~ "Listing Pharmacies"
+    test "lists all pharmacies", %{conn: conn, pharmacies: pharmacies} do
+      response = get conn, api_pharmacy_path(conn, :index)
+      json = json_response(response, 200)
+      assert json_equiv?(json["pharmacies"], pharmacies)
     end
   end
 
-  describe "new pharmacy" do
-    setup [:log_in_admin]
+  describe "show pharmacy" do
+    setup [:add_administrator, :log_in_admin, :add_pharmacy]
 
-    test "renders form", %{conn: conn} do
-      response = get conn, pharmacy_path(conn, :new)
-      assert html_response(response, 200) =~ "New Pharmacy"
+    test "renders an pharmacy when the id is valid" , %{conn: conn, pharmacies: pharmacies} do
+      pharmacy = List.first(pharmacies)
+      response1 = get conn, api_pharmacy_path(conn, :show, pharmacy)
+      json = json_response(response1, 200)
+      assert json_equiv?(json["pharmacy"], pharmacy)
     end
   end
 
   describe "create pharmacy" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin, :add_pharmacy]
 
-    test "redirects to show when data is valid", %{conn: conn} do
-      response0 = post conn, pharmacy_path(conn, :create), agent: @create_attrs
-      assert %{id: id} = redirected_params(response0)
-      assert redirected_to(response0) == pharmacy_path(response0, :show, id)
-      response1 = get conn, pharmacy_path(conn, :show, id)
-      assert html_response(response1, 200) =~ "Show Pharmacy"
+    test "creates and renders an pharmacy when the data is valid" , %{conn: conn} do
+      name = "some name"
+      username = "some username"
+      email = "some email"
+
+      attrs = %{ "name" => name,
+                 "username" => username,
+                 "email" => email,
+                 "address" => "some address",
+                 "password" => "some password",
+               }
+
+      response0 = post conn, api_pharmacy_path(conn, :create), pharmacy: attrs
+      json = json_response(response0, :created)
+      created = json["created"]["pharmacy"]
+      created_id = created["id"]
+
+      template = %{ "id" => created_id,
+                    "name" => name,
+                    "username" => username,
+                    "email" => email,
+                  }
+
+      assert created == template
+
+      response1 = get conn, api_pharmacy_path(conn, :show, created_id)
+      json = json_response(response1, 200)
+      assert json["pharmacy"] == template
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      response = post conn, pharmacy_path(conn, :create), agent: @invalid_attrs
-      assert html_response(response, 400) =~ "New Pharmacy"
+      invalid_attrs = %{}
+      response = post conn, api_pharmacy_path(conn, :create), pharmacy: invalid_attrs
+      json_response(response, 400)
     end
-  end
-
-  describe "delete pharmacy" do
-    setup [:log_in_admin, :create_pharmacy]
-
-    test "deletes chosen pharmacy", %{conn: conn, pharmacy: pharmacy} do
-      response0 = delete conn, pharmacy_path(conn, :delete, pharmacy)
-      assert redirected_to(response0) == pharmacy_path(response0, :index)
-      response1 = get conn, pharmacy_path(conn, :show, pharmacy)
-      assert redirected_to(response1) == page_path(response1, :index)
-      error = "Pharmacy ##{pharmacy.id} does not exist"
-      assert get_flash(response1, :error) =~ error
-    end
-  end
-
-  defp create_pharmacy(_) do
-    pharmacy = fixture(:pharmacy)
-    {:ok, pharmacy: pharmacy}
   end
 end
