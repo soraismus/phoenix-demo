@@ -4,30 +4,6 @@ defmodule Assessment.AccountsTest do
   alias Assessment.Accounts
   alias Assessment.Accounts.{Administrator,Agent,Courier,Pharmacy}
 
-  def equiv?([], []), do: true
-  def equiv?([_ | _], []), do: false
-  def equiv?([], [_ | _]), do: false
-  def equiv?([value0 | values0], [value1 | values1]) do
-    equiv?(value0, value1)
-      && equiv?(values0, values1)
-  end
-  def equiv?(%Administrator{} = admin0, %Administrator{} = admin1) do
-    admin0.id == admin1.id
-      && admin0.email == admin1.email
-  end
-  def equiv?(%Pharmacy{} = pharmacy0, %Pharmacy{} = pharmacy1) do
-    pharmacy0.id == pharmacy1.id
-      && pharmacy0.name == pharmacy1.name
-      && pharmacy0.email == pharmacy1.email
-      && pharmacy0.address == pharmacy1.address
-  end
-  def equiv?(%Courier{} = courier0, %Courier{} = courier1) do
-    courier0.id == courier1.id
-      && courier0.name == courier1.name
-      && courier0.email == courier1.email
-      && courier0.address == courier1.address
-  end
-
   describe "administrators" do
     alias Assessment.Accounts.Administrator
 
@@ -50,13 +26,13 @@ defmodule Assessment.AccountsTest do
 
     test "list_administrators/0 returns all administrators" do
       administrator = administrator_fixture()
-      assert(equiv?(Accounts.list_administrators(), [administrator]))
+      assert(Equiv.equiv?(Accounts.list_administrators(), [administrator]))
     end
 
     test "get_administrator/1 returns the administrator with given id" do
       administrator0 = administrator_fixture()
       {:ok, administrator1} = Accounts.get_administrator(administrator0.id)
-      assert(equiv?(administrator0, administrator1))
+      assert(Equiv.equiv?(administrator0, administrator1))
     end
 
     test "create_administrator/1 with valid data creates a administrator" do
@@ -103,13 +79,13 @@ defmodule Assessment.AccountsTest do
 
     test "list_pharmacies/0 returns all pharmacies" do
       pharmacy = pharmacy_fixture()
-      assert(equiv?(Accounts.list_pharmacies(), [pharmacy]))
+      assert(Equiv.equiv?(Accounts.list_pharmacies(), [pharmacy]))
     end
 
     test "get_pharmacy/1 returns the pharmacy with given id" do
       pharmacy0 = pharmacy_fixture()
       {:ok, pharmacy1} = Accounts.get_pharmacy(pharmacy0.id)
-      assert(equiv?(pharmacy0, pharmacy1))
+      assert(Equiv.equiv?(pharmacy0, pharmacy1))
     end
 
     test "create_pharmacy/1 with valid data creates a pharmacy" do
@@ -157,13 +133,13 @@ defmodule Assessment.AccountsTest do
 
     test "list_couriers/0 returns all couriers" do
       courier = courier_fixture()
-      assert(equiv?(Accounts.list_couriers(), [courier]))
+      assert(Equiv.equiv?(Accounts.list_couriers(), [courier]))
     end
 
     test "get_courier/1 returns the courier with given id" do
       courier0 = courier_fixture()
       {:ok, courier1} = Accounts.get_courier(courier0.id)
-      assert(equiv?(courier0, courier1))
+      assert(Equiv.equiv?(courier0, courier1))
     end
 
     test "create_courier/1 with valid data creates a courier" do

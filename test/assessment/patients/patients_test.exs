@@ -20,7 +20,7 @@ defmodule Assessment.PatientsTest do
 
     test "list_patients/0 returns all patients" do
       patient = patient_fixture()
-      assert Patients.list_patients() == [patient]
+      assert(Equiv.equiv?(Patients.list_patients(), [patient]))
     end
 
     test "get_patient/1 returns the patient with given id" do
