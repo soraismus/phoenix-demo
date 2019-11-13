@@ -1,8 +1,13 @@
 defmodule AssessmentWeb.Api.AdministratorControllerTest do
   use AssessmentWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Api.ConnCase, only: [log_in_admin: 1]
+  import Assessment.DataCase, only: [fixture: 1, json_equiv?: 2]
+  import AssessmentWeb.Api.ConnCase,
+    only: [ add_administrator: 1,
+            log_in_admin: 1,
+          ]
+
+  alias Assessment.Accounts.Administrator
 
   @invalid_attrs %{email: nil}
   @create_attrs %{ username: "some username",
@@ -13,11 +18,12 @@ defmodule AssessmentWeb.Api.AdministratorControllerTest do
                  }
 
   describe "index" do
-    setup [:log_in_admin]
+    setup [:add_administrator, :log_in_admin]
 
-    test "lists all administrators", %{conn: conn} do
+    test "lists all administrators", %{conn: conn, administrators: administrators} do
       response = get conn, api_administrator_path(conn, :index)
-      assert json_response(response, 200) =~ "Listing Administrators"
+      json = json_response(response, 200)
+      assert json_equiv?(json["administrators"], administrators)
     end
   end
 

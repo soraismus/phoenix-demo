@@ -34,6 +34,7 @@ defmodule Assessment.Sessions do
       end
   end
 
+  @doc false
   def session_changeset(params) do
     %Agent{}
     |> Agent.changeset(params)

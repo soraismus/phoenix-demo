@@ -51,22 +51,16 @@ defmodule Assessment.DataCase do
     end)
   end
 
-  alias Assessment.{Accounts,Orders,Patients}
+  alias Assessment.Accounts
+  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
+  alias Assessment.{Orders,Patients}
 
-  @administrator_attrs %{ username: "some username",
-                          administrator: %{
-                            email: "some email",
-                          },
-                          credential: %{password: "some password"}
-                        }
-
-  @courier_attrs %{ "courier" => %{
-                      "name" => "some name",
-                      "email" => "some email",
-                      "address" => "some address",
-                    },
-                    "credential" => %{"password" => "some password"}
-                  }
+  @administrator :administrator
+  @courier :courier
+  @ok :ok
+  @order :order
+  @patient :patient
+  @pharmacy :pharmacy
 
   @order_attrs %{ "order_state_description" => "active",
                   "pickup_date" => "2010-04-17",
@@ -75,33 +69,50 @@ defmodule Assessment.DataCase do
 
   @patient_attrs %{"name" => "some name", "address" => "some address"}
 
-  @pharmacy_attrs %{ "pharmacy" => %{
-                       "name" => "some name",
-                       "email" => "some email",
-                       "address" => "some address",
-                     },
-                     "credential" => %{"password" => "some password"}
-                   }
+  def fixture(@administrator) do
+    fixture(@administrator, get_username())
+  end
 
-  def fixture(:administrator) do
-    {:ok, %_{administrator: administrator} = agent} =
-      Accounts.create_administrator(@administrator_attrs)
+  def fixture(@courier) do
+    fixture(@courier, get_username())
+  end
+
+  def fixture(@order) do
+    fixture(@order, %{})
+  end
+
+  def fixture(@patient) do
+    {@ok, patient} = Patients.create_patient(@patient_attrs)
+    patient
+  end
+
+  def fixture(@pharmacy) do
+    fixture(@pharmacy, get_username())
+  end
+
+  def fixture(@administrator, username) do
+    {@ok, %_{administrator: administrator} = agent} =
+      Accounts.create_administrator(
+        get_account("administrator", username))
     %{administrator | agent: agent}
   end
 
-  def fixture(:courier) do
-    {:ok, %_{courier: courier} = agent} =
-      @courier_attrs
-      |> Enum.into(%{"username" => get_username()})
-      |> Accounts.create_courier()
+  def fixture(@courier, username) do
+    {@ok, %_{courier: courier} = agent} =
+      Accounts.create_courier(
+        get_account("courier", username))
     %{courier | agent: agent}
   end
 
-  def fixture(:order) do
-    patient = fixture(:patient)
-    courier = fixture(:courier)
-    pharmacy = fixture(:pharmacy)
-    {:ok, order} =
+  def fixture(@order, account_details) do
+    courier_username = Map.get(account_details, @courier) || get_username()
+    pharmacy_username = Map.get(account_details, @pharmacy) || get_username()
+
+    courier = fixture(@courier, courier_username)
+    patient = fixture(@patient)
+    pharmacy = fixture(@pharmacy, pharmacy_username)
+
+    {@ok, order} =
       %{ "patient_id" => patient.id,
          "courier_id" => courier.id,
          "pharmacy_id" => pharmacy.id,
@@ -111,20 +122,33 @@ defmodule Assessment.DataCase do
     order
   end
 
-  def fixture(:patient) do
-    {:ok, patient} = Patients.create_patient(@patient_attrs)
-    patient
+  def fixture(@pharmacy, username) do
+    {@ok, %_{pharmacy: pharmacy} = agent} =
+      Accounts.create_pharmacy(
+        get_account("pharmacy", username))
+    %{pharmacy | agent: agent}
   end
 
-  def fixture(:pharmacy) do
-    {:ok, %_{pharmacy: pharmacy} = agent} =
-      @pharmacy_attrs
-      |> Enum.into(%{"username" => get_username()})
-      |> Accounts.create_pharmacy()
-    %{pharmacy | agent: agent}
+  def get_password(%Administrator{} = account), do: account.username
+  def get_password(%Courier{} = account),       do: account.username
+  def get_password(%Pharmacy{} = account),      do: account.username
+
+  def json_equiv?(json, list) when is_list(list) do
+    json_list = list |> Enum.map(&ToJson.to_json/1)
+    Utilities.same_members?(json, json_list)
   end
 
   defp get_username() do
     :rand.uniform(1000000000) |> to_string()
+  end
+
+  defp get_account(account_type, username) do
+    %{ "username"   => username,
+       account_type => %{ "name" => username,
+                          "email" => username <> "@example.com",
+                          "address" => username <> "_address",
+                        },
+       "credential" => %{"password" => username},
+     }
   end
 end

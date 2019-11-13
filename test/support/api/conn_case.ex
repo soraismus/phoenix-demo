@@ -15,6 +15,7 @@ defmodule AssessmentWeb.Api.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  import Assessment.DataCase, only: [fixture: 1, get_password: 1]
   import AssessmentWeb.Router.Helpers, only: [api_session_path: 2]
   import Phoenix.ConnTest, only: [build_conn: 0, post: 3]
   import Plug.Conn, only: [put_req_header: 3]
@@ -40,20 +41,28 @@ defmodule AssessmentWeb.Api.ConnCase do
     {:ok, conn: build_conn()}
   end
 
-  def log_in_admin(_) do
-    username = "admin_username"
-    password = "admin_password"
-    {:ok, _admin} =
-      Assessment.Accounts.create_administrator(%{
-        username: username,
-        administrator: %{
-          email: "admin@example.com",
-        },
-        credential: %{
-          password: password,
-        }
-      })
-    credential = %{"username" => username, "password" => password}
+  def add_administrator(context) do
+    administrators = Map.get(context, :administrators) || []
+    administrator = fixture(:administrator)
+    {:ok, administrators: [administrator | administrators]}
+  end
+
+  def add_courier(context) do
+    couriers = Map.get(context, :couriers) || []
+    courier = fixture(:courier)
+    {:ok, couriers: [courier | couriers]}
+  end
+
+  def add_pharmacy(context) do
+    pharmacies = Map.get(context, :pharmacies) || []
+    pharmacy = fixture(:pharmacy)
+    {:ok, pharmacies: [pharmacy | pharmacies]}
+  end
+
+  def log_in_admin(%{administrators: [administrator | _]}) do
+    credential = %{ "username" => administrator.username,
+                    "password" => get_password(administrator),
+                  }
     {:ok, conn: get_authenticated_connection(credential)}
   end
 
