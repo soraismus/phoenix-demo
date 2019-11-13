@@ -79,19 +79,18 @@ defmodule AssessmentWeb.Browser.OrderControllerTest do
     end
   end
 
-#  describe "delete order" do
-#    setup [:log_in_admin, :create_order]
-#
-#    test "deletes chosen order", %{conn: conn, order: order} do
-#      response0 = delete conn, order_path(conn, :delete, order)
-#      assert redirected_to(response0) == order_path(response0, :index)
-#      response1 = get conn, order_path(conn, :show, order)
-#      assert redirected_to(response1) == page_path(response1, :index)
-#      error = "Order ##{order.id} does not exist"
-#      assert get_flash(response1, :error) =~ error
-#      end
-#    end
-#  end
+  describe "delete order" do
+    setup [:log_in_admin, :create_order]
+
+    test "deletes chosen order", %{conn: conn, order: order} do
+      response0 = delete conn, order_path(conn, :delete, order)
+      assert redirected_to(response0) == order_path(response0, :index)
+      response1 = get conn, order_path(conn, :show, order)
+      assert redirected_to(response1) == page_path(response1, :index)
+      error = "Order ##{order.id} does not exist"
+      assert get_flash(response1, :error) =~ error
+    end
+  end
 
   defp create_courier(_) do
     courier = fixture(:courier)
