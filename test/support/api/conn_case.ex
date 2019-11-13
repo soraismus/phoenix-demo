@@ -29,6 +29,8 @@ defmodule AssessmentWeb.Api.ConnCase do
     end
   end
 
+  @endpoint AssessmentWeb.Endpoint
+
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
     unless tags[:async] do
