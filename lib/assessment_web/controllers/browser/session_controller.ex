@@ -1,6 +1,11 @@
 defmodule AssessmentWeb.Browser.SessionController do
   use AssessmentWeb, :controller
 
+  import AssessmentWeb.Browser.ControllerUtilities,
+    only: [ internal_error: 2,
+            match_error: 2,
+          ]
+
   alias Assessment.Accounts
   alias Assessment.Sessions
 
@@ -14,6 +19,7 @@ defmodule AssessmentWeb.Browser.SessionController do
     |> put_status(:forbidden)
     |> json(%{errors: %{request: [msg]}})
   end
+  def auth_error(conn, _, _), do: conn |> internal_error("SEAE")
 
   def new(conn, _params) do
     conn
@@ -40,6 +46,11 @@ defmodule AssessmentWeb.Browser.SessionController do
       |> assign(:changeset, %{changeset | action: :show_errors})
       |> render("new.html")
     end
+  end
+  def create(conn, _) do
+    conn
+    |> authentication_error()
+    |> match_error("to create a session")
   end
 
   def delete(conn, _) do

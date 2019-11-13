@@ -2,8 +2,11 @@ defmodule AssessmentWeb.Browser.PatientController do
   use AssessmentWeb, :controller
 
   import AssessmentWeb.Browser.ControllerUtilities,
-    only: [ internal_error: 2,
+    only: [ id_type_validation_error: 1,
+            internal_error: 2,
+            match_error: 2,
             resource_error: 3,
+            validate_id_type: 1,
           ]
 
   alias Assessment.Patients
@@ -15,21 +18,12 @@ defmodule AssessmentWeb.Browser.PatientController do
   @ignore :ignore
   @index :index
   @info :info
+  @invalid_parameter :invalid_parameter
   @new :new
   @no_resource :no_resource
   @ok :ok
   @request_path :request_path
   @show :show
-
-  def index(conn, _params) do
-    conn
-    |> render("index.html", patients: Patients.list_patients())
-  end
-
-  def new(conn, _params) do
-    conn
-    |> render("new.html", changeset: Patients.change_patient(%Patient{}))
-  end
 
   def create(conn, %{"patient" => patient_params}) do
     case Patients.create_patient(patient_params) do
@@ -46,36 +40,60 @@ defmodule AssessmentWeb.Browser.PatientController do
         |> internal_error("PACR_B")
     end
   end
-
-  def show(conn, %{"id" => id}) do
-    with {@ok, patient} <- Patients.get_patient(id) do
-      conn
-      |> render("show.html", patient: patient)
-    else
-      {@error, @no_resource} ->
-        conn
-        |> resource_error("patient ##{id}", "does not exist")
-      _ ->
-        conn
-        |> internal_error("PASH_B")
-    end
+  def create(conn, _) do
+    conn
+    |> match_error("to create a patient")
   end
 
   def delete(conn, %{"id" => id}) do
-    with {@ok, patient} <- Patients.get_patient(id),
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, patient} <- Patients.get_patient(id),
          {@ok, _patient} = Patients.delete_patient(patient) do
       conn
       |> put_flash(@info, "Patient deleted successfully.")
       |> redirect(to: patient_path(conn, @index))
     else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
       {@error, @no_resource} ->
         conn
         |> resource_error("patient ##{id}", "does not exist")
       _ ->
         conn
-        |> internal_error("PADE_B")
+        |> internal_error("PADE_B_1")
     end
   end
+  def delete(conn, _), do: conn |> internal_error("PADE_B_2")
+
+  def index(conn, _params) do
+    conn
+    |> render("index.html", patients: Patients.list_patients())
+  end
+
+  def new(conn, _params) do
+    conn
+    |> render("new.html", changeset: Patients.change_patient(%Patient{}))
+  end
+
+  def show(conn, %{"id" => id}) do
+    with {@ok, _} <- validate_id_type(id),
+         {@ok, patient} <- Patients.get_patient(id) do
+      conn
+      |> render("show.html", patient: patient)
+    else
+      {@error, {@invalid_parameter, _}} ->
+        conn
+        |> id_type_validation_error()
+      {@error, @no_resource} ->
+        conn
+        |> resource_error("patient ##{id}", "does not exist")
+      _ ->
+        conn
+        |> internal_error("PASH_B_1")
+    end
+  end
+  def show(conn, _), do: conn |> internal_error("PASH_B_2")
 
   defp authenticate_administrator(conn, _) do
     agent = conn.assigns.agent
