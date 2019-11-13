@@ -26,7 +26,6 @@ defmodule AssessmentWeb.Browser.ConnCase do
     end
   end
 
-
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
     unless tags[:async] do

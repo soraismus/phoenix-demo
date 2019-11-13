@@ -17,6 +17,12 @@ defmodule Assessment.DataCase do
     end)
   end
 
+  @administrator_attrs %{ username: "some username",
+                          administrator: %{
+                            email: "some email",
+                          },
+                          credential: %{password: "some password"}
+                        }
 
   @courier_attrs %{ "courier" => %{
                       "name" => "some name",
@@ -40,6 +46,12 @@ defmodule Assessment.DataCase do
                      },
                      "credential" => %{"password" => "some password"}
                    }
+
+  def fixture(:administrator) do
+    {:ok, %_{administrator: administrator} = agent} =
+      Accounts.create_administrator(@administrator_attrs)
+    %{administrator | agent: agent}
+  end
 
   def fixture(:courier) do
     {:ok, %_{courier: courier} = agent} =

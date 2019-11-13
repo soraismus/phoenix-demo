@@ -1,17 +1,11 @@
 defmodule AssessmentWeb.Browser.PatientControllerTest do
   use AssessmentWeb.ConnCase
 
+  import Assessment.DataCase, only: [fixture: 1]
   import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
-
-  alias Assessment.Patients
 
   @invalid_attrs %{address: nil, name: nil}
   @create_attrs %{name: "some name", address: "some address"}
-
-  def fixture(:patient) do
-    {:ok, patient} = Patients.create_patient(@create_attrs)
-    patient
-  end
 
   describe "index" do
     setup [:log_in_admin]
@@ -44,7 +38,7 @@ defmodule AssessmentWeb.Browser.PatientControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn} do
       response = post conn, patient_path(conn, :create), patient: @invalid_attrs
-      assert html_response(response, 200) =~ "New Patient"
+      assert html_response(response, 400) =~ "New Patient"
     end
   end
 

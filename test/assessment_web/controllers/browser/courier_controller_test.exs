@@ -1,9 +1,8 @@
 defmodule AssessmentWeb.Browser.CourierControllerTest do
   use AssessmentWeb.ConnCase
 
+  import Assessment.DataCase, only: [fixture: 1]
   import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
-
-  alias Assessment.Accounts
 
   @invalid_attrs %{address: nil, email: nil, name: nil}
   @create_attrs %{ username: "some username",
@@ -14,12 +13,6 @@ defmodule AssessmentWeb.Browser.CourierControllerTest do
                    },
                    credential: %{password: "some password"}
                  }
-
-  def fixture(:courier) do
-    {:ok, %_{courier: courier} = agent} =
-      Accounts.create_courier(@create_attrs)
-    %{courier | agent: agent}
-  end
 
   describe "index" do
     setup [:log_in_admin]
@@ -52,7 +45,7 @@ defmodule AssessmentWeb.Browser.CourierControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn} do
       response = post conn, courier_path(conn, :create), agent: @invalid_attrs
-      assert html_response(response, 200) =~ "New Courier"
+      assert html_response(response, 400) =~ "New Courier"
     end
   end
 

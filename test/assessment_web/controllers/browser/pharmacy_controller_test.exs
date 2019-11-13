@@ -1,9 +1,8 @@
 defmodule AssessmentWeb.Browser.PharmacyControllerTest do
   use AssessmentWeb.ConnCase
 
+  import Assessment.DataCase, only: [fixture: 1]
   import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
-
-  alias Assessment.Accounts
 
   @invalid_attrs %{address: nil, email: nil, name: nil}
   @create_attrs %{ username: "some username",
@@ -14,12 +13,6 @@ defmodule AssessmentWeb.Browser.PharmacyControllerTest do
                    },
                    credential: %{password: "some password"}
                  }
-
-  def fixture(:pharmacy) do
-    {:ok, %_{pharmacy: pharmacy} = agent} =
-      Accounts.create_pharmacy(@create_attrs)
-    %{pharmacy | agent: agent}
-  end
 
   describe "index" do
     setup [:log_in_admin]
@@ -52,7 +45,7 @@ defmodule AssessmentWeb.Browser.PharmacyControllerTest do
 
     test "renders errors when data is invalid", %{conn: conn} do
       response = post conn, pharmacy_path(conn, :create), agent: @invalid_attrs
-      assert html_response(response, 200) =~ "New Pharmacy"
+      assert html_response(response, 400) =~ "New Pharmacy"
     end
   end
 

@@ -1,9 +1,8 @@
 defmodule AssessmentWeb.Browser.AdministratorControllerTest do
   use AssessmentWeb.Browser.ConnCase
 
+  import Assessment.DataCase, only: [fixture: 1]
   import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
-
-  alias Assessment.Accounts
 
   @invalid_attrs %{email: nil}
   @create_attrs %{ username: "some username",
@@ -12,12 +11,6 @@ defmodule AssessmentWeb.Browser.AdministratorControllerTest do
                    },
                    credential: %{password: "some password"}
                  }
-
-  def fixture(:administrator) do
-    {:ok, %_{administrator: administrator} = agent} =
-      Accounts.create_administrator(@create_attrs)
-    %{administrator | agent: agent}
-  end
 
   describe "index" do
     setup [:log_in_admin]
