@@ -28,7 +28,7 @@ defmodule DemoWeb do
 
   def view do
     quote do
-      use Phoenix.View, root: "lib/assessment_web/templates",
+      use Phoenix.View, root: "lib/demo_web/templates",
                         namespace: DemoWeb
 
       # Import convenience functions from controllers

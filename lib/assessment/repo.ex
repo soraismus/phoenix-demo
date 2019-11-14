@@ -1,5 +1,5 @@
 defmodule Demo.Repo do
-  use Ecto.Repo, otp_app: :assessment
+  use Ecto.Repo, otp_app: :demo
 
   @doc """
   Dynamically loads the repository url from the

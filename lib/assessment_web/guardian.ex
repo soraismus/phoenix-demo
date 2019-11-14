@@ -1,5 +1,5 @@
 defmodule DemoWeb.Guardian do
-  use Guardian, otp_app: :assessment
+  use Guardian, otp_app: :demo
   alias Demo.Accounts
 
   def subject_for_token(%{agent_id: agent_id} = _resource, _claims) do
