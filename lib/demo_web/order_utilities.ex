@@ -42,8 +42,8 @@ defmodule DemoWeb.OrderUtilities do
       |> validate_order_state_description()
     patient_id =
       params
-      |> get_patient_id_param_result()
-      |> bind_value(&validate_id/1)
+      |> get_patient_id_param_or_unspecified()
+      |> validate_id()
     pharmacy_id =
       params
       |> get_pharmacy_id_param_or_unspecified()
@@ -109,7 +109,7 @@ defmodule DemoWeb.OrderUtilities do
       |> validate_order_state_description()
     patient_id =
       params
-      |> get_pharmacy_id_param_or_unspecified()
+      |> get_patient_id_param_or_unspecified()
       |> check_unspecified_or_validate(order.patient.id, &validate_id/1)
     pharmacy_id =
       params
@@ -175,11 +175,9 @@ defmodule DemoWeb.OrderUtilities do
     |> to_string()
   end
 
-  defp get_patient_id_param_result(params) do
+  defp get_patient_id_param_or_unspecified(params) do
     params
-    |> Map.get("patient_id")
-    |> prohibit_nil(@absent_patient_id)
-    |> map_value(&to_string/1)
+    |> get_param_or_unspecified("patient_id")
   end
 
   defp get_pharmacy_id_param_or_unspecified(params) do

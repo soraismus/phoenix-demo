@@ -1,5 +1,12 @@
 alias Demo.{Accounts,Orders,OrderStates,Patients}
 
+get_date_today = fn () ->
+  :calendar.local_time()
+  |> elem(0)
+  |> Date.from_erl()
+  |> elem(1)
+end
+
 [{:ok, _active}, {:ok, _canceled}, {:ok, _delivered}, {:ok, _undeliverable}] =
   Enum.map(
     ~w(active canceled delivered undeliverable)s,
@@ -90,7 +97,7 @@ alias Demo.{Accounts,Orders,OrderStates,Patients}
   })
 
 now = Time.utc_now()
-today = Date.utc_today()
+today = get_date_today.()
 future = Date.add(today, 5)
 
 {:ok, _order0} =

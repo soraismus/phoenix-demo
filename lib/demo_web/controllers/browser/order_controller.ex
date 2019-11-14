@@ -139,7 +139,10 @@ defmodule DemoWeb.Browser.OrderController do
          account <- Accounts.specify_agent(agent),
          {@ok, _} <- authorize(account, order) do
       conn
-      |> render("edit.html", order_id: id, changeset: Orders.change_order(order))
+      |> render(
+            "edit.html",
+            order_id: id,
+            changeset: Orders.change_order(order))
     else
       {@error, {@invalid_parameter, _}} ->
         conn
@@ -236,8 +239,9 @@ defmodule DemoWeb.Browser.OrderController do
          account <- Accounts.specify_agent(agent),
          {@ok, _} <- authorize(account, order),
          validated_params <- normalize_validate_update(order, params, account),
-         {@ok, normalized_params} <- accumulate_errors(validated_params) do
-      {@ok, new_order} = Orders.update_order(order, normalized_params)
+         {@ok, normalized_params} <- accumulate_errors(validated_params),
+         _ <- IO.inspect(normalized_params),
+         {@ok, new_order} <- Orders.update_order(order, normalized_params) do
       conn
       |> put_flash(@info, "Order ##{id} updated successfully.")
       |> redirect(to: order_path(conn, @show, new_order))
@@ -266,6 +270,7 @@ defmodule DemoWeb.Browser.OrderController do
               order_id: id,
             })
       {@error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect({"update error", changeset})
         conn
         |> changeset_error(%{
               view: "edit.html",
