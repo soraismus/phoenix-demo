@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.Browser.LayoutView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.LayoutView do
+  use DemoWeb, :view
 end

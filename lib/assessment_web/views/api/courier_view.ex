@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.CourierView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Api.CourierView do
+  use DemoWeb, :view
 
   def render("create.json", %{courier: courier}) do
     %{created: %{courier: ToJson.to_json(courier)}}

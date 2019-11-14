@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Browser.PageControllerTest do
-  use AssessmentWeb.ConnCase
+defmodule DemoWeb.Browser.PageControllerTest do
+  use DemoWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     response = get conn, "/"

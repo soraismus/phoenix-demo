@@ -1,16 +1,16 @@
-defmodule AssessmentWeb.Browser.CourierController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.CourierController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Browser.ControllerUtilities,
+  import DemoWeb.Browser.ControllerUtilities,
     only: [ id_type_validation_error: 1,
             internal_error: 2,
             match_error: 2,
             resource_error: 3,
           ]
-  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
+  import DemoWeb.ControllerUtilities, only: [validate_id_type: 1]
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.Agent
+  alias Demo.Accounts
+  alias Demo.Accounts.Agent
 
   plug :authenticate_administrator
 

@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Router do
-  use AssessmentWeb, :router
+defmodule DemoWeb.Router do
+  use DemoWeb, :router
 
   import Utilities, only: [nilify_error: 1]
 
@@ -7,9 +7,9 @@ defmodule AssessmentWeb.Router do
   alias Guardian.Plug.Pipeline, as: Guardian_Pipeline
   alias Guardian.Plug.VerifyHeader, as: Guardian_VerifyHeader
   alias Guardian.Plug.VerifySession, as: Guardian_VerifySession
-  alias AssessmentWeb.Guardian
-  alias AssessmentWeb.AuthErrorHandler
-  alias AssessmentWeb.GuardianController
+  alias DemoWeb.Guardian
+  alias DemoWeb.AuthErrorHandler
+  alias DemoWeb.GuardianController
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -23,7 +23,7 @@ defmodule AssessmentWeb.Router do
     plug :authenticate_agent
   end
 
-  scope "/", AssessmentWeb.Browser do
+  scope "/", DemoWeb.Browser do
     pipe_through :browser
 
     get "/", PageController, :index
@@ -45,13 +45,13 @@ defmodule AssessmentWeb.Router do
     plug :accepts, ["json", "csv"]
     plug ProperCase.Plug.SnakeCaseParams
     plug Guardian_Pipeline,
-      error_handler: AssessmentWeb.Api.SessionController,
-      module: AssessmentWeb.Guardian
+      error_handler: DemoWeb.Api.SessionController,
+      module: DemoWeb.Guardian
     plug Guardian_VerifyHeader, realm: "Token"
     plug Guardian_LoadResource, allow_blank: true
   end
 
-  scope "/api", AssessmentWeb.Api, as: :api do
+  scope "/api", DemoWeb.Api, as: :api do
     pipe_through :api
 
     post   "/login",              SessionController,       :create

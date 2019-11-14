@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.Browser.SessionView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.SessionView do
+  use DemoWeb, :view
 end

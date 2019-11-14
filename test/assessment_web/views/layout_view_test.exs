@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.LayoutViewTest do
-  use AssessmentWeb.ConnCase, async: true
+defmodule DemoWeb.LayoutViewTest do
+  use DemoWeb.ConnCase, async: true
 end

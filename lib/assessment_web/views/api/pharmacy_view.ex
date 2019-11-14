@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.PharmacyView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Api.PharmacyView do
+  use DemoWeb, :view
 
   def render("create.json", %{pharmacy: pharmacy}) do
     %{created: %{pharmacy: ToJson.to_json(pharmacy)}}

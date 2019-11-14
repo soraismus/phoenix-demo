@@ -1,4 +1,4 @@
-defmodule Assessment.OrderStates do
+defmodule Demo.OrderStates do
   @moduledoc """
   The OrderStates context.
   """
@@ -6,8 +6,8 @@ defmodule Assessment.OrderStates do
   import Ecto.Query, warn: false
   import Utilities, only: [prohibit_nil: 2]
 
-  alias Assessment.Repo
-  alias Assessment.OrderStates.OrderState
+  alias Demo.Repo
+  alias Demo.OrderStates.OrderState
 
   @active OrderState.active()
   @canceled OrderState.canceled()

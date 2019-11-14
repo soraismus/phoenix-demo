@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.Browser.CourierView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.CourierView do
+  use DemoWeb, :view
 end

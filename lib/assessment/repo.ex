@@ -1,4 +1,4 @@
-defmodule Assessment.Repo do
+defmodule Demo.Repo do
   use Ecto.Repo, otp_app: :assessment
 
   @doc """

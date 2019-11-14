@@ -1,8 +1,8 @@
-defmodule AssessmentWeb.Browser.AdministratorControllerTest do
-  use AssessmentWeb.Browser.ConnCase
+defmodule DemoWeb.Browser.AdministratorControllerTest do
+  use DemoWeb.Browser.ConnCase
 
-  import Assessment.DataCase, only: [fixture: 1]
-  import AssessmentWeb.Browser.ConnCase, only: [log_in_admin: 1]
+  import Demo.DataCase, only: [fixture: 1]
+  import DemoWeb.Browser.ConnCase, only: [log_in_admin: 1]
 
   @invalid_attrs %{email: nil}
   @create_attrs %{ username: "some username",

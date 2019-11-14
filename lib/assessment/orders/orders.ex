@@ -1,4 +1,4 @@
-defmodule Assessment.Orders do
+defmodule Demo.Orders do
   @moduledoc """
   The Orders context.
   """
@@ -11,10 +11,10 @@ defmodule Assessment.Orders do
             prohibit_nil: 2,
           ]
 
-  alias Assessment.Repo
-  alias Assessment.Orders.Order
-  alias Assessment.OrderStates
-  alias Assessment.OrderStates.OrderState
+  alias Demo.Repo
+  alias Demo.Orders.Order
+  alias Demo.OrderStates
+  alias Demo.OrderStates.OrderState
   alias Ecto.Changeset
 
   @no_resource :no_resource

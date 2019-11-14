@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.Browser.PatientView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.PatientView do
+  use DemoWeb, :view
 end

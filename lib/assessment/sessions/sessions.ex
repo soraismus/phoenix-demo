@@ -1,10 +1,10 @@
-defmodule Assessment.Sessions do
+defmodule Demo.Sessions do
   @moduledoc """
   The Sessions context.
   """
 
-  alias Assessment.Repo
-  alias Assessment.Accounts.{Agent,Credential}
+  alias Demo.Repo
+  alias Demo.Accounts.{Agent,Credential}
 
   @doc """
   Gets a single agent corresponding to a username and password.

@@ -1,4 +1,4 @@
-# Assessment
+# Demo
 
 To start your Phoenix server:
 

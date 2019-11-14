@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.Browser.OrderController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.OrderController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Browser.ControllerUtilities,
+  import DemoWeb.Browser.ControllerUtilities,
     only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,
@@ -12,21 +12,21 @@ defmodule AssessmentWeb.Browser.OrderController do
             send_attachment: 4,
             validation_error: 2,
           ]
-  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
-  import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
-  import AssessmentWeb.OrderUtilities,
+  import DemoWeb.ControllerUtilities, only: [validate_id_type: 1]
+  import DemoWeb.GuardianController, only: [authenticate_agent: 1]
+  import DemoWeb.OrderUtilities,
     only: [ normalize_validate_creation: 2,
             normalize_validate_index: 2,
             normalize_validate_update: 3,
           ]
   import Utilities, only: [accumulate_errors: 1]
-  import AssessmentWeb.Utilities, only: [to_changeset: 2]
+  import DemoWeb.Utilities, only: [to_changeset: 2]
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
-  alias Assessment.Orders
-  alias Assessment.Orders.Order
-  alias AssessmentWeb.OrderView
+  alias Demo.Accounts
+  alias Demo.Accounts.{Administrator,Courier,Pharmacy}
+  alias Demo.Orders
+  alias Demo.Orders.Order
+  alias DemoWeb.OrderView
 
   @error :error
   @no_resource :no_resource

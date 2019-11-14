@@ -1,14 +1,14 @@
-defmodule AssessmentWeb.Api.SessionController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Api.SessionController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Api.ControllerUtilities,
+  import DemoWeb.Api.ControllerUtilities,
     only: [ internal_error: 2,
             match_error: 2,
             resource_error: 4,
           ]
 
-  alias Assessment.Sessions
-  alias AssessmentWeb.Guardian
+  alias Demo.Sessions
+  alias DemoWeb.Guardian
 
   @accepted :accepted
   @error :error

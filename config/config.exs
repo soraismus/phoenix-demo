@@ -7,14 +7,14 @@ use Mix.Config
 
 # General application configuration
 config :assessment,
-  ecto_repos: [Assessment.Repo]
+  ecto_repos: [Demo.Repo]
 
 # Configures the endpoint
-config :assessment, AssessmentWeb.Endpoint,
+config :assessment, DemoWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "ZZMSGnkc3iCnqTd1Xl84slJ08+WFWXqZ3A0AqjFoy+c4s2Cahr4vVRSpJdbBsOd2",
-  render_errors: [view: AssessmentWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Assessment.PubSub,
+  render_errors: [view: DemoWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: Demo.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
@@ -27,8 +27,8 @@ config :mime, :types, %{
   "text/csv" => ["csv"]
 }
 
-config :assessment, AssessmentWeb.Guardian,
-  issuer: "Assessment",
+config :assessment, DemoWeb.Guardian,
+  issuer: "Demo",
   secret_key: "MDLMflIpKod5YCnkdiY7C4E3ki2rgcAAMwfBl0+vyC5uqJNgoibfQmAh7J3uZWVK",
   # optional
   allowed_algos: ["HS256"],

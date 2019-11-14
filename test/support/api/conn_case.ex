@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.Api.ConnCase do
+defmodule DemoWeb.Api.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -15,8 +15,8 @@ defmodule AssessmentWeb.Api.ConnCase do
 
   use ExUnit.CaseTemplate
 
-  import Assessment.DataCase, only: [fixture: 1, get_password: 1]
-  import AssessmentWeb.Router.Helpers, only: [api_session_path: 2]
+  import Demo.DataCase, only: [fixture: 1, get_password: 1]
+  import DemoWeb.Router.Helpers, only: [api_session_path: 2]
   import Phoenix.ConnTest, only: [build_conn: 0, post: 3]
   import Plug.Conn, only: [put_req_header: 3]
 
@@ -24,19 +24,19 @@ defmodule AssessmentWeb.Api.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      import AssessmentWeb.Router.Helpers
+      import DemoWeb.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint AssessmentWeb.Endpoint
+      @endpoint DemoWeb.Endpoint
     end
   end
 
-  @endpoint AssessmentWeb.Endpoint
+  @endpoint DemoWeb.Endpoint
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Demo.Repo)
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Assessment.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Demo.Repo, {:shared, self()})
     end
     {:ok, conn: build_conn()}
   end

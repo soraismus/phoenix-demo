@@ -1,8 +1,8 @@
-defmodule Assessment.ToJson do
-  alias Assessment.Accounts.{Administrator,Agent,Courier,Pharmacy}
-  alias Assessment.Orders.Order
-  alias Assessment.OrderStates
-  alias Assessment.Patients.Patient
+defmodule Demo.ToJson do
+  alias Demo.Accounts.{Administrator,Agent,Courier,Pharmacy}
+  alias Demo.Orders.Order
+  alias Demo.OrderStates
+  alias Demo.Patients.Patient
 
   defimpl ToJson, for: Administrator do
     def to_json(%Administrator{} = administrator) do

@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.OrderUtilities do
+defmodule DemoWeb.OrderUtilities do
   import Utilities,
     only: [ bind_value: 2,
             get_date_today: 0,
@@ -8,9 +8,9 @@ defmodule AssessmentWeb.OrderUtilities do
             to_integer: 1,
           ]
 
-  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
-  alias Assessment.Orders.Order
-  alias Assessment.OrderStates.OrderState
+  alias Demo.Accounts.{Administrator,Courier,Pharmacy}
+  alias Demo.Orders.Order
+  alias Demo.OrderStates.OrderState
 
   @default_order_state_description OrderState.active()
   @default_pickup_date "today"

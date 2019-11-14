@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.Api.OrderController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Api.OrderController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Api.ControllerUtilities,
+  import DemoWeb.Api.ControllerUtilities,
     only: [ authentication_error: 2,
             authorization_error: 2,
             changeset_error: 2,
@@ -13,19 +13,19 @@ defmodule AssessmentWeb.Api.OrderController do
             send_attachment: 4,
             validation_error: 2,
           ]
-  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
-  import AssessmentWeb.GuardianController, only: [authenticate_agent: 1]
-  import AssessmentWeb.OrderUtilities,
+  import DemoWeb.ControllerUtilities, only: [validate_id_type: 1]
+  import DemoWeb.GuardianController, only: [authenticate_agent: 1]
+  import DemoWeb.OrderUtilities,
     only: [ normalize_validate_creation: 2,
             normalize_validate_index: 2,
           ]
   import Utilities, only: [accumulate_errors: 1]
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
-  alias Assessment.Orders
-  alias Assessment.OrderStates.OrderState
-  alias AssessmentWeb.OrderView
+  alias Demo.Accounts
+  alias Demo.Accounts.{Administrator,Courier,Pharmacy}
+  alias Demo.Orders
+  alias Demo.OrderStates.OrderState
+  alias DemoWeb.OrderView
 
   @already_canceled :already_canceled
   @already_delivered :already_delivered

@@ -1,8 +1,8 @@
-defmodule AssessmentWeb.Api.OrderControllerTest do
-  use AssessmentWeb.Api.ConnCase
+defmodule DemoWeb.Api.OrderControllerTest do
+  use DemoWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [json_equiv?: 2]
-  import AssessmentWeb.Api.ConnCase,
+  import Demo.DataCase, only: [json_equiv?: 2]
+  import DemoWeb.Api.ConnCase,
     only: [ add_administrator: 1,
             add_courier: 1,
             add_order: 1,
@@ -11,7 +11,7 @@ defmodule AssessmentWeb.Api.OrderControllerTest do
             log_in_admin: 1,
           ]
 
-  alias Assessment.OrderStates
+  alias Demo.OrderStates
 
   @base_attrs %{ "order_state" => "active",
                  "pickup_date" => "2010-04-17",

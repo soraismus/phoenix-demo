@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.Utilities do
+defmodule DemoWeb.Utilities do
   alias Ecto.Changeset
 
   @doc """

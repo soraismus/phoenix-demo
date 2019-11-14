@@ -1,4 +1,4 @@
-defmodule Assessment.Repo.Migrations.CreateCouriers do
+defmodule Demo.Repo.Migrations.CreateCouriers do
   use Ecto.Migration
 
   def change do

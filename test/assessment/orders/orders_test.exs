@@ -1,13 +1,13 @@
-defmodule Assessment.OrdersTest do
-  use Assessment.DataCase
+defmodule Demo.OrdersTest do
+  use Demo.DataCase
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.Agent
-  alias Assessment.Orders
-  alias Assessment.Patients
+  alias Demo.Accounts
+  alias Demo.Accounts.Agent
+  alias Demo.Orders
+  alias Demo.Patients
 
   describe "orders" do
-    alias Assessment.Orders.Order
+    alias Demo.Orders.Order
 
     @valid_attrs %{ order_state_description: "active",
                     pickup_date: ~D[2010-04-17],

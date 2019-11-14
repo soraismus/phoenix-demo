@@ -1,3 +1,3 @@
-defmodule AssessmentWeb.Browser.AdministratorView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.AdministratorView do
+  use DemoWeb, :view
 end

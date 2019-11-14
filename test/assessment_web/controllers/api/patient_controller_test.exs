@@ -1,8 +1,8 @@
-defmodule AssessmentWeb.Api.PatientControllerTest do
-  use AssessmentWeb.Api.ConnCase
+defmodule DemoWeb.Api.PatientControllerTest do
+  use DemoWeb.Api.ConnCase
 
-  import Assessment.DataCase, only: [json_equiv?: 2]
-  import AssessmentWeb.Api.ConnCase,
+  import Demo.DataCase, only: [json_equiv?: 2]
+  import DemoWeb.Api.ConnCase,
     only: [ add_administrator: 1,
             add_patient: 1,
             log_in_admin: 1,

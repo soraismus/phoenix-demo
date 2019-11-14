@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.AdministratorView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Api.AdministratorView do
+  use DemoWeb, :view
 
   def render("create.json", %{administrator: administrator}) do
     %{created: %{administrator: ToJson.to_json(administrator)}}
