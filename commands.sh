@@ -68,7 +68,6 @@ parse_json() {
 login_token() {
   request login _ POST "{\"username\":\"$1\",\"password\":\"$2\"}"
 }
-
 note() {
   echo
   echo "$1"
@@ -169,7 +168,7 @@ PATIENT
   note "INDEX PATIENTS"
   request patients admin | parse_json
 
-  note "CREATE ORDER"
+  note "CREATE ORDER [Causes error if previously created.]"
   username="$(get_username)"
   read -d '' order <<ORDER
   { "order":
@@ -184,12 +183,12 @@ ORDER
   request orders admin POST "$order" | parse_json
   note "SHOW ORDER #2"
   request orders/2 admin | parse_json
-  note "MARK ORDER #2 UNDELIVERABLE"
+  note "MARK ORDER #2 UNDELIVERABLE [Causes error if previously canceled/delivered.]"
   request orders/2/mark_undeliverable admin POST | parse_json
-  note "CANCEL ORDER #2"
+  note "CANCEL ORDER #2 [Cancels order #2 the first time; causes error subsequently.]"
   request orders/2/cancel admin POST | parse_json
-  note "DELIVER ORDER #1"
-  request orders/1/cancel admin POST | parse_json
+  note "DELIVER ORDER #1 [Delivers order #1 the first time; causes error subsequently.]"
+  request orders/1/deliver admin POST | parse_json
 
   note "INDEX ORDERS -- order_state: active, pickup_date: today"
   request orders admin | parse_json
@@ -201,7 +200,7 @@ ORDER
   request "orders?order_state=all&pickup_date=all" admin | parse_json
   future="$(get_today_plus_five_days)"
   note "INDEX ORDERS -- order_state: active, pickup_date: $future"
-  request "orders?order_state=all&pickup_date=$future" admin | parse_json
+  request "orders?order_state=active&pickup_date=$future" admin | parse_json
   read -d '' request <<REQUEST
   INDEX ORDERS --
     order_state: active,
@@ -232,4 +231,12 @@ REQUEST
 &pharmacy_id=invalid\
 &courier_id=invalid"
   request "$orders" admin | parse_json
+
+  note "INDEX ORDERS IN CSV FORMAT -- order_state: delivered, pickup_date: all"
+  request                                          \
+    "orders?order_state=delivered&pickup_date=all" \
+    admin                                          \
+    GET                                            \
+    ""                                             \
+    "text/csv"
 }
