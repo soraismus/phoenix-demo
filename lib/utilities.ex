@@ -40,18 +40,6 @@ defmodule Utilities do
     Enum.reduce(map, {@ok, %{}}, reduce)
   end
 
-  def atomify_map_keys(%{} = map, permissible_atoms) do
-    permissible_keys = Enum.map(permissible_atoms, &Atom.to_string/1)
-    map
-    |> Map.new(fn ({key, value}) when is_binary(key) ->
-          if key in permissible_keys do
-            {String.to_existing_atom(key), value}
-          else
-            raise "Invalid binary key"
-          end
-        end)
-  end
-
   def bind_error({@ok, value}, _fun), do: {@ok, value}
   def bind_error({@error, value}, fun), do: fun.(value)
 
@@ -65,9 +53,6 @@ defmodule Utilities do
     |> elem(1)
     |> Date.to_iso8601()
   end
-
-  def is_valid_result({:ok, _}), do: true
-  def is_valid_result({:error, _}), do: false
 
   def map_error({@ok, value}, _fun), do: {@ok, value}
   def map_error({@error, value}, fun), do: {@error, fun.(value)}

@@ -113,7 +113,7 @@ ADMINISTRATOR
   request administrators admin POST "$administrator" | parse_json
   note "SHOW ADMINISTRATOR #2"
   request administrators/2 admin | parse_json
-  note "INDEX ADMINISTRATORS"
+  note "LIST ADMINISTRATORS"
   request administrators admin | parse_json
 
   # Testing API's courier-related calls.
@@ -132,7 +132,7 @@ COURIER
   request couriers admin POST "$courier" | parse_json
   note "SHOW COURIER #2"
   request couriers/2 admin | parse_json
-  note "INDEX COURIERS"
+  note "LIST COURIERS"
   request couriers admin | parse_json
 
   note "CREATE PHARMACY"
@@ -150,7 +150,7 @@ PHARMACY
   request pharmacies admin POST "$pharmacy" | parse_json
   note "SHOW PHARMACY #2"
   request pharmacies/2 admin | parse_json
-  note "INDEX PHARMACIES"
+  note "LIST PHARMACIES"
   request pharmacies admin | parse_json
 
   note "CREATE PATIENT"
@@ -165,7 +165,7 @@ PATIENT
   request patients admin POST "$patient" | parse_json
   note "SHOW PATIENT #2"
   request patients/2 admin | parse_json
-  note "INDEX PATIENTS"
+  note "LIST PATIENTS"
   request patients admin | parse_json
 
   note "CREATE ORDER [Causes error if previously created.]"
@@ -190,19 +190,19 @@ ORDER
   note "DELIVER ORDER #1 [Delivers order #1 the first time; causes error subsequently.]"
   request orders/1/deliver admin POST | parse_json
 
-  note "INDEX ORDERS -- order_state: active, pickup_date: today"
+  note "LIST ORDERS -- order_state: active, pickup_date: today"
   request orders admin | parse_json
-  note "INDEX ORDERS -- order_state: all, pickup_date: today"
+  note "LIST ORDERS -- order_state: all, pickup_date: today"
   request "orders?order_state=all" admin | parse_json
-  note "INDEX ORDERS -- order_state: active, pickup_date: all"
+  note "LIST ORDERS -- order_state: active, pickup_date: all"
   request "orders?pickup_date=all" admin | parse_json
-  note "INDEX ORDERS -- order_state: all, pickup_date: all"
+  note "LIST ORDERS -- order_state: all, pickup_date: all"
   request "orders?order_state=all&pickup_date=all" admin | parse_json
   future="$(get_today_plus_five_days)"
-  note "INDEX ORDERS -- order_state: active, pickup_date: $future"
+  note "LIST ORDERS -- order_state: active, pickup_date: $future"
   request "orders?order_state=active&pickup_date=$future" admin | parse_json
   read -d '' request <<REQUEST
-  INDEX ORDERS --
+  LIST ORDERS --
     order_state: active,
     pickup_date: today,
     patient_id: 1,
@@ -211,10 +211,10 @@ ORDER
 REQUEST
   note "$request"
   request "orders?patient_id=1&pharmacy_id=2&courier_id=2" admin | parse_json
-  note "INDEX ORDERS -- order_state: delivered, pickup_date: all"
+  note "LIST ORDERS -- order_state: delivered, pickup_date: all"
   request "orders?order_state=delivered&pickup_date=all" admin | parse_json
   read -d '' request <<REQUEST
-  INDEX ORDERS --
+  LIST ORDERS --
     order_state: invalid,
     pickup_date: invalid,
     pickup_time: invalid,
@@ -232,7 +232,7 @@ REQUEST
 &courier_id=invalid"
   request "$orders" admin | parse_json
 
-  note "INDEX ORDERS IN CSV FORMAT -- order_state: delivered, pickup_date: all"
+  note "LIST ORDERS IN CSV FORMAT -- order_state: delivered, pickup_date: all"
   request                                          \
     "orders?order_state=delivered&pickup_date=all" \
     admin                                          \
