@@ -29,7 +29,7 @@ defmodule DemoWeb.OrderView do
                     courier_name
                     courier_email
                     courier_address
-                    order_state_description
+                    order_state
                     pickup_date
                     pickup_time
                   )
