@@ -105,9 +105,9 @@ defmodule AssessmentWeb.Api.OrderController do
       {@error, @not_authenticated} ->
         conn
         |> authentication_error("Must provide credentials to view orders")
-      {@error, %{errors: _, valid_results: _} = partition} ->
+      {@error, %{errors: errors, valid_results: _}} ->
         conn
-        |> validation_error(OrderView.format_index_errors(partition))
+        |> validation_error(OrderView.format_index_errors(errors))
       _ ->
         conn
         |> internal_error("ORIN-A")
