@@ -3,6 +3,9 @@ defprotocol ToJson do
 end
 
 defimpl ToJson, for: Atom do
+  def to_json(nil), do: nil
+  def to_json(true), do: true
+  def to_json(false), do: false
   def to_json(atom), do: to_string(atom)
 end
 
@@ -15,7 +18,7 @@ defimpl ToJson, for: Date do
 end
 
 defimpl ToJson, for: Integer do
-  def to_json(integer), do: to_string(integer)
+  def to_json(integer), do: integer
 end
 
 defimpl ToJson, for: List do
@@ -34,7 +37,7 @@ defimpl ToJson, for: Map do
 end
 
 defimpl ToJson, for: Number do
-  def to_json(number), do: to_string(number)
+  def to_json(number), do: number
 end
 
 defimpl ToJson, for: String do
