@@ -294,8 +294,8 @@ defmodule Demo.Accounts do
 
   defp delete_account(%{agent: %Agent{}} = account) do
     # Because, when the database deletes an agent, it also deletes the
-    # agent's corresponding pharmacy (or administrator or courier),
-    # the effect-ful expression `Repo.delete(pharmacy)` is not needed.
+    # agent's corresponding administrator, courier, or pharmacy,
+    # the effect-ful expression, e.g., `Repo.delete(pharmacy)` is not needed.
     # Deleting `pharmacy.agent` alone is sufficient.
     account.agent
     |> Repo.delete()
