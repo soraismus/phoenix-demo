@@ -231,6 +231,7 @@ defmodule DemoWeb.Api.OrderController do
       {@error, @not_authorized} ->
         conn
         |> authorization_error("Not authorized to update orders.")
+      {@error, @already_canceled} ->
         msg = "cannot be #{order_state} because it has already been canceled"
         conn
         |> resource_error(resource, msg)

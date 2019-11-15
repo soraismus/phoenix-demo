@@ -211,7 +211,7 @@ REQUEST
   note "$request"
   request "orders?patient_id=1&pharmacy_id=2&courier_id=2" admin | parse_json
   note "INDEX ORDERS -- order_state: delivered, pickup_date: all"
-  request "orders?order_state=all&pickup_date=all" admin | parse_json
+  request "orders?order_state=delivered&pickup_date=all" admin | parse_json
   read -d '' request <<REQUEST
   INDEX ORDERS --
     order_state: invalid,
