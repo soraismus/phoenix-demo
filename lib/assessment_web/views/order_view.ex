@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.OrderView do
-  alias Assessment.Orders.Order
+defmodule DemoWeb.OrderView do
+  alias Demo.Orders.Order
 
   @absent_account_id :absent_account_id
   @absent_patient_id :absent_patient_id

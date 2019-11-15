@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Browser.ControllerUtilities do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.ControllerUtilities do
+  use DemoWeb, :controller
 
   alias Ecto.Changeset
 

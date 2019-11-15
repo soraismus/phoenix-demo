@@ -1,4 +1,4 @@
-defmodule Assessment.Repo.Migrations.CreateAdministrators do
+defmodule Demo.Repo.Migrations.CreateAdministrators do
   use Ecto.Migration
 
   def change do

@@ -1,12 +1,12 @@
-defmodule AssessmentWeb do
+defmodule DemoWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, views, channels and so on.
 
   This can be used in your application as:
 
-      use AssessmentWeb, :controller
-      use AssessmentWeb, :view
+      use DemoWeb, :controller
+      use DemoWeb, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -19,17 +19,17 @@ defmodule AssessmentWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: AssessmentWeb.Browser
+      use Phoenix.Controller, namespace: DemoWeb.Browser
       import Plug.Conn
-      import AssessmentWeb.Router.Helpers
-      import AssessmentWeb.Gettext
+      import DemoWeb.Router.Helpers
+      import DemoWeb.Gettext
     end
   end
 
   def view do
     quote do
       use Phoenix.View, root: "lib/assessment_web/templates",
-                        namespace: AssessmentWeb
+                        namespace: DemoWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
@@ -37,9 +37,9 @@ defmodule AssessmentWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import AssessmentWeb.Router.Helpers
-      import AssessmentWeb.ErrorHelpers
-      import AssessmentWeb.Gettext
+      import DemoWeb.Router.Helpers
+      import DemoWeb.ErrorHelpers
+      import DemoWeb.Gettext
     end
   end
 
@@ -54,7 +54,7 @@ defmodule AssessmentWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import AssessmentWeb.Gettext
+      import DemoWeb.Gettext
     end
   end
 

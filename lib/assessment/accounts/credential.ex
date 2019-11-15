@@ -1,9 +1,9 @@
-defmodule Assessment.Accounts.Credential do
+defmodule Demo.Accounts.Credential do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Assessment.Accounts.Agent
+  alias Demo.Accounts.Agent
   alias Comeonin.Bcrypt
   alias Ecto.Changeset
 

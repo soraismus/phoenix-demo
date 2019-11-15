@@ -1,11 +1,11 @@
-defmodule Assessment.AccountsTest do
-  use Assessment.DataCase
+defmodule Demo.AccountsTest do
+  use Demo.DataCase
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.{Administrator,Agent,Courier,Pharmacy}
+  alias Demo.Accounts
+  alias Demo.Accounts.{Administrator,Agent,Courier,Pharmacy}
 
   describe "administrators" do
-    alias Assessment.Accounts.Administrator
+    alias Demo.Accounts.Administrator
 
     @valid_attrs %{ username: "some username",
                     administrator: %{
@@ -57,7 +57,7 @@ defmodule Assessment.AccountsTest do
   end
 
   describe "pharmacies" do
-    alias Assessment.Accounts.Pharmacy
+    alias Demo.Accounts.Pharmacy
 
     @valid_attrs %{ username: "some username",
                     pharmacy: %{
@@ -111,7 +111,7 @@ defmodule Assessment.AccountsTest do
   end
 
   describe "couriers" do
-    alias Assessment.Accounts.Courier
+    alias Demo.Accounts.Courier
 
     @valid_attrs %{ username: "some username",
                     courier: %{

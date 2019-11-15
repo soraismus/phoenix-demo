@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.ControllerUtilities do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Api.ControllerUtilities do
+  use DemoWeb, :controller
 
   alias Ecto.Changeset
 
@@ -62,9 +62,9 @@ defmodule AssessmentWeb.Api.ControllerUtilities do
 
   defp translate_error({msg, opts}) do
     if count = opts[:count] do
-      Gettext.dngettext(AssessmentWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(DemoWeb.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(AssessmentWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(DemoWeb.Gettext, "errors", msg, opts)
     end
   end
 

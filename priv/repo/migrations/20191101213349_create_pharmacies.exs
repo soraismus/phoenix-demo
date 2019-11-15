@@ -1,4 +1,4 @@
-defmodule Assessment.Repo.Migrations.CreatePharmacies do
+defmodule Demo.Repo.Migrations.CreatePharmacies do
   use Ecto.Migration
 
   def change do

@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Browser.PageController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.PageController do
+  use DemoWeb, :controller
 
   def index(conn, _params) do
     render conn, "index.html"

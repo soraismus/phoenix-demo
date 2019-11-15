@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Browser.OrderView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Browser.OrderView do
+  use DemoWeb, :view
 
   import Utilities, only: [get_date_today: 0]
 

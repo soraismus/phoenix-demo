@@ -1,4 +1,4 @@
-defmodule Assessment.DataCase do
+defmodule Demo.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -16,20 +16,20 @@ defmodule Assessment.DataCase do
 
   using do
     quote do
-      alias Assessment.Repo
+      alias Demo.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Assessment.DataCase
+      import Demo.DataCase
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Demo.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Assessment.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Demo.Repo, {:shared, self()})
     end
 
     :ok
@@ -51,9 +51,9 @@ defmodule Assessment.DataCase do
     end)
   end
 
-  alias Assessment.Accounts
-  alias Assessment.Accounts.{Administrator,Courier,Pharmacy}
-  alias Assessment.{Orders,Patients}
+  alias Demo.Accounts
+  alias Demo.Accounts.{Administrator,Courier,Pharmacy}
+  alias Demo.{Orders,Patients}
 
   @administrator :administrator
   @courier :courier

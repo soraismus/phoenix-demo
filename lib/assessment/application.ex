@@ -1,4 +1,4 @@
-defmodule Assessment.Application do
+defmodule Demo.Application do
   use Application
 
   # See https://hexdocs.pm/elixir/Application.html
@@ -9,23 +9,23 @@ defmodule Assessment.Application do
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
-      supervisor(Assessment.Repo, []),
+      supervisor(Demo.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(AssessmentWeb.Endpoint, []),
-      # Start your own worker by calling: Assessment.Worker.start_link(arg1, arg2, arg3)
-      # worker(Assessment.Worker, [arg1, arg2, arg3]),
+      supervisor(DemoWeb.Endpoint, []),
+      # Start your own worker by calling: Demo.Worker.start_link(arg1, arg2, arg3)
+      # worker(Demo.Worker, [arg1, arg2, arg3]),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Assessment.Supervisor]
+    opts = [strategy: :one_for_one, name: Demo.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    AssessmentWeb.Endpoint.config_change(changed, removed)
+    DemoWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

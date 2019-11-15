@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.PatientView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Api.PatientView do
+  use DemoWeb, :view
 
   def render("create.json", %{patient: patient}) do
     %{created: %{patient: ToJson.to_json(patient)}}

@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.ChannelCase do
+defmodule DemoWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -21,15 +21,15 @@ defmodule AssessmentWeb.ChannelCase do
       use Phoenix.ChannelTest
 
       # The default endpoint for testing
-      @endpoint AssessmentWeb.Endpoint
+      @endpoint DemoWeb.Endpoint
     end
   end
 
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Demo.Repo)
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Assessment.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Demo.Repo, {:shared, self()})
     end
     :ok
   end

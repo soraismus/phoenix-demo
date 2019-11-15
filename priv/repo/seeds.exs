@@ -1,4 +1,4 @@
-alias Assessment.{Accounts,Orders,OrderStates,Patients}
+alias Demo.{Accounts,Orders,OrderStates,Patients}
 
 [{:ok, _active}, {:ok, _canceled}, {:ok, _delivered}, {:ok, _undeliverable}] =
   Enum.map(

@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.Browser.ConnCase do
+defmodule DemoWeb.Browser.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -19,24 +19,24 @@ defmodule AssessmentWeb.Browser.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      import AssessmentWeb.Router.Helpers
+      import DemoWeb.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint AssessmentWeb.Endpoint
+      @endpoint DemoWeb.Endpoint
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Assessment.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Demo.Repo)
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Assessment.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Demo.Repo, {:shared, self()})
     end
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 
   def log_in_admin(_) do
     {:ok, admin} =
-      Assessment.Accounts.create_administrator(%{
+      Demo.Accounts.create_administrator(%{
         username: "admin",
         administrator: %{
           email: "admin@example.com"
@@ -48,7 +48,7 @@ defmodule AssessmentWeb.Browser.ConnCase do
     subject = %{agent_id: admin.id}
     conn =
       Phoenix.ConnTest.build_conn()
-      |> AssessmentWeb.Guardian.Plug.sign_in(subject)
+      |> DemoWeb.Guardian.Plug.sign_in(subject)
     {:ok, conn: conn}
   end
 end

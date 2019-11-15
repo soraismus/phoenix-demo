@@ -1,4 +1,4 @@
-defmodule Assessment.Mixfile do
+defmodule Demo.Mixfile do
   use Mix.Project
 
   def project do
@@ -19,7 +19,7 @@ defmodule Assessment.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Assessment.Application, []},
+      mod: {Demo.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

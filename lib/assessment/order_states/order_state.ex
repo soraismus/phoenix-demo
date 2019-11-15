@@ -1,9 +1,9 @@
-defmodule Assessment.OrderStates.OrderState do
+defmodule Demo.OrderStates.OrderState do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Assessment.Orders.Order
+  alias Demo.Orders.Order
 
   @active "active"
   @canceled "canceled"

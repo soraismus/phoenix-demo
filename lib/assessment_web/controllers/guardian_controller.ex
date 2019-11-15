@@ -1,9 +1,9 @@
-defmodule AssessmentWeb.GuardianController do
+defmodule DemoWeb.GuardianController do
   import Utilities, only: [prohibit_nil: 1]
 
-  alias Assessment.Accounts.Agent
-  alias AssessmentWeb.Guardian.Plug, as: GuardianPlug
-  alias AssessmentWeb.Guardian
+  alias Demo.Accounts.Agent
+  alias DemoWeb.Guardian.Plug, as: GuardianPlug
+  alias DemoWeb.Guardian
   alias Plug.Conn
 
   @error :error

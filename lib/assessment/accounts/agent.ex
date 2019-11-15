@@ -1,9 +1,9 @@
-defmodule Assessment.Accounts.Agent do
+defmodule Demo.Accounts.Agent do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Assessment.Accounts.{Administrator,Courier,Credential,Pharmacy}
+  alias Demo.Accounts.{Administrator,Courier,Credential,Pharmacy}
 
   schema "agents" do
     field :username, :string

@@ -1,4 +1,4 @@
-defmodule Assessment.Repo.Migrations.CreateCredentials do
+defmodule Demo.Repo.Migrations.CreateCredentials do
   use Ecto.Migration
 
   def change do

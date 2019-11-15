@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.ErrorView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.ErrorView do
+  use DemoWeb, :view
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.

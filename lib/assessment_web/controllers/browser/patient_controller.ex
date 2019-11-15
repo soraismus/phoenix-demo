@@ -1,16 +1,16 @@
-defmodule AssessmentWeb.Browser.PatientController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.PatientController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Browser.ControllerUtilities,
+  import DemoWeb.Browser.ControllerUtilities,
     only: [ id_type_validation_error: 1,
             internal_error: 2,
             match_error: 2,
             resource_error: 3,
           ]
-  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
+  import DemoWeb.ControllerUtilities, only: [validate_id_type: 1]
 
-  alias Assessment.Patients
-  alias Assessment.Patients.Patient
+  alias Demo.Patients
+  alias Demo.Patients.Patient
 
   plug :authenticate_administrator
 

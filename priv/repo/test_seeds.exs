@@ -1,4 +1,4 @@
-alias Assessment.OrderStates
+alias Demo.OrderStates
 
 [{:ok, _active}, {:ok, _canceled}, {:ok, _delivered}, {:ok, _undeliverable}] =
   Enum.map(

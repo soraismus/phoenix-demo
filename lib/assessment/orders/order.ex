@@ -1,12 +1,12 @@
-defmodule Assessment.Orders.Order do
+defmodule Demo.Orders.Order do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Assessment.Accounts.{Courier,Pharmacy}
-  alias Assessment.OrderStates
-  alias Assessment.OrderStates.OrderState
-  alias Assessment.Patients.Patient
+  alias Demo.Accounts.{Courier,Pharmacy}
+  alias Demo.OrderStates
+  alias Demo.OrderStates.OrderState
+  alias Demo.Patients.Patient
 
   @active OrderState.active()
   @canceled OrderState.canceled()

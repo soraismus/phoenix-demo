@@ -1,10 +1,10 @@
-defmodule Assessment.Accounts.Pharmacy do
+defmodule Demo.Accounts.Pharmacy do
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Assessment.Accounts.Agent
-  alias Assessment.Orders.Order
+  alias Demo.Accounts.Agent
+  alias Demo.Orders.Order
 
   schema "pharmacies" do
     field :address, :string

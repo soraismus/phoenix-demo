@@ -1,12 +1,12 @@
-defmodule Assessment.Patients do
+defmodule Demo.Patients do
   @moduledoc """
   The Patients context.
   """
 
   import Ecto.Query, warn: false
 
-  alias Assessment.Repo
-  alias Assessment.Patients.Patient
+  alias Demo.Repo
+  alias Demo.Patients.Patient
 
   @doc """
   Returns the list of patients.

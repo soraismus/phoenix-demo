@@ -1,4 +1,4 @@
-defmodule AssessmentWeb.ControllerUtilities do
+defmodule DemoWeb.ControllerUtilities do
   @error :error
   @invalid_parameter :invalid_parameter
   @ok :ok

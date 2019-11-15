@@ -1,13 +1,13 @@
-defmodule AssessmentWeb.Browser.SessionController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Browser.SessionController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Browser.ControllerUtilities,
+  import DemoWeb.Browser.ControllerUtilities,
     only: [ internal_error: 2,
             match_error: 2,
           ]
 
-  alias Assessment.Accounts
-  alias Assessment.Sessions
+  alias Demo.Accounts
+  alias Demo.Sessions
 
   @doc """
     Callback required by Guardian
@@ -76,12 +76,12 @@ defmodule AssessmentWeb.Browser.SessionController do
   defp log_in(conn, agent_id) do
     conn
     |> put_flash(:info, "Welcome back!")
-    |> AssessmentWeb.Guardian.Plug.sign_in(%{agent_id: agent_id})
+    |> DemoWeb.Guardian.Plug.sign_in(%{agent_id: agent_id})
   end
 
   defp logout(conn) do
     conn
-    |> AssessmentWeb.Guardian.Plug.sign_out()
+    |> DemoWeb.Guardian.Plug.sign_out()
     |> configure_session(drop: true)
   end
 

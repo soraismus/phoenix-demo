@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.Api.PatientController do
-  use AssessmentWeb, :controller
+defmodule DemoWeb.Api.PatientController do
+  use DemoWeb, :controller
 
-  import AssessmentWeb.Api.ControllerUtilities,
+  import DemoWeb.Api.ControllerUtilities,
     only: [ authentication_error: 1,
             authorization_error: 1,
             changeset_error: 2,
@@ -10,10 +10,10 @@ defmodule AssessmentWeb.Api.PatientController do
             match_error: 2,
             resource_error: 4
           ]
-  import AssessmentWeb.ControllerUtilities, only: [validate_id_type: 1]
-  import AssessmentWeb.GuardianController, only: [authenticate_administrator: 1]
+  import DemoWeb.ControllerUtilities, only: [validate_id_type: 1]
+  import DemoWeb.GuardianController, only: [authenticate_administrator: 1]
 
-  alias Assessment.Patients
+  alias Demo.Patients
 
   @created :created
   @error :error

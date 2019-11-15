@@ -1,7 +1,7 @@
-defmodule AssessmentWeb.Endpoint do
+defmodule DemoWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :assessment
 
-  socket "/socket", AssessmentWeb.UserSocket
+  socket "/socket", DemoWeb.UserSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -37,7 +37,7 @@ defmodule AssessmentWeb.Endpoint do
     key: "_assessment_key",
     signing_salt: "DVKKoGvk"
 
-  plug AssessmentWeb.Router
+  plug DemoWeb.Router
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

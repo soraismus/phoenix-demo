@@ -1,10 +1,10 @@
-defmodule Assessment.PatientsTest do
-  use Assessment.DataCase
+defmodule Demo.PatientsTest do
+  use Demo.DataCase
 
-  alias Assessment.Patients
+  alias Demo.Patients
 
   describe "patients" do
-    alias Assessment.Patients.Patient
+    alias Demo.Patients.Patient
 
     @valid_attrs %{address: "some address", name: "some name"}
     @update_attrs %{address: "some updated address", name: "some updated name"}

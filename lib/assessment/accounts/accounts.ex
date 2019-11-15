@@ -1,12 +1,12 @@
-defmodule Assessment.Accounts do
+defmodule Demo.Accounts do
   @moduledoc """
   The Accounts context.
   """
 
   import Ecto.Query, warn: false
 
-  alias Assessment.Repo
-  alias Assessment.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
+  alias Demo.Repo
+  alias Demo.Accounts.{Administrator,Agent,Courier,Credential,Pharmacy}
   alias Ecto.Changeset
 
   @no_resource :no_resource

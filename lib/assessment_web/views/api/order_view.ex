@@ -1,5 +1,5 @@
-defmodule AssessmentWeb.Api.OrderView do
-  use AssessmentWeb, :view
+defmodule DemoWeb.Api.OrderView do
+  use DemoWeb, :view
 
   @all :all
   @order_state :order_state
