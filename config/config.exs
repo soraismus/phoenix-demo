@@ -6,11 +6,11 @@
 use Mix.Config
 
 # General application configuration
-config :assessment,
+config :demo,
   ecto_repos: [Demo.Repo]
 
 # Configures the endpoint
-config :assessment, DemoWeb.Endpoint,
+config :demo, DemoWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "ZZMSGnkc3iCnqTd1Xl84slJ08+WFWXqZ3A0AqjFoy+c4s2Cahr4vVRSpJdbBsOd2",
   render_errors: [view: DemoWeb.ErrorView, accepts: ~w(html json)],
@@ -27,7 +27,7 @@ config :mime, :types, %{
   "text/csv" => ["csv"]
 }
 
-config :assessment, DemoWeb.Guardian,
+config :demo, DemoWeb.Guardian,
   issuer: "Demo",
   secret_key: "MDLMflIpKod5YCnkdiY7C4E3ki2rgcAAMwfBl0+vyC5uqJNgoibfQmAh7J3uZWVK",
   # optional
