@@ -57,6 +57,8 @@ get_username() {
   echo "john_evelyn_$RANDOM$RANDOM"
 }
 parse_json() {
+  # If the 'jq' executable is available, use it.
+  # Otherwise, pass data through the pipeline without modification.
   if command -v jq >/dev/null 2>&1; then
     jq
   else
