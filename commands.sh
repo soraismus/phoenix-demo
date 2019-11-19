@@ -76,9 +76,6 @@ address() {
   echo "11059-$RANDOM$RANDOM Nulliusinverba NEA, Asteroid Belt, Solar System"
 }
 test_api_calls() {
-  mkdir -p tokens
-  touch tokens/_
-
   note "TRY TO SHOW LIST PHARMACIES WITHOUT FIRST LOGGING IN"
   request pharmacies _ | parse_json
 
